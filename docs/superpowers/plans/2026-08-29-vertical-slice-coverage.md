@@ -156,3 +156,7 @@ None. The user delegated implementation and product decisions to the agent for t
 - D005: Type-only attribution reruns were deliberately deferred because the Phase 0 run produced no gap candidate and did not pass the product-value gate.
 - D006: The adversarial Podman matrix is incomplete. Before any claim of safe general-purpose untrusted execution, add real traversal, hostile environment, network, output, inode, timeout, ignored-termination, and cleanup tests.
 - D007: Two generated mutants remain unresolved TLC tool errors. Their event codes are recorded, but root-cause interpretation remains work for a later experiment.
+- D008: BRL helper definitions must be excluded when the same helper is also used in a negative or non-guard model context; add a multi-use helper fixture before broadening BRL coverage.
+- D009: Standalone TLC output truncation must force an unresolved result, and its child-process collector should adopt the sandbox runner's bounded reap contract.
+- D010: Mutation-workspace I/O failures should be classified as unresolved resource or tool failures rather than semantic-invalid SANY rejections.
+- D011: Add deterministic Podman failure-injection tests for malformed create output and interruption during cleanup before claiming general-purpose hostile-input containment.
