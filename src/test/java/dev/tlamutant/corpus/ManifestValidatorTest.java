@@ -33,11 +33,22 @@ final class ManifestValidatorTest {
 
     @Test
     void rejectsDuplicateNormalizedAndCaseFoldedPaths() {
-        CorpusManifest.Entry duplicate = entry(List.of(file("Spec.tla"), file("Spec.tla")));
-        CorpusManifest.Entry caseCollision = entry(List.of(file("Spec.tla"), file("spec.tla")));
+        CorpusManifest.Entry duplicate = entry(List.of(file("Spec.tla"), file("Spec.tla"), file("Spec.cfg")));
+        CorpusManifest.Entry caseCollision = entry(List.of(file("Spec.tla"), file("spec.tla"), file("Spec.cfg")));
 
         assertThrows(IllegalArgumentException.class, () -> ManifestValidator.validateEntry(duplicate, GLOBAL));
         assertThrows(IllegalArgumentException.class, () -> ManifestValidator.validateEntry(caseCollision, GLOBAL));
+    }
+
+    @Test
+    void requiresRootAndConfigFilesAndSafeRepositoryPaths() {
+        CorpusManifest.Entry missingConfig = entry(List.of(file("Spec.tla")));
+        CorpusManifest.Entry unsafeRepositoryPath = entry(
+                List.of(new CorpusManifest.SourceFile("Spec.tla", "../Spec.tla", "0".repeat(64), 1), file("Spec.cfg")));
+
+        assertThrows(IllegalArgumentException.class, () -> ManifestValidator.validateEntry(missingConfig, GLOBAL));
+        assertThrows(
+                IllegalArgumentException.class, () -> ManifestValidator.validateEntry(unsafeRepositoryPath, GLOBAL));
     }
 
     private static CorpusManifest.Entry entry(List<CorpusManifest.SourceFile> files) {
@@ -53,6 +64,6 @@ final class ManifestValidatorTest {
     }
 
     private static CorpusManifest.SourceFile file(String path) {
-        return new CorpusManifest.SourceFile(path, "0".repeat(64), 1);
+        return new CorpusManifest.SourceFile(path, "specifications/sample/" + path, "0".repeat(64), 1);
     }
 }

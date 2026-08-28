@@ -35,6 +35,7 @@ final class PodmanCommandTest {
         assertTrue(joined.contains("--user 501:20"));
         assertTrue(joined.contains("--userns keep-id"));
         assertTrue(joined.contains("--pids-limit 64"));
+        assertTrue(joined.contains("--ulimit fsize=33554432:33554432"));
         assertTrue(joined.contains("--read-only-tmpfs=false"));
         assertTrue(joined.contains("-Djava.io.tmpdir=/scratch"));
         assertTrue(joined.contains("-cp /opt/app.jar:/opt/tla2tools.jar dev.tlamutant.cli.Main"));
@@ -45,5 +46,6 @@ final class PodmanCommandTest {
         assertTrue(joined.contains("--pull never"));
         assertFalse(joined.contains("--privileged"));
         assertFalse(joined.contains("--device"));
+        assertFalse(joined.contains("fsize=32768:32768"));
     }
 }

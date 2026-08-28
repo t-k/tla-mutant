@@ -14,5 +14,5 @@ public record CorpusManifest(int version, String repository, String commit, Stri
             List<String> targetInvariants,
             ExecutionPolicy.Limits limits) {}
 
-    public record SourceFile(String path, String sha256, long sizeBytes) {}
+    public record SourceFile(String path, String repositoryPath, String sha256, long sizeBytes) {}
 }

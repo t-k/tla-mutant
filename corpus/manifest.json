@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "repository": "https://github.com/tlaplus/Examples",
+  "commit": "ed3cc4c35f7001d7cec08a22dcd698dae7570dc3",
+  "license": "MIT",
+  "entries": [
+    {
+      "id": "cigarette-smokers",
+      "domain": "concurrency",
+      "rootModule": "CigaretteSmokers.tla",
+      "config": "CigaretteSmokers.cfg",
+      "files": [
+        {"path": "CigaretteSmokers.tla", "repositoryPath": "specifications/CigaretteSmokers/CigaretteSmokers.tla", "sha256": "c0dc0ebf3fef3e95be8f7173197f6798f4c2ada5e99aa34fcadc9f71bececa51", "sizeBytes": 2942},
+        {"path": "CigaretteSmokers.cfg", "repositoryPath": "specifications/CigaretteSmokers/CigaretteSmokers.cfg", "sha256": "1d3b7af9618a5ed95a4a27562827259196706c3ec5e2976f3a171938757ac3f8", "sizeBytes": 168}
+      ],
+      "typeInvariants": ["TypeOK"],
+      "targetInvariants": ["AtMostOne"],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90}
+    },
+    {
+      "id": "game-of-life",
+      "domain": "cellular-automata",
+      "rootModule": "GameOfLife.tla",
+      "config": "GameOfLife.cfg",
+      "files": [
+        {"path": "GameOfLife.tla", "repositoryPath": "specifications/GameOfLife/GameOfLife.tla", "sha256": "dcd6d626946faab35ac22ad38a031b0d9bd9bc274d8750340506acc407dccbc6", "sizeBytes": 1265},
+        {"path": "GameOfLife.cfg", "repositoryPath": "specifications/GameOfLife/GameOfLife.cfg", "sha256": "89b3dd94f35fb6cee4b093fa2b9a2e0f44e6cf0d3e43707b82c801690eeb9bf3", "sizeBytes": 52}
+      ],
+      "typeInvariants": ["TypeOK"],
+      "targetInvariants": [],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90}
+    },
+    {
+      "id": "chameneos",
+      "domain": "concurrency",
+      "rootModule": "Chameneos.tla",
+      "config": "Chameneos.cfg",
+      "files": [
+        {"path": "Chameneos.tla", "repositoryPath": "specifications/Chameneos/Chameneos.tla", "sha256": "0e709f85c9fd764e8410fd57201b5c0900eb5bcb881168709c2376e921b29b32", "sizeBytes": 3691},
+        {"path": "Chameneos.cfg", "repositoryPath": "specifications/Chameneos/Chameneos.cfg", "sha256": "fbfb1dc9697f4161719cd924c6049fe48cded01cca00d58f8b6fe928c466118c", "sizeBytes": 148}
+      ],
+      "typeInvariants": ["TypeOK"],
+      "targetInvariants": ["SumMet"],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90}
+    },
+    {
+      "id": "channel",
+      "domain": "interface-protocol",
+      "rootModule": "Channel.tla",
+      "config": "Channel.cfg",
+      "files": [
+        {"path": "Channel.tla", "repositoryPath": "specifications/SpecifyingSystems/AsynchronousInterface/Channel.tla", "sha256": "8b2cbd4533a157ae0760e3117e3c008fb9a31dc3673005fc8b537d3879de1bfc", "sizeBytes": 761},
+        {"path": "Channel.cfg", "repositoryPath": "specifications/SpecifyingSystems/AsynchronousInterface/Channel.cfg", "sha256": "1d5437ab52c06defaa83bd3b860310e94865e2e19b60524d56c4de08f13c068f", "sizeBytes": 1085}
+      ],
+      "typeInvariants": ["TypeInvariant"],
+      "targetInvariants": [],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90}
+    },
+    {
+      "id": "asynchronous-interface",
+      "domain": "interface-protocol",
+      "rootModule": "AsynchInterface.tla",
+      "config": "AsynchInterface.cfg",
+      "files": [
+        {"path": "AsynchInterface.tla", "repositoryPath": "specifications/SpecifyingSystems/AsynchronousInterface/AsynchInterface.tla", "sha256": "86adf068c65219ebe140e047dece85a9d04b9492d508e4aa4d5f86685ada09d4", "sizeBytes": 764},
+        {"path": "AsynchInterface.cfg", "repositoryPath": "specifications/SpecifyingSystems/AsynchronousInterface/AsynchInterface.cfg", "sha256": "1d5437ab52c06defaa83bd3b860310e94865e2e19b60524d56c4de08f13c068f", "sizeBytes": 1085}
+      ],
+      "typeInvariants": ["TypeInvariant"],
+      "targetInvariants": [],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90}
+    },
+    {
+      "id": "nbacc-ray97",
+      "domain": "consensus",
+      "rootModule": "nbacc_ray97.tla",
+      "config": "nbacc_ray97.cfg",
+      "files": [
+        {"path": "nbacc_ray97.tla", "repositoryPath": "specifications/nbacc_ray97/nbacc_ray97.tla", "sha256": "c763b946f4135a439c67daa5b3d4ce55977726855b8af8198e453fc795c2f353", "sizeBytes": 4267},
+        {"path": "nbacc_ray97.cfg", "repositoryPath": "specifications/nbacc_ray97/nbacc_ray97.cfg", "sha256": "dc4f86156dab28a6b053805dade4dc803f851c681083d540bfdae2928d2e7871", "sizeBytes": 52}
+      ],
+      "typeInvariants": ["TypeOK"],
+      "targetInvariants": [],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90}
+    },
+    {
+      "id": "barrier",
+      "domain": "synchronization",
+      "rootModule": "Barrier.tla",
+      "config": "Barrier.cfg",
+      "files": [
+        {"path": "Barrier.tla", "repositoryPath": "specifications/barriers/Barrier.tla", "sha256": "e4a28b2900e3769602e700c3d474e5ac2147a1187ce80ef2f365a029abc5c220", "sizeBytes": 849},
+        {"path": "Barrier.cfg", "repositoryPath": "specifications/barriers/Barrier.cfg", "sha256": "493424bad25906d0c8202fc727fec04cec8edba8e09ab89ebab06a577e54d6e1", "sizeBytes": 76}
+      ],
+      "typeInvariants": ["TypeOK"],
+      "targetInvariants": [],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90}
+    },
+    {
+      "id": "two-phase-commit-btm",
+      "domain": "transaction-protocol",
+      "rootModule": "2PCwithBTM.tla",
+      "config": "2PCwithBTM.cfg",
+      "files": [
+        {"path": "2PCwithBTM.tla", "repositoryPath": "specifications/transaction_commit/2PCwithBTM.tla", "sha256": "ea518313d91f44080ddd8a062439e24be52c6851173952558436124f35227198", "sizeBytes": 7152},
+        {"path": "2PCwithBTM.cfg", "repositoryPath": "specifications/transaction_commit/2PCwithBTM.cfg", "sha256": "3da95f63bdd374311f671f5cda8c0504517fa910811f7491ac9c96482c3a55d7", "sizeBytes": 121}
+      ],
+      "typeInvariants": ["TypeOK"],
+      "targetInvariants": ["Consistency"],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90}
+    },
+    {
+      "id": "token-ring",
+      "domain": "self-stabilization",
+      "rootModule": "TokenRing.tla",
+      "config": "TokenRing.cfg",
+      "files": [
+        {"path": "TokenRing.tla", "repositoryPath": "specifications/ewd426/TokenRing.tla", "sha256": "e13841dfa43b3bd65a35d53c0c7c02bf8de42bb6864bd202ba30b724b33a056f", "sizeBytes": 2124},
+        {"path": "TokenRing.cfg", "repositoryPath": "specifications/ewd426/TokenRing.cfg", "sha256": "8dcdfc79502bc6074033e444e96adb838b89224a53a00a4d21fac94a7a70c740", "sizeBytes": 141}
+      ],
+      "typeInvariants": ["TypeOK"],
+      "targetInvariants": [],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90}
+    },
+    {
+      "id": "asynchronous-termination-detection",
+      "domain": "termination-detection",
+      "rootModule": "AsyncTerminationDetection.tla",
+      "config": "AsyncTerminationDetection.cfg",
+      "files": [
+        {"path": "AsyncTerminationDetection.tla", "repositoryPath": "specifications/ewd998/AsyncTerminationDetection.tla", "sha256": "c1b15be68a73c6e5f69c5c09f2736870182a9b0765ad9860452240119911b030", "sizeBytes": 4783},
+        {"path": "AsyncTerminationDetection.cfg", "repositoryPath": "specifications/ewd998/AsyncTerminationDetection.cfg", "sha256": "6affac15002d814a67775f16affa001d9e01c2a758a9d35dbfbaccdd1fc9f5c6", "sizeBytes": 128}
+      ],
+      "typeInvariants": ["TypeOK"],
+      "targetInvariants": [],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90}
+    }
+  ]
+}

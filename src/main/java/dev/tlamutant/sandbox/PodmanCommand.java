@@ -50,7 +50,7 @@ public final class PodmanCommand {
                 "--ulimit",
                 "nofile=" + limits.openFiles() + ":" + limits.openFiles(),
                 "--ulimit",
-                "fsize=" + Math.max(1, limits.fileBytes() / 1024) + ":" + Math.max(1, limits.fileBytes() / 1024),
+                "fsize=" + limits.fileBytes() + ":" + limits.fileBytes(),
                 "--mount",
                 "type=volume,source=" + scratchVolume + ",destination=/scratch",
                 "--mount",

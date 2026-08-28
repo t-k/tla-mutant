@@ -49,25 +49,42 @@ public final class ExperimentRunner {
         } catch (IOException exception) {
             throw new IllegalStateException("Cannot read root module", exception);
         }
+        Path stateInvariantConfig = results.resolve("state-invariants.cfg");
+        try {
+            StateInvariantConfig.write(modelRoot.resolve(configFile), stateInvariantConfig);
+        } catch (IOException exception) {
+            throw new IllegalStateException("Cannot create the State Invariant-only configuration", exception);
+        }
         List<MutationCandidate> candidates = new ArrayList<>();
         candidates.addAll(new GcdMutator().generate(project, source));
         candidates.addAll(new BrlMutator().generate(project, source));
         candidates.addAll(new UoiMutator().generate(project, source));
         candidates.sort(Comparator.comparing(MutationCandidate::id));
 
-        TlcExecution baseline =
-                tlcRunner.run(modelRoot, moduleFile, configFile, results.resolve("baseline-states.jsonl"), timeout);
+        TlcExecution baseline = tlcRunner.run(
+                modelRoot,
+                moduleFile,
+                stateInvariantConfig.toString(),
+                results.resolve("baseline-states.jsonl"),
+                timeout);
         if (baseline.status() != ExecutionStatus.COMPLETED || baseline.oracle() != OracleOutcome.PASSED) {
-            throw new IllegalStateException(
-                    "Baseline did not complete successfully: " + baseline.status() + "/" + baseline.oracle());
+            throw new IllegalStateException("Baseline did not complete successfully: "
+                    + baseline.status()
+                    + "/"
+                    + baseline.oracle()
+                    + "\nstdout:\n"
+                    + bounded(baseline.stdout())
+                    + "\nstderr:\n"
+                    + bounded(baseline.stderr()));
         }
 
         List<MutationResult> mutationResults = new ArrayList<>();
         for (MutationCandidate candidate : candidates) {
-            mutationResults.add(runCandidate(modelRoot, moduleFile, configFile, results, source, baseline, candidate));
+            mutationResults.add(runCandidate(
+                    modelRoot, moduleFile, configFile, stateInvariantConfig, results, source, baseline, candidate));
         }
         int evaluated = (int) mutationResults.stream()
-                .filter(result -> !result.executionStatus().equals("INVALID_SEMANTIC"))
+                .filter(result -> result.executionStatus().equals(ExecutionStatus.COMPLETED.name()))
                 .count();
         int gaps = (int) mutationResults.stream()
                 .filter(result -> result.verdict().equals("state-invariant-gap-candidate"))
@@ -76,10 +93,16 @@ public final class ExperimentRunner {
                 1, moduleFile, configFile, "proxy-agent-review", candidates.size(), evaluated, gaps, mutationResults);
     }
 
+    private static String bounded(String value) {
+        String text = value == null ? "" : value;
+        return text.substring(0, Math.min(text.length(), 4000));
+    }
+
     private MutationResult runCandidate(
             Path modelRoot,
             String moduleFile,
             String configFile,
+            Path stateInvariantConfig,
             Path results,
             SourceDocument source,
             TlcExecution baseline,
@@ -92,7 +115,11 @@ public final class ExperimentRunner {
             Files.writeString(workspace.resolve(moduleFile), patched.content());
             sanyAnalyzer.analyze(workspace, moduleFile, configFile);
             TlcExecution mutant = tlcRunner.run(
-                    workspace, moduleFile, configFile, results.resolve(candidate.id() + "-states.jsonl"), timeout);
+                    workspace,
+                    moduleFile,
+                    stateInvariantConfig.toString(),
+                    results.resolve(candidate.id() + "-states.jsonl"),
+                    timeout);
             return classify(candidate, baseline, mutant);
         } catch (IllegalArgumentException | IOException exception) {
             return new MutationResult(
