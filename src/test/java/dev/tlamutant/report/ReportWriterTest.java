@@ -43,7 +43,7 @@ final class ReportWriterTest {
     void corpusMarkdownNeutralizesLinksImagesHtmlControlsAndTableDelimiters() {
         CorpusEntryResult entry = new CorpusEntryResult(
                 "![image](javascript:alert(1))|next\u202e",
-                "<img src=x onerror=alert(1)>\u0000",
+                "<img src=x onerror=alert(1)>\u0000\u061c\u200e\u200f\u0085",
                 "COMPLETED",
                 null,
                 new ExperimentReport(1, "Fixture.tla", "Fixture.cfg", "proxy-agent-review", 0, 0, 0, List.of()));
@@ -57,6 +57,10 @@ final class ReportWriterTest {
         assertFalse(markdown.contains("<img"));
         assertFalse(markdown.contains("\u202e"));
         assertFalse(markdown.contains("\u0000"));
+        assertFalse(markdown.contains("\u061c"));
+        assertFalse(markdown.contains("\u200e"));
+        assertFalse(markdown.contains("\u200f"));
+        assertFalse(markdown.contains("\u0085"));
         assertTrue(markdown.contains("\\|"));
         assertFalse(markdown.contains("injected\nrow"));
     }

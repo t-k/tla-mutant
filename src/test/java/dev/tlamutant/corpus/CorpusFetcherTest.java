@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -13,6 +15,25 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 final class CorpusFetcherTest {
+    @Test
+    void verifiedInstallerStopsAfterTheDeclaredLengthWithoutWaitingForEof() throws Exception {
+        byte[] content = "exact".getBytes(StandardCharsets.UTF_8);
+        InputStream noEof = new ByteArrayInputStream(content) {
+            @Override
+            public int read(byte[] bytes, int offset, int length) {
+                if (available() == 0) {
+                    throw new AssertionError("installer read beyond the declared content length");
+                }
+                return super.read(bytes, offset, length);
+            }
+        };
+        Path installed = temporaryDirectory.resolve("exact.tla");
+
+        CorpusFetcher.installVerified(noEof, installed, content.length, sha256(content));
+
+        assertArrayEquals(content, Files.readAllBytes(installed));
+    }
+
     @TempDir
     Path temporaryDirectory;
 

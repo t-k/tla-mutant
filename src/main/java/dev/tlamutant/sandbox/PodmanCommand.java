@@ -10,6 +10,7 @@ public final class PodmanCommand {
 
     public static List<String> create(
             String containerName,
+            String runToken,
             String scratchVolume,
             String image,
             Path inputDirectory,
@@ -25,6 +26,8 @@ public final class PodmanCommand {
                 "create",
                 "--name",
                 containerName,
+                "--label",
+                "dev.tlamutant.run=" + runToken,
                 "--pull",
                 "never",
                 "--network",

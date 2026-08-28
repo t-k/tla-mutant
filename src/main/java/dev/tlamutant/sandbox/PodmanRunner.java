@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -22,6 +23,8 @@ import java.util.concurrent.TimeoutException;
 
 public final class PodmanRunner {
     private static final String SECCOMP_SHA256 = "886ae167646b7e5db381ecf7c31e6de720a8e8da15cf3202fe1f67f424af2b75";
+    private static final String RUN_LABEL = "dev.tlamutant.run";
+    private static final Duration PODMAN_COMMAND_TIMEOUT = Duration.ofSeconds(30);
 
     private final String image;
     private final Path applicationJar;
@@ -53,16 +56,19 @@ public final class PodmanRunner {
             effectiveTimeout = policyTimeout;
         }
         EngineIdentity identity = preflight();
-        String name = "tla-mutant-" + randomHex(8);
-        String scratchVolume = "tla-mutant-scratch-" + randomHex(8);
+        String runToken = randomHex(16);
+        String name = "tla-mutant-" + runToken;
+        String scratchVolume = "tla-mutant-scratch-" + runToken;
         String containerId = "";
-        boolean volumeCreated = false;
+        boolean volumeCreateAttempted = false;
+        boolean containerCreateAttempted = false;
         try {
-            createScratchVolume(scratchVolume);
-            volumeCreated = true;
-            verifyScratchVolume(scratchVolume);
+            volumeCreateAttempted = true;
+            createScratchVolume(scratchVolume, runToken);
+            verifyScratchVolume(scratchVolume, runToken);
             List<String> create = PodmanCommand.create(
                     name,
+                    runToken,
                     scratchVolume,
                     image,
                     input,
@@ -73,31 +79,34 @@ public final class PodmanRunner {
                     identity.uid(),
                     identity.gid(),
                     limits);
+            containerCreateAttempted = true;
             containerId = runChecked(create).trim();
             if (!containerId.matches("[0-9a-f]{64}")) {
                 throw new IllegalStateException("Podman returned an invalid container identity");
             }
-            verifyContainer(containerId, name);
+            verifyContainer(containerId, name, runToken);
             return startAttached(containerId, effectiveTimeout);
         } finally {
             try {
-                if (!containerId.isEmpty()) {
-                    cleanup(containerId);
+                if (containerCreateAttempted) {
+                    cleanupContainer(containerId, name, runToken);
                 }
             } finally {
-                if (volumeCreated) {
-                    cleanupVolume(scratchVolume);
+                if (volumeCreateAttempted) {
+                    cleanupVolume(scratchVolume, runToken);
                 }
             }
         }
     }
 
-    private void createScratchVolume(String name) {
+    private void createScratchVolume(String name, String runToken) {
         String options = scratchOptions();
         String created = runChecked(List.of(
                         "podman",
                         "volume",
                         "create",
+                        "--label",
+                        RUN_LABEL + "=" + runToken,
                         "--opt",
                         "type=tmpfs",
                         "--opt",
@@ -125,11 +134,12 @@ public final class PodmanRunner {
                 + ",mode=700,nodev,nosuid,noexec";
     }
 
-    private void verifyScratchVolume(String name) {
+    private void verifyScratchVolume(String name, String runToken) {
         try {
             JsonNode inspect = mapper.readTree(runChecked(List.of("podman", "volume", "inspect", name)))
                     .get(0);
             if (!inspect.required("Name").textValue().equals(name)
+                    || !inspect.at("/Labels/" + RUN_LABEL).asText().equals(runToken)
                     || !inspect.at("/Options/type").asText().equals("tmpfs")
                     || !inspect.at("/Options").has("nocopy")
                     || !inspect.at("/Options/o").asText().equals(scratchOptions())) {
@@ -184,12 +194,13 @@ public final class PodmanRunner {
         throw new IllegalStateException("Podman root identity mapping is unsupported");
     }
 
-    private void verifyContainer(String containerId, String expectedName) {
+    private void verifyContainer(String containerId, String expectedName, String runToken) {
         try {
             JsonNode inspect = mapper.readTree(runChecked(List.of("podman", "inspect", containerId)))
                     .get(0);
             if (!inspect.required("Id").textValue().equals(containerId)
-                    || !inspect.required("Name").textValue().equals(expectedName)) {
+                    || !inspect.required("Name").textValue().equals(expectedName)
+                    || !inspect.at("/Config/Labels/" + RUN_LABEL).asText().equals(runToken)) {
                 throw new IllegalStateException("Created container identity mismatch");
             }
             JsonNode hostConfig = inspect.required("HostConfig");
@@ -209,76 +220,108 @@ public final class PodmanRunner {
 
     private PodmanExecution startAttached(String containerId, Duration timeout) {
         ProcessBuilder builder = new ProcessBuilder("podman", "start", "--attach", containerId);
+        Process process = null;
+        ExecutorService executor = null;
+        Future<Capture> stdout = null;
+        Future<Capture> stderr = null;
         try {
-            Process process = builder.start();
+            process = builder.start();
             process.getOutputStream().close();
-            try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-                Future<Capture> stdout = executor.submit(new Collector(process.getInputStream(), limits.stdoutBytes()));
-                Future<Capture> stderr = executor.submit(new Collector(process.getErrorStream(), limits.stderrBytes()));
-                boolean completed = process.waitFor(timeout.toMillis(), TimeUnit.MILLISECONDS);
-                if (!completed) {
-                    runUnchecked(List.of("podman", "stop", "--time", "2", containerId));
-                    if (!process.waitFor(3, TimeUnit.SECONDS)) {
-                        runUnchecked(List.of("podman", "kill", containerId));
-                        if (!process.waitFor(5, TimeUnit.SECONDS)) {
-                            terminate(process);
-                        }
+            executor = Executors.newVirtualThreadPerTaskExecutor();
+            stdout = executor.submit(new Collector(process.getInputStream(), limits.stdoutBytes()));
+            stderr = executor.submit(new Collector(process.getErrorStream(), limits.stderrBytes()));
+            boolean completed = process.waitFor(timeout.toMillis(), TimeUnit.MILLISECONDS);
+            if (!completed) {
+                runUnchecked(List.of("podman", "stop", "--time", "2", containerId));
+                if (!process.waitFor(3, TimeUnit.SECONDS)) {
+                    runUnchecked(List.of("podman", "kill", containerId));
+                    if (!process.waitFor(5, TimeUnit.SECONDS)) {
+                        terminate(process);
                     }
                 }
-                Capture out = stdout.get(5, TimeUnit.SECONDS);
-                Capture err = stderr.get(5, TimeUnit.SECONDS);
-                return new PodmanExecution(
-                        containerId,
-                        completed ? process.exitValue() : -1,
-                        out.text().trim(),
-                        err.text(),
-                        !completed,
-                        out.truncated() || err.truncated());
             }
+            Capture out = stdout.get(5, TimeUnit.SECONDS);
+            Capture err = stderr.get(5, TimeUnit.SECONDS);
+            return new PodmanExecution(
+                    containerId,
+                    completed ? process.exitValue() : -1,
+                    out.text().trim(),
+                    err.text(),
+                    !completed,
+                    out.truncated() || err.truncated());
         } catch (IOException | InterruptedException | ExecutionException | TimeoutException exception) {
             if (exception instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
             throw new IllegalStateException("Sandbox execution failed", exception);
+        } finally {
+            closeProcessStreams(process);
+            if (stdout != null && !stdout.isDone()) {
+                stdout.cancel(true);
+            }
+            if (stderr != null && !stderr.isDone()) {
+                stderr.cancel(true);
+            }
+            if (executor != null) {
+                executor.shutdownNow();
+            }
+            terminateIfAlive(process);
         }
     }
 
-    private void cleanup(String containerId) {
-        runUnchecked(List.of("podman", "rm", "--force", "--time", "2", containerId));
-        Process existence;
+    private void cleanupContainer(String containerId, String expectedName, String runToken) {
+        CommandResult existence =
+                runCommand(List.of("podman", "container", "exists", expectedName), PODMAN_COMMAND_TIMEOUT, 64 * 1024);
+        if (existence.exitCode() == 1) {
+            return;
+        }
+        requireExit(existence, 0, "Cannot establish sandbox container presence");
         try {
-            existence = new ProcessBuilder("podman", "container", "exists", containerId).start();
-            int exitCode = existence.waitFor();
-            if (exitCode == 0) {
-                throw new IllegalStateException("Sandbox container remained after cleanup");
+            JsonNode inspect = mapper.readTree(runChecked(List.of("podman", "inspect", expectedName)))
+                    .get(0);
+            String actualId = inspect.required("Id").textValue();
+            if (!inspect.required("Name").textValue().equals(expectedName)
+                    || !inspect.at("/Config/Labels/" + RUN_LABEL).asText().equals(runToken)
+                    || (!containerId.isEmpty() && !actualId.equals(containerId))) {
+                throw new IllegalStateException("Refusing to clean a container outside this run");
             }
-            if (exitCode != 1) {
-                throw new IllegalStateException("Cannot establish sandbox container absence");
-            }
-        } catch (IOException | InterruptedException exception) {
-            if (exception instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
-            throw new IllegalStateException("Cannot verify container cleanup", exception);
+            runChecked(List.of("podman", "rm", "--force", "--time", "2", actualId));
+            requireAbsent("container", expectedName, "Sandbox container remained after cleanup");
+        } catch (IOException exception) {
+            throw new IllegalStateException("Cannot inspect sandbox container for cleanup", exception);
         }
     }
 
-    private void cleanupVolume(String name) {
-        runUnchecked(List.of("podman", "volume", "rm", "--force", name));
+    private void cleanupVolume(String name, String runToken) {
+        CommandResult existence =
+                runCommand(List.of("podman", "volume", "exists", name), PODMAN_COMMAND_TIMEOUT, 64 * 1024);
+        if (existence.exitCode() == 1) {
+            return;
+        }
+        requireExit(existence, 0, "Cannot establish scratch-volume presence");
         try {
-            Process existence = new ProcessBuilder("podman", "volume", "exists", name).start();
-            int exitCode = existence.waitFor();
-            if (exitCode == 0) {
-                throw new IllegalStateException("Scratch volume remained after cleanup");
+            JsonNode inspect = mapper.readTree(runChecked(List.of("podman", "volume", "inspect", name)))
+                    .get(0);
+            if (!inspect.required("Name").textValue().equals(name)
+                    || !inspect.at("/Labels/" + RUN_LABEL).asText().equals(runToken)) {
+                throw new IllegalStateException("Refusing to clean a volume outside this run");
             }
-            if (exitCode != 1) {
-                throw new IllegalStateException("Cannot establish scratch-volume absence");
-            }
-        } catch (IOException | InterruptedException exception) {
-            if (exception instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
-            throw new IllegalStateException("Cannot verify scratch-volume cleanup", exception);
+            runChecked(List.of("podman", "volume", "rm", "--force", name));
+            requireAbsent("volume", name, "Scratch volume remained after cleanup");
+        } catch (IOException exception) {
+            throw new IllegalStateException("Cannot inspect scratch volume for cleanup", exception);
+        }
+    }
+
+    private static void requireAbsent(String kind, String identity, String message) {
+        CommandResult existence =
+                runCommand(List.of("podman", kind, "exists", identity), PODMAN_COMMAND_TIMEOUT, 64 * 1024);
+        requireExit(existence, 1, message);
+    }
+
+    private static void requireExit(CommandResult result, int expected, String message) {
+        if (result.exitCode() != expected) {
+            throw new IllegalStateException(message + ": " + result.output());
         }
     }
 
@@ -291,46 +334,84 @@ public final class PodmanRunner {
     }
 
     private static String runChecked(List<String> command) {
+        CommandResult result = runCommand(command, PODMAN_COMMAND_TIMEOUT, 1024 * 1024);
+        if (result.exitCode() != 0 || result.truncated()) {
+            throw new IllegalStateException("Command failed: " + command.get(0) + ": " + result.output());
+        }
+        return result.output();
+    }
+
+    private static CommandResult runCommand(List<String> command, Duration timeout, long outputLimit) {
+        Process process = null;
+        ExecutorService executor = null;
+        Future<Capture> capture = null;
         try {
-            Process process =
-                    new ProcessBuilder(command).redirectErrorStream(true).start();
+            process = new ProcessBuilder(command).redirectErrorStream(true).start();
             process.getOutputStream().close();
-            try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-                Future<Capture> capture = executor.submit(new Collector(process.getInputStream(), 1024 * 1024));
-                boolean completed = process.waitFor(30, TimeUnit.SECONDS);
-                if (!completed) {
-                    terminate(process);
-                }
-                String output = capture.get(5, TimeUnit.SECONDS).text();
-                if (!completed || process.exitValue() != 0) {
-                    throw new IllegalStateException("Command failed: " + command.get(0) + ": " + output);
-                }
-                return output;
+            executor = Executors.newVirtualThreadPerTaskExecutor();
+            capture = executor.submit(new Collector(process.getInputStream(), outputLimit));
+            boolean completed = process.waitFor(timeout.toMillis(), TimeUnit.MILLISECONDS);
+            if (!completed) {
+                terminate(process);
+                throw new IllegalStateException("Command exceeded its absolute deadline: " + command.get(0));
             }
+            Capture output = capture.get(5, TimeUnit.SECONDS);
+            return new CommandResult(process.exitValue(), output.text(), output.truncated());
         } catch (IOException | InterruptedException | ExecutionException | TimeoutException exception) {
             if (exception instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
             throw new IllegalStateException("Cannot execute " + command.get(0), exception);
+        } finally {
+            closeProcessStreams(process);
+            if (capture != null && !capture.isDone()) {
+                capture.cancel(true);
+            }
+            if (executor != null) {
+                executor.shutdownNow();
+            }
+            terminateIfAlive(process);
         }
     }
 
     private static void runUnchecked(List<String> command) {
         try {
-            Process process =
-                    new ProcessBuilder(command).redirectErrorStream(true).start();
+            runCommand(command, Duration.ofSeconds(10), 64 * 1024);
+        } catch (IllegalStateException ignored) {
+            // Best effort is used only before exact labeled cleanup.
+        }
+    }
+
+    private static void closeProcessStreams(Process process) {
+        if (process == null) {
+            return;
+        }
+        try {
+            process.getInputStream().close();
+        } catch (IOException ignored) {
+            // Closing is best effort after bounded collection.
+        }
+        try {
+            process.getErrorStream().close();
+        } catch (IOException ignored) {
+            // Closing is best effort after bounded collection.
+        }
+        try {
             process.getOutputStream().close();
-            try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-                Future<Capture> capture = executor.submit(new Collector(process.getInputStream(), 64 * 1024));
-                if (!process.waitFor(10, TimeUnit.SECONDS)) {
-                    terminate(process);
-                }
-                capture.get(5, TimeUnit.SECONDS);
-            }
-        } catch (IOException | InterruptedException | ExecutionException | TimeoutException ignored) {
-            if (ignored instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
+        } catch (IOException ignored) {
+            // Closing is best effort after bounded collection.
+        }
+    }
+
+    private static void terminateIfAlive(Process process) {
+        if (process == null || !process.isAlive()) {
+            return;
+        }
+        try {
+            terminate(process);
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            process.destroyForcibly();
         }
     }
 
@@ -351,6 +432,8 @@ public final class PodmanRunner {
     }
 
     private record Capture(String text, boolean truncated) {}
+
+    private record CommandResult(int exitCode, String output, boolean truncated) {}
 
     private record EngineIdentity(int uid, int gid) {}
 

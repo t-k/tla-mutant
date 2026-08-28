@@ -15,6 +15,7 @@ final class PodmanCommandTest {
                 new ExecutionPolicy.Limits(60, 536_870_912, 64, 128, 33_554_432, 2048, 1024, 1024, 10_000, 90);
         List<String> command = PodmanCommand.create(
                 "tla-mutant-0123456789abcdef",
+                "0123456789abcdef",
                 "tla-mutant-scratch-0123456789abcdef",
                 "docker.io/library/eclipse-temurin@sha256:" + "a".repeat(64),
                 Path.of("/input"),
@@ -28,6 +29,7 @@ final class PodmanCommandTest {
         String joined = String.join(" ", command);
 
         assertTrue(joined.contains("--network none"));
+        assertTrue(joined.contains("--label dev.tlamutant.run=0123456789abcdef"));
         assertTrue(joined.contains("--read-only"));
         assertTrue(joined.contains("--cap-drop ALL"));
         assertTrue(joined.contains("no-new-privileges"));

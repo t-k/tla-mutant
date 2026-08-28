@@ -26,6 +26,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.net.ssl.SNIHostName;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocket;
@@ -35,6 +40,7 @@ public final class CorpusFetcher {
     private static final String REPOSITORY = "https://github.com/tlaplus/Examples";
     private static final String RAW_HOST = "raw.githubusercontent.com";
     private static final long MAX_SOURCE_BYTES = 8L * 1024 * 1024;
+    private static final Duration DOWNLOAD_TIMEOUT = Duration.ofSeconds(60);
     private static final java.nio.file.attribute.FileAttribute<java.util.Set<PosixFilePermission>> OWNER_DIRECTORY =
             PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------"));
     private static final java.nio.file.attribute.FileAttribute<java.util.Set<PosixFilePermission>> OWNER_FILE =
@@ -87,7 +93,8 @@ public final class CorpusFetcher {
             throw new IllegalArgumentException("Corpus source exceeds the per-file maximum");
         }
         String requestPath = "/tlaplus/Examples/" + commit + "/" + file.repositoryPath();
-        try (PinnedResponse response = openPinned(requestPath, file.sizeBytes());
+        Deadline deadline = Deadline.after(DOWNLOAD_TIMEOUT);
+        try (PinnedResponse response = openPinned(requestPath, file.sizeBytes(), deadline);
                 InputStream input = response.input()) {
             installVerified(input, target, file.sizeBytes(), file.sha256());
         }
@@ -108,15 +115,13 @@ public final class CorpusFetcher {
             long total = 0;
             try (var output = Files.newOutputStream(temporary)) {
                 byte[] buffer = new byte[64 * 1024];
-                while (true) {
-                    int count = input.read(buffer);
+                while (total < expectedSize) {
+                    int requested = (int) Math.min(buffer.length, expectedSize - total);
+                    int count = input.read(buffer, 0, requested);
                     if (count < 0) {
-                        break;
+                        throw new IllegalArgumentException("Downloaded source ended before its declared size");
                     }
                     total += count;
-                    if (total > expectedSize) {
-                        throw new IllegalArgumentException("Downloaded source exceeded its declared size");
-                    }
                     digest.update(buffer, 0, count);
                     output.write(buffer, 0, count);
                 }
@@ -163,9 +168,10 @@ public final class CorpusFetcher {
         }
     }
 
-    private static PinnedResponse openPinned(String requestPath, long expectedSize) throws IOException {
+    private static PinnedResponse openPinned(String requestPath, long expectedSize, Deadline deadline)
+            throws IOException, InterruptedException {
         List<InetAddress> addresses = new ArrayList<>();
-        for (InetAddress address : InetAddress.getAllByName(RAW_HOST)) {
+        for (InetAddress address : resolveAddresses(deadline)) {
             if (!isPublicGlobalAddress(address)) {
                 throw new IllegalArgumentException("Corpus source host resolved to a non-public address");
             }
@@ -176,8 +182,9 @@ public final class CorpusFetcher {
         }
         IOException failure = null;
         for (InetAddress address : addresses) {
+            deadline.requireRemaining();
             try {
-                return connectPinned(address, requestPath, expectedSize);
+                return connectPinned(address, requestPath, expectedSize, deadline);
             } catch (IOException exception) {
                 failure = exception;
             }
@@ -185,20 +192,41 @@ public final class CorpusFetcher {
         throw new IOException("Cannot connect to any verified corpus endpoint", failure);
     }
 
-    private static PinnedResponse connectPinned(InetAddress address, String requestPath, long expectedSize)
-            throws IOException {
+    private static InetAddress[] resolveAddresses(Deadline deadline) throws IOException, InterruptedException {
+        var executor = Executors.newSingleThreadExecutor(
+                Thread.ofVirtual().name("corpus-dns-", 0).factory());
+        Future<InetAddress[]> resolution = executor.submit(() -> InetAddress.getAllByName(RAW_HOST));
+        try {
+            return resolution.get(deadline.remainingMillis(), TimeUnit.MILLISECONDS);
+        } catch (TimeoutException exception) {
+            throw new IOException("Corpus source DNS resolution exceeded the absolute deadline", exception);
+        } catch (ExecutionException exception) {
+            Throwable cause = exception.getCause();
+            if (cause instanceof IOException ioException) {
+                throw ioException;
+            }
+            throw new IOException("Corpus source DNS resolution failed", cause);
+        } finally {
+            resolution.cancel(true);
+            executor.shutdownNow();
+        }
+    }
+
+    private static PinnedResponse connectPinned(
+            InetAddress address, String requestPath, long expectedSize, Deadline deadline) throws IOException {
         Socket plain = new Socket();
         try {
-            plain.connect(new InetSocketAddress(address, 443), (int)
-                    Duration.ofSeconds(20).toMillis());
-            plain.setSoTimeout((int) Duration.ofSeconds(30).toMillis());
+            plain.connect(new InetSocketAddress(address, 443), deadline.boundedMillis(Duration.ofSeconds(20)));
+            plain.setSoTimeout(deadline.boundedMillis(Duration.ofSeconds(30)));
             SSLSocket tls = (SSLSocket)
                     ((SSLSocketFactory) SSLSocketFactory.getDefault()).createSocket(plain, RAW_HOST, 443, true);
             SSLParameters parameters = tls.getSSLParameters();
             parameters.setEndpointIdentificationAlgorithm("HTTPS");
             parameters.setServerNames(List.of(new SNIHostName(RAW_HOST)));
             tls.setSSLParameters(parameters);
+            tls.setSoTimeout(deadline.boundedMillis(Duration.ofSeconds(30)));
             tls.startHandshake();
+            deadline.requireRemaining();
             OutputStream output = tls.getOutputStream();
             output.write(("GET "
                             + requestPath
@@ -208,7 +236,7 @@ public final class CorpusFetcher {
                     .getBytes(StandardCharsets.US_ASCII));
             output.flush();
 
-            InputStream input = tls.getInputStream();
+            InputStream input = new DeadlineInputStream(tls.getInputStream(), tls, deadline);
             String status = readHttpLine(input, 4096);
             if (status == null || !status.matches("HTTP/1\\.[01] 200(?: .*)?")) {
                 tls.close();
@@ -328,6 +356,57 @@ public final class CorpusFetcher {
         @Override
         public void close() throws IOException {
             socket.close();
+        }
+    }
+
+    private record Deadline(long endNanos) {
+        static Deadline after(Duration duration) {
+            return new Deadline(Math.addExact(System.nanoTime(), duration.toNanos()));
+        }
+
+        long remainingMillis() throws IOException {
+            long remaining = endNanos - System.nanoTime();
+            if (remaining <= 0) {
+                throw new IOException("Corpus source download exceeded the absolute deadline");
+            }
+            return Math.max(1, TimeUnit.NANOSECONDS.toMillis(remaining));
+        }
+
+        int boundedMillis(Duration maximum) throws IOException {
+            return Math.toIntExact(Math.min(remainingMillis(), maximum.toMillis()));
+        }
+
+        void requireRemaining() throws IOException {
+            remainingMillis();
+        }
+    }
+
+    private static final class DeadlineInputStream extends InputStream {
+        private final InputStream delegate;
+        private final Socket socket;
+        private final Deadline deadline;
+
+        private DeadlineInputStream(InputStream delegate, Socket socket, Deadline deadline) {
+            this.delegate = delegate;
+            this.socket = socket;
+            this.deadline = deadline;
+        }
+
+        @Override
+        public int read() throws IOException {
+            socket.setSoTimeout(deadline.boundedMillis(Duration.ofSeconds(30)));
+            return delegate.read();
+        }
+
+        @Override
+        public int read(byte[] bytes, int offset, int length) throws IOException {
+            socket.setSoTimeout(deadline.boundedMillis(Duration.ofSeconds(30)));
+            return delegate.read(bytes, offset, length);
+        }
+
+        @Override
+        public void close() throws IOException {
+            delegate.close();
         }
     }
 
