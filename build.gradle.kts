@@ -201,7 +201,9 @@ val verifyTlaTools by tasks.registering {
 
 dependencies {
     compileOnly(files(toolsJar))
+    testCompileOnly(files(toolsJar))
     testRuntimeOnly(files(toolsJar))
+    add(integrationTestSourceSet.compileOnlyConfigurationName, files(toolsJar))
     add(integrationTestSourceSet.runtimeOnlyConfigurationName, files(toolsJar))
 }
 
@@ -221,6 +223,18 @@ val fatJar by tasks.registering(Jar::class) {
     from({
         configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) }
     })
+}
+
+integrationTest {
+    dependsOn(fatJar, verifyTlaTools)
+    systemProperty(
+        "tla.mutant.test.appJar",
+        fatJar
+            .flatMap { it.archiveFile }
+            .get()
+            .asFile.absolutePath,
+    )
+    systemProperty("tla.mutant.test.toolsJar", toolsJar.asFile.absolutePath)
 }
 
 tasks.withType<Test>().configureEach {
