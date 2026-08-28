@@ -1,0 +1,264 @@
+package dev.tlamutant.tlc;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.tlamutant.state.CanonicalState;
+import dev.tlamutant.state.CanonicalValue;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
+public final class TlcRunner {
+    private static final int OUTPUT_LIMIT = 1024 * 1024;
+    private static final Set<String> REMOVED_ENVIRONMENT = Set.of(
+            "CLASSPATH",
+            "TLA_LIBRARY",
+            "JAVA_TOOL_OPTIONS",
+            "_JAVA_OPTIONS",
+            "JDK_JAVA_OPTIONS",
+            "HTTP_PROXY",
+            "HTTPS_PROXY",
+            "ALL_PROXY",
+            "NO_PROXY",
+            "AWS_ACCESS_KEY_ID",
+            "AWS_SECRET_ACCESS_KEY",
+            "GOOGLE_APPLICATION_CREDENTIALS");
+
+    private final Path javaExecutable;
+    private final Path applicationJar;
+    private final Path toolsJar;
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final TlcToolEventParser eventParser = new TlcToolEventParser();
+
+    public TlcRunner(Path javaExecutable, Path applicationJar, Path toolsJar) {
+        this.javaExecutable = requireRegularAbsolute(javaExecutable, "java executable");
+        this.applicationJar = requireRegularAbsolute(applicationJar, "application jar");
+        this.toolsJar = requireRegularAbsolute(toolsJar, "TLA+ Tools jar");
+    }
+
+    public static TlcRunner forCurrentJava(Path applicationJar, Path toolsJar) {
+        return new TlcRunner(
+                Path.of(System.getProperty("java.home"), "bin", "java"),
+                applicationJar.toAbsolutePath(),
+                toolsJar.toAbsolutePath());
+    }
+
+    public TlcExecution run(
+            Path modelDirectory, String moduleFile, String configFile, Path stateOutput, Duration timeout) {
+        if (timeout == null || timeout.isZero() || timeout.isNegative()) {
+            throw new IllegalArgumentException("TLC timeout must be positive");
+        }
+        Path modelRoot = modelDirectory.toAbsolutePath().normalize();
+        Path output = stateOutput.toAbsolutePath().normalize();
+        Path runDirectory;
+        try {
+            Files.createDirectories(output.getParent());
+            runDirectory = Files.createTempDirectory(output.getParent(), ".tlc-run-");
+        } catch (IOException exception) {
+            throw new IllegalStateException("Cannot create TLC run directory", exception);
+        }
+        Path metadata = runDirectory.resolve("metadata");
+        List<String> command = List.of(
+                javaExecutable.toString(),
+                "-XX:+UseParallelGC",
+                "-Dtla.mutant.state.path=" + output,
+                "-Dtla.mutant.state.maxStates=1000000",
+                "-Dtla.mutant.state.maxBytes=67108864",
+                "-cp",
+                applicationJar + System.getProperty("path.separator") + toolsJar,
+                "tlc2.TLC",
+                "-tool",
+                "-workers",
+                "1",
+                "-fp",
+                "81",
+                "-metadir",
+                metadata.toString(),
+                "-config",
+                configFile,
+                "-dump",
+                "class,dev.tlamutant.state.CanonicalStateWriter",
+                moduleFile);
+        ProcessBuilder builder = new ProcessBuilder(command).directory(modelRoot.toFile());
+        REMOVED_ENVIRONMENT.forEach(builder.environment()::remove);
+
+        try {
+            Process process = builder.start();
+            try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+                Future<OutputCapture> stdout = executor.submit(new Collector(process.getInputStream(), OUTPUT_LIMIT));
+                Future<OutputCapture> stderr = executor.submit(new Collector(process.getErrorStream(), OUTPUT_LIMIT));
+                boolean completed = process.waitFor(timeout.toMillis(), TimeUnit.MILLISECONDS);
+                if (!completed) {
+                    process.destroy();
+                    if (!process.waitFor(2, TimeUnit.SECONDS)) {
+                        process.destroyForcibly();
+                        process.waitFor(5, TimeUnit.SECONDS);
+                    }
+                }
+                OutputCapture out = stdout.get();
+                OutputCapture err = stderr.get();
+                int exitCode = completed ? process.exitValue() : -1;
+                List<TlcToolEvent> events = eventParser.parse(out.text());
+                StateFile stateFile = readStateFile(output);
+                Classification classification = classify(completed, exitCode, events, stateFile.complete());
+                return new TlcExecution(
+                        classification.status(),
+                        classification.oracle(),
+                        exitCode,
+                        events,
+                        stateFile.states(),
+                        out.text(),
+                        err.text(),
+                        out.truncated() || err.truncated());
+            }
+        } catch (IOException | InterruptedException | ExecutionException exception) {
+            if (exception instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            return new TlcExecution(
+                    ExecutionStatus.TOOL_ERROR,
+                    OracleOutcome.NOT_EVALUATED,
+                    -1,
+                    List.of(),
+                    List.of(),
+                    "",
+                    exception.getClass().getSimpleName(),
+                    false);
+        } finally {
+            deleteTree(runDirectory);
+        }
+    }
+
+    private Classification classify(
+            boolean completed, int exitCode, List<TlcToolEvent> events, boolean completeStateFile) {
+        Set<Integer> codes = events.stream().map(TlcToolEvent::code).collect(java.util.stream.Collectors.toSet());
+        if (!completed) {
+            return new Classification(ExecutionStatus.TIMEOUT, OracleOutcome.NOT_EVALUATED);
+        }
+        if (codes.contains(1001)) {
+            return new Classification(ExecutionStatus.OUT_OF_MEMORY, OracleOutcome.NOT_EVALUATED);
+        }
+        if (codes.contains(2111)) {
+            return new Classification(ExecutionStatus.EVALUATION_ERROR, OracleOutcome.NOT_EVALUATED);
+        }
+        if (codes.contains(2107) || codes.contains(2110)) {
+            return new Classification(ExecutionStatus.COMPLETED, OracleOutcome.KILLED_STATE_SAFETY);
+        }
+        if (codes.contains(2114)) {
+            return new Classification(ExecutionStatus.COMPLETED, OracleOutcome.KILLED_DEADLOCK);
+        }
+        if (codes.contains(2193) && exitCode == 0 && completeStateFile) {
+            return new Classification(ExecutionStatus.COMPLETED, OracleOutcome.PASSED);
+        }
+        return new Classification(ExecutionStatus.TOOL_ERROR, OracleOutcome.NOT_EVALUATED);
+    }
+
+    private StateFile readStateFile(Path path) {
+        if (!Files.isRegularFile(path)) {
+            return new StateFile(List.of(), false);
+        }
+        try {
+            List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
+            List<CanonicalState> states = new ArrayList<>();
+            boolean complete = false;
+            int declaredCount = -1;
+            for (String line : lines) {
+                JsonNode node = mapper.readTree(line);
+                String type = node.required("type").textValue();
+                if (type.equals("state")) {
+                    TreeMap<String, CanonicalValue> variables = mapper.convertValue(
+                            node.required("variables"), new TypeReference<TreeMap<String, CanonicalValue>>() {});
+                    String identity = stateIdentity(variables);
+                    CanonicalState state = CanonicalState.of(identity);
+                    if (!state.sha256().equals(node.required("sha256").textValue())) {
+                        return new StateFile(List.of(), false);
+                    }
+                    states.add(state);
+                } else if (type.equals("complete")) {
+                    complete = true;
+                    declaredCount = node.required("states").intValue();
+                } else {
+                    return new StateFile(List.of(), false);
+                }
+            }
+            return new StateFile(List.copyOf(states), complete && declaredCount == states.size());
+        } catch (IOException | RuntimeException exception) {
+            return new StateFile(List.of(), false);
+        }
+    }
+
+    private static String stateIdentity(TreeMap<String, CanonicalValue> variables) {
+        StringBuilder identity = new StringBuilder();
+        variables.forEach((name, value) -> identity.append(name.length())
+                .append(':')
+                .append(name)
+                .append(':')
+                .append(value.identityText())
+                .append(';'));
+        return identity.toString();
+    }
+
+    private static Path requireRegularAbsolute(Path path, String name) {
+        Path normalized = path.toAbsolutePath().normalize();
+        if (!path.isAbsolute() || !Files.isRegularFile(normalized)) {
+            throw new IllegalArgumentException(name + " must be an absolute regular file");
+        }
+        return normalized;
+    }
+
+    private static void deleteTree(Path root) {
+        if (root == null || !Files.exists(root)) {
+            return;
+        }
+        try (var paths = Files.walk(root)) {
+            paths.sorted(java.util.Comparator.reverseOrder()).forEach(path -> {
+                try {
+                    Files.deleteIfExists(path);
+                } catch (IOException ignored) {
+                    // The exact run directory is best-effort cleanup; a later inspection detects leakage.
+                }
+            });
+        } catch (IOException ignored) {
+            // The exact run directory is best-effort cleanup; a later inspection detects leakage.
+        }
+    }
+
+    private record Classification(ExecutionStatus status, OracleOutcome oracle) {}
+
+    private record StateFile(List<CanonicalState> states, boolean complete) {}
+
+    private record OutputCapture(String text, boolean truncated) {}
+
+    private record Collector(InputStream input, int limit) implements Callable<OutputCapture> {
+        @Override
+        public OutputCapture call() throws IOException {
+            ByteArrayOutputStream retained = new ByteArrayOutputStream();
+            byte[] buffer = new byte[16 * 1024];
+            long total = 0;
+            while (true) {
+                int count = input.read(buffer);
+                if (count < 0) {
+                    break;
+                }
+                int keep = (int) Math.min(count, Math.max(0, limit - retained.size()));
+                retained.write(buffer, 0, keep);
+                total += count;
+            }
+            return new OutputCapture(retained.toString(StandardCharsets.UTF_8), total > limit);
+        }
+    }
+}
