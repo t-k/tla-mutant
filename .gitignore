@@ -1,8 +1,8 @@
 docs.local/
 .worktree/
 .codex/
-.gradle/
-build/
-.tools/
-.corpus/
-.tla-mutant/
+/.gradle/
+/build/
+/.tools/
+/.corpus/
+/.tla-mutant/

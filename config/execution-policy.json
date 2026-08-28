@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "containerImage": "unconfigured",
+  "limits": {
+    "cpuSeconds": 120,
+    "memoryBytes": 1073741824,
+    "pids": 128,
+    "openFiles": 256,
+    "fileBytes": 67108864,
+    "fileCount": 4096,
+    "stdoutBytes": 1048576,
+    "stderrBytes": 1048576,
+    "states": 1000000,
+    "wallClockSeconds": 180
+  }
+}
