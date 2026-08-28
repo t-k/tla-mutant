@@ -237,6 +237,18 @@ integrationTest {
     systemProperty("tla.mutant.test.toolsJar", toolsJar.asFile.absolutePath)
 }
 
+sandboxTest {
+    dependsOn(fatJar, verifyTlaTools)
+    systemProperty(
+        "tla.mutant.test.appJar",
+        fatJar
+            .flatMap { it.archiveFile }
+            .get()
+            .asFile.absolutePath,
+    )
+    systemProperty("tla.mutant.test.toolsJar", toolsJar.asFile.absolutePath)
+}
+
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }

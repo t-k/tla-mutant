@@ -72,9 +72,17 @@ public final class TlcRunner {
             throw new IllegalStateException("Cannot create TLC run directory", exception);
         }
         Path metadata = runDirectory.resolve("metadata");
+        Path temporary = runDirectory.resolve("tmp");
+        try {
+            Files.createDirectory(temporary);
+        } catch (IOException exception) {
+            deleteTree(runDirectory);
+            throw new IllegalStateException("Cannot create TLC temporary directory", exception);
+        }
         List<String> command = List.of(
                 javaExecutable.toString(),
                 "-XX:+UseParallelGC",
+                "-Djava.io.tmpdir=" + temporary,
                 "-Dtla.mutant.state.path=" + output,
                 "-Dtla.mutant.state.maxStates=1000000",
                 "-Dtla.mutant.state.maxBytes=67108864",

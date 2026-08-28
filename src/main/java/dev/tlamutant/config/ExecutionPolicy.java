@@ -1,7 +1,9 @@
 package dev.tlamutant.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.Objects;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record ExecutionPolicy(int version, String containerImage, Limits limits) {
     public ExecutionPolicy {
         if (version <= 0) {

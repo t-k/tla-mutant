@@ -1,0 +1,93 @@
+package dev.tlamutant.sandbox;
+
+import dev.tlamutant.config.ExecutionPolicy;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+
+public final class PodmanCommand {
+    private PodmanCommand() {}
+
+    public static List<String> create(
+            String containerName,
+            String scratchVolume,
+            String image,
+            Path inputDirectory,
+            Path applicationJar,
+            Path toolsJar,
+            String module,
+            String config,
+            int uid,
+            int gid,
+            ExecutionPolicy.Limits limits) {
+        List<String> command = new ArrayList<>(List.of(
+                "podman",
+                "create",
+                "--name",
+                containerName,
+                "--pull",
+                "never",
+                "--network",
+                "none",
+                "--read-only",
+                "--read-only-tmpfs=false",
+                "--cap-drop",
+                "ALL",
+                "--security-opt",
+                "no-new-privileges",
+                "--security-opt",
+                "seccomp=/usr/share/containers/seccomp.json",
+                "--userns",
+                "keep-id",
+                "--user",
+                uid + ":" + gid,
+                "--pids-limit",
+                Long.toString(limits.pids()),
+                "--memory",
+                Long.toString(limits.memoryBytes()),
+                "--cpus",
+                "1",
+                "--ulimit",
+                "nofile=" + limits.openFiles() + ":" + limits.openFiles(),
+                "--ulimit",
+                "fsize=" + Math.max(1, limits.fileBytes() / 1024) + ":" + Math.max(1, limits.fileBytes() / 1024),
+                "--mount",
+                "type=volume,source=" + scratchVolume + ",destination=/scratch",
+                "--mount",
+                "type=bind,source=" + inputDirectory.toAbsolutePath().normalize() + ",destination=/input,ro=true",
+                "--mount",
+                "type=bind,source=" + applicationJar.toAbsolutePath().normalize() + ",destination=/opt/app.jar,ro=true",
+                "--mount",
+                "type=bind,source=" + toolsJar.toAbsolutePath().normalize() + ",destination=/opt/tla2tools.jar,ro=true",
+                "--env",
+                "HOME=/scratch",
+                "--env",
+                "TMPDIR=/scratch",
+                "--env",
+                "LANG=C.UTF-8",
+                "--workdir",
+                "/scratch",
+                "--entrypoint",
+                "java",
+                image,
+                "-XX:+UseParallelGC",
+                "-Djava.io.tmpdir=/scratch",
+                "-cp",
+                "/opt/app.jar:/opt/tla2tools.jar",
+                "dev.tlamutant.cli.Main",
+                "experiment",
+                "--model-dir",
+                "/input",
+                "--module",
+                module,
+                "--config",
+                config,
+                "--tools-jar",
+                "/opt/tla2tools.jar",
+                "--work-dir",
+                "/scratch/work",
+                "--timeout-seconds",
+                Long.toString(limits.wallClockSeconds())));
+        return List.copyOf(command);
+    }
+}

@@ -1,6 +1,9 @@
 {
   "version": 1,
-  "containerImage": "unconfigured",
+  "containerImage": "docker.io/library/eclipse-temurin@sha256:cc0a57a8aa0730b543dc34e56ff6679609532a43f685f459863330d64e97fbb6",
+  "containerImageIndex": "docker.io/library/eclipse-temurin@sha256:974b08960c5d96694c780e65b2d5705268ab1e1ca1a0dd0caf4ba6c3fe34d699",
+  "seccompProfile": "/usr/share/containers/seccomp.json",
+  "seccompSha256": "886ae167646b7e5db381ecf7c31e6de720a8e8da15cf3202fe1f67f424af2b75",
   "limits": {
     "cpuSeconds": 120,
     "memoryBytes": 1073741824,

@@ -1,0 +1,5 @@
+FROM docker.io/library/eclipse-temurin@sha256:cc0a57a8aa0730b543dc34e56ff6679609532a43f685f459863330d64e97fbb6
+
+USER 65532:65532
+WORKDIR /scratch
+ENTRYPOINT ["java"]
