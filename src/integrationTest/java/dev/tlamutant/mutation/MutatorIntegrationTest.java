@@ -61,4 +61,30 @@ final class MutatorIntegrationTest {
             new SanyAnalyzer().analyze(workspace, "MutationFixture.tla", "MutationFixture.cfg");
         }
     }
+
+    @Test
+    void followsTheNextDefinitionBelowAConfiguredSpecification() throws IOException {
+        Path root = Path.of("src/testFixtures/resources/tla/roles");
+        SemanticProject project = new SanyAnalyzer().analyze(root, "RoleFixture.tla", "RoleFixture.cfg");
+        SourceDocument source = SourceDocument.read(root.resolve("RoleFixture.tla"));
+
+        assertEquals(
+                List.of("Bound"),
+                new GcdMutator()
+                        .generate(project, source).stream()
+                                .map(MutationCandidate::original)
+                                .toList());
+        assertEquals(
+                List.of("<"),
+                new BrlMutator()
+                        .generate(project, source).stream()
+                                .map(MutationCandidate::original)
+                                .toList());
+        assertEquals(
+                List.of("1"),
+                new UoiMutator()
+                        .generate(project, source).stream()
+                                .map(MutationCandidate::original)
+                                .toList());
+    }
 }
