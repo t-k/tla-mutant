@@ -193,7 +193,7 @@ TLC metadata, generated mutants, state JSONL, and diagnostics remain beneath the
 
 ### Fetch and report integrity
 
-The toolchain download uses an allowlisted HTTPS URL, no redirect, an expected size bound, SHA-256 verification before atomic rename, and owner-only permissions. The build dependency and runtime jar must have the same digest. The container image registry and repository are allowlisted, and every pull must resolve to the committed image digest or fail closed.
+The toolchain download uses an allowlisted HTTPS URL, a bounded redirect chain whose every origin is allowlisted, an expected size bound, SHA-256 verification before atomic rename, and owner-only permissions. The build dependency and runtime jar must have the same digest. The container image registry and repository are allowlisted, and every pull must resolve to the committed image digest or fail closed.
 
 The experiment result records the execution-policy version, sandbox arguments, resource limits, container image digest, Java identity, harness digest, TLA+ Tools digest, source tree identity, transitive module hashes, CFG hash, and every generated mutant hash. A mismatch rejects reproduction rather than silently producing a new result.
 
