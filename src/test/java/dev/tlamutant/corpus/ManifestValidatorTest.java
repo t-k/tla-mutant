@@ -51,6 +51,22 @@ final class ManifestValidatorTest {
                 IllegalArgumentException.class, () -> ManifestValidator.validateEntry(unsafeRepositoryPath, GLOBAL));
     }
 
+    @Test
+    void rejectsAnUnboundedSourceFileSetOrByteTotal() {
+        List<CorpusManifest.SourceFile> tooMany = new java.util.ArrayList<>();
+        for (int index = 0; index < 65; index++) {
+            tooMany.add(file("Source" + index + ".tla"));
+        }
+        CorpusManifest.Entry tooLarge = entry(List.of(
+                new CorpusManifest.SourceFile(
+                        "Spec.tla", "specifications/sample/Spec.tla", "0".repeat(64), 20L * 1024 * 1024),
+                new CorpusManifest.SourceFile(
+                        "Spec.cfg", "specifications/sample/Spec.cfg", "0".repeat(64), 20L * 1024 * 1024)));
+
+        assertThrows(IllegalArgumentException.class, () -> ManifestValidator.validateEntry(entry(tooMany), GLOBAL));
+        assertThrows(IllegalArgumentException.class, () -> ManifestValidator.validateEntry(tooLarge, GLOBAL));
+    }
+
     private static CorpusManifest.Entry entry(List<CorpusManifest.SourceFile> files) {
         return new CorpusManifest.Entry(
                 "sample",

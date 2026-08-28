@@ -18,6 +18,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public final class PodmanRunner {
     private static final String SECCOMP_SHA256 = "886ae167646b7e5db381ecf7c31e6de720a8e8da15cf3202fe1f67f424af2b75";
@@ -46,6 +47,11 @@ public final class PodmanRunner {
         if (timeout == null || timeout.isNegative() || timeout.isZero()) {
             throw new IllegalArgumentException("Sandbox timeout must be positive");
         }
+        Duration effectiveTimeout = timeout;
+        Duration policyTimeout = Duration.ofSeconds(Math.min(limits.cpuSeconds(), limits.wallClockSeconds()));
+        if (effectiveTimeout.compareTo(policyTimeout) > 0) {
+            effectiveTimeout = policyTimeout;
+        }
         EngineIdentity identity = preflight();
         String name = "tla-mutant-" + randomHex(8);
         String scratchVolume = "tla-mutant-scratch-" + randomHex(8);
@@ -54,6 +60,7 @@ public final class PodmanRunner {
         try {
             createScratchVolume(scratchVolume);
             volumeCreated = true;
+            verifyScratchVolume(scratchVolume);
             List<String> create = PodmanCommand.create(
                     name,
                     scratchVolume,
@@ -71,27 +78,22 @@ public final class PodmanRunner {
                 throw new IllegalStateException("Podman returned an invalid container identity");
             }
             verifyContainer(containerId, name);
-            return startAttached(containerId, timeout);
+            return startAttached(containerId, effectiveTimeout);
         } finally {
-            if (!containerId.isEmpty()) {
-                cleanup(containerId);
-            }
-            if (volumeCreated) {
-                cleanupVolume(scratchVolume);
+            try {
+                if (!containerId.isEmpty()) {
+                    cleanup(containerId);
+                }
+            } finally {
+                if (volumeCreated) {
+                    cleanupVolume(scratchVolume);
+                }
             }
         }
     }
 
     private void createScratchVolume(String name) {
-        String options = "size="
-                + limits.fileBytes()
-                + ",nr_inodes="
-                + limits.fileCount()
-                + ",uid="
-                + 0
-                + ",gid="
-                + 0
-                + ",mode=700";
+        String options = scratchOptions();
         String created = runChecked(List.of(
                         "podman",
                         "volume",
@@ -109,13 +111,28 @@ public final class PodmanRunner {
         if (!created.equals(name)) {
             throw new IllegalStateException("Podman returned an unexpected scratch-volume name");
         }
+    }
+
+    private String scratchOptions() {
+        return "size="
+                + limits.fileBytes()
+                + ",nr_inodes="
+                + limits.fileCount()
+                + ",uid="
+                + 0
+                + ",gid="
+                + 0
+                + ",mode=700,nodev,nosuid,noexec";
+    }
+
+    private void verifyScratchVolume(String name) {
         try {
             JsonNode inspect = mapper.readTree(runChecked(List.of("podman", "volume", "inspect", name)))
                     .get(0);
             if (!inspect.required("Name").textValue().equals(name)
                     || !inspect.at("/Options/type").asText().equals("tmpfs")
                     || !inspect.at("/Options").has("nocopy")
-                    || !inspect.at("/Options/o").asText().equals(options)) {
+                    || !inspect.at("/Options/o").asText().equals(scratchOptions())) {
                 throw new IllegalStateException("Scratch tmpfs limits were not preserved");
             }
         } catch (IOException exception) {
@@ -180,7 +197,9 @@ public final class PodmanRunner {
                     || !hostConfig.required("NetworkMode").textValue().equals("none")
                     || hostConfig.required("Privileged").asBoolean()
                     || hostConfig.required("PidsLimit").longValue() != limits.pids()
-                    || hostConfig.required("Memory").longValue() != limits.memoryBytes()) {
+                    || hostConfig.required("Memory").longValue() != limits.memoryBytes()
+                    || hostConfig.required("MemorySwap").longValue() != limits.memoryBytes()
+                    || hostConfig.required("NanoCpus").longValue() != 1_000_000_000L) {
                 throw new IllegalStateException("Podman did not preserve the requested resource boundary");
             }
         } catch (IOException exception) {
@@ -201,11 +220,13 @@ public final class PodmanRunner {
                     runUnchecked(List.of("podman", "stop", "--time", "2", containerId));
                     if (!process.waitFor(3, TimeUnit.SECONDS)) {
                         runUnchecked(List.of("podman", "kill", containerId));
-                        process.waitFor(5, TimeUnit.SECONDS);
+                        if (!process.waitFor(5, TimeUnit.SECONDS)) {
+                            terminate(process);
+                        }
                     }
                 }
-                Capture out = stdout.get();
-                Capture err = stderr.get();
+                Capture out = stdout.get(5, TimeUnit.SECONDS);
+                Capture err = stderr.get(5, TimeUnit.SECONDS);
                 return new PodmanExecution(
                         containerId,
                         completed ? process.exitValue() : -1,
@@ -214,7 +235,7 @@ public final class PodmanRunner {
                         !completed,
                         out.truncated() || err.truncated());
             }
-        } catch (IOException | InterruptedException | ExecutionException exception) {
+        } catch (IOException | InterruptedException | ExecutionException | TimeoutException exception) {
             if (exception instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
@@ -227,8 +248,12 @@ public final class PodmanRunner {
         Process existence;
         try {
             existence = new ProcessBuilder("podman", "container", "exists", containerId).start();
-            if (existence.waitFor() == 0) {
+            int exitCode = existence.waitFor();
+            if (exitCode == 0) {
                 throw new IllegalStateException("Sandbox container remained after cleanup");
+            }
+            if (exitCode != 1) {
+                throw new IllegalStateException("Cannot establish sandbox container absence");
             }
         } catch (IOException | InterruptedException exception) {
             if (exception instanceof InterruptedException) {
@@ -242,8 +267,12 @@ public final class PodmanRunner {
         runUnchecked(List.of("podman", "volume", "rm", "--force", name));
         try {
             Process existence = new ProcessBuilder("podman", "volume", "exists", name).start();
-            if (existence.waitFor() == 0) {
+            int exitCode = existence.waitFor();
+            if (exitCode == 0) {
                 throw new IllegalStateException("Scratch volume remained after cleanup");
+            }
+            if (exitCode != 1) {
+                throw new IllegalStateException("Cannot establish scratch-volume absence");
             }
         } catch (IOException | InterruptedException exception) {
             if (exception instanceof InterruptedException) {
@@ -266,12 +295,19 @@ public final class PodmanRunner {
             Process process =
                     new ProcessBuilder(command).redirectErrorStream(true).start();
             process.getOutputStream().close();
-            String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-            if (!process.waitFor(30, TimeUnit.SECONDS) || process.exitValue() != 0) {
-                throw new IllegalStateException("Command failed: " + command.get(0) + ": " + output);
+            try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+                Future<Capture> capture = executor.submit(new Collector(process.getInputStream(), 1024 * 1024));
+                boolean completed = process.waitFor(30, TimeUnit.SECONDS);
+                if (!completed) {
+                    terminate(process);
+                }
+                String output = capture.get(5, TimeUnit.SECONDS).text();
+                if (!completed || process.exitValue() != 0) {
+                    throw new IllegalStateException("Command failed: " + command.get(0) + ": " + output);
+                }
+                return output;
             }
-            return output;
-        } catch (IOException | InterruptedException exception) {
+        } catch (IOException | InterruptedException | ExecutionException | TimeoutException exception) {
             if (exception instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
@@ -281,14 +317,29 @@ public final class PodmanRunner {
 
     private static void runUnchecked(List<String> command) {
         try {
-            Process process = new ProcessBuilder(command).start();
+            Process process =
+                    new ProcessBuilder(command).redirectErrorStream(true).start();
             process.getOutputStream().close();
-            process.getInputStream().transferTo(OutputStreamDiscard.INSTANCE);
-            process.getErrorStream().transferTo(OutputStreamDiscard.INSTANCE);
-            process.waitFor(10, TimeUnit.SECONDS);
-        } catch (IOException | InterruptedException ignored) {
+            try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+                Future<Capture> capture = executor.submit(new Collector(process.getInputStream(), 64 * 1024));
+                if (!process.waitFor(10, TimeUnit.SECONDS)) {
+                    terminate(process);
+                }
+                capture.get(5, TimeUnit.SECONDS);
+            }
+        } catch (IOException | InterruptedException | ExecutionException | TimeoutException ignored) {
             if (ignored instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    private static void terminate(Process process) throws InterruptedException {
+        process.destroy();
+        if (!process.waitFor(2, TimeUnit.SECONDS)) {
+            process.destroyForcibly();
+            if (!process.waitFor(5, TimeUnit.SECONDS)) {
+                throw new IllegalStateException("Exact child process could not be reaped");
             }
         }
     }
@@ -320,12 +371,5 @@ public final class PodmanRunner {
             }
             return new Capture(retained.toString(StandardCharsets.UTF_8), total > limit);
         }
-    }
-
-    private static final class OutputStreamDiscard extends java.io.OutputStream {
-        private static final OutputStreamDiscard INSTANCE = new OutputStreamDiscard();
-
-        @Override
-        public void write(int ignored) {}
     }
 }

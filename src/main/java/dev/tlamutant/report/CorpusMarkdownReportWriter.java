@@ -10,7 +10,7 @@ public final class CorpusMarkdownReportWriter {
                 .append(
                         "Candidate extraction is an automated proxy review. Human usefulness review is a separate gate.\n\n")
                 .append("- Pinned revision: ")
-                .append(report.commit())
+                .append(MarkdownSanitizer.inline(report.commit()))
                 .append('\n')
                 .append("- Specifications: ")
                 .append(report.entryCount())
@@ -32,11 +32,11 @@ public final class CorpusMarkdownReportWriter {
                 .append("| --- | --- | --- | ---: | ---: | ---: |\n");
         for (CorpusEntryResult entry : report.entries()) {
             markdown.append("| ")
-                    .append(table(entry.id()))
+                    .append(MarkdownSanitizer.tableCell(entry.id()))
                     .append(" | ")
-                    .append(table(entry.domain()))
+                    .append(MarkdownSanitizer.tableCell(entry.domain()))
                     .append(" | ")
-                    .append(table(entry.status()))
+                    .append(MarkdownSanitizer.tableCell(entry.status()))
                     .append(" | ")
                     .append(entry.report() == null ? "-" : entry.report().generatedMutants())
                     .append(" | ")
@@ -46,9 +46,5 @@ public final class CorpusMarkdownReportWriter {
                     .append(" |\n");
         }
         return markdown.toString();
-    }
-
-    private static String table(String value) {
-        return value.replace("|", "\\|").replace("\r", " ").replace("\n", " ");
     }
 }

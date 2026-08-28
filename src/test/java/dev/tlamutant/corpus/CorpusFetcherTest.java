@@ -44,6 +44,34 @@ final class CorpusFetcherTest {
         assertFalse(Files.exists(wrongDigest));
     }
 
+    @Test
+    void acceptsOnlyPublicGlobalEndpointAddresses() throws Exception {
+        for (String rejected : new String[] {
+            "0.0.0.1",
+            "10.0.0.1",
+            "100.64.0.1",
+            "127.0.0.1",
+            "169.254.1.1",
+            "172.16.0.1",
+            "192.0.2.1",
+            "192.168.1.1",
+            "198.18.0.1",
+            "198.51.100.1",
+            "203.0.113.1",
+            "224.0.0.1",
+            "::1",
+            "fc00::1",
+            "fe80::1",
+            "2001:db8::1"
+        }) {
+            assertFalse(CorpusFetcher.isPublicGlobalAddress(java.net.InetAddress.getByName(rejected)), rejected);
+        }
+        org.junit.jupiter.api.Assertions.assertTrue(
+                CorpusFetcher.isPublicGlobalAddress(java.net.InetAddress.getByName("8.8.8.8")));
+        org.junit.jupiter.api.Assertions.assertTrue(
+                CorpusFetcher.isPublicGlobalAddress(java.net.InetAddress.getByName("2606:4700:4700::1111")));
+    }
+
     private static String sha256(byte[] content) {
         try {
             return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(content));

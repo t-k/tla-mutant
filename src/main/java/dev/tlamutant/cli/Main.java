@@ -110,6 +110,12 @@ public final class Main implements Runnable {
         @CommandLine.Option(names = "--timeout-seconds", defaultValue = "180")
         long timeoutSeconds;
 
+        @CommandLine.Option(names = "--max-states", defaultValue = "1000000")
+        long maximumStates;
+
+        @CommandLine.Option(names = "--max-state-bytes", defaultValue = "67108864")
+        long maximumStateBytes;
+
         @Override
         public Integer call() throws Exception {
             Path applicationJar = Path.of(Main.class
@@ -118,7 +124,8 @@ public final class Main implements Runnable {
                     .getLocation()
                     .toURI());
             ExperimentRunner experiment = new ExperimentRunner(
-                    TlcRunner.forCurrentJava(applicationJar, toolsJar), Duration.ofSeconds(timeoutSeconds));
+                    TlcRunner.forCurrentJava(applicationJar, toolsJar, maximumStates, maximumStateBytes),
+                    Duration.ofSeconds(timeoutSeconds));
             ExperimentReport report = experiment.run(modelDirectory, module, config, workDirectory);
             if (jsonReport != null) {
                 new JsonReportWriter().write(jsonReport, report);

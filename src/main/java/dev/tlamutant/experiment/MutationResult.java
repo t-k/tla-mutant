@@ -10,6 +10,7 @@ public record MutationResult(
         String oracleOutcome,
         String stateRelation,
         String verdict,
+        String diagnosticReason,
         int baselineStateCount,
         int mutantStateCount,
         String mutantOnlyWitness) {}

@@ -35,7 +35,11 @@ final class PodmanCommandTest {
         assertTrue(joined.contains("--user 501:20"));
         assertTrue(joined.contains("--userns keep-id"));
         assertTrue(joined.contains("--pids-limit 64"));
+        assertTrue(joined.contains("--memory 536870912 --memory-swap 536870912"));
+        assertTrue(joined.contains("--ulimit cpu=60:60"));
         assertTrue(joined.contains("--ulimit fsize=33554432:33554432"));
+        assertTrue(joined.contains("--max-states 10000"));
+        assertTrue(joined.contains("--max-state-bytes 33554432"));
         assertTrue(joined.contains("--read-only-tmpfs=false"));
         assertTrue(joined.contains("-Djava.io.tmpdir=/scratch"));
         assertTrue(joined.contains("-cp /opt/app.jar:/opt/tla2tools.jar dev.tlamutant.cli.Main"));

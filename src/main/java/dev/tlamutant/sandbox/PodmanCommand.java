@@ -45,10 +45,14 @@ public final class PodmanCommand {
                 Long.toString(limits.pids()),
                 "--memory",
                 Long.toString(limits.memoryBytes()),
+                "--memory-swap",
+                Long.toString(limits.memoryBytes()),
                 "--cpus",
                 "1",
                 "--ulimit",
                 "nofile=" + limits.openFiles() + ":" + limits.openFiles(),
+                "--ulimit",
+                "cpu=" + limits.cpuSeconds() + ":" + limits.cpuSeconds(),
                 "--ulimit",
                 "fsize=" + limits.fileBytes() + ":" + limits.fileBytes(),
                 "--mount",
@@ -87,7 +91,11 @@ public final class PodmanCommand {
                 "--work-dir",
                 "/scratch/work",
                 "--timeout-seconds",
-                Long.toString(limits.wallClockSeconds())));
+                Long.toString(limits.wallClockSeconds()),
+                "--max-states",
+                Long.toString(limits.states()),
+                "--max-state-bytes",
+                Long.toString(limits.fileBytes())));
         return List.copyOf(command);
     }
 }

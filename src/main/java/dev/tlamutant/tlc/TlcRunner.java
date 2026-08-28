@@ -41,13 +41,25 @@ public final class TlcRunner {
     private final Path javaExecutable;
     private final Path applicationJar;
     private final Path toolsJar;
+    private final long maximumStates;
+    private final long maximumStateBytes;
     private final ObjectMapper mapper = new ObjectMapper();
     private final TlcToolEventParser eventParser = new TlcToolEventParser();
 
     public TlcRunner(Path javaExecutable, Path applicationJar, Path toolsJar) {
+        this(javaExecutable, applicationJar, toolsJar, 1_000_000, 67_108_864);
+    }
+
+    public TlcRunner(
+            Path javaExecutable, Path applicationJar, Path toolsJar, long maximumStates, long maximumStateBytes) {
         this.javaExecutable = requireRegularAbsolute(javaExecutable, "java executable");
         this.applicationJar = requireRegularAbsolute(applicationJar, "application jar");
         this.toolsJar = requireRegularAbsolute(toolsJar, "TLA+ Tools jar");
+        if (maximumStates <= 0 || maximumStateBytes <= 0) {
+            throw new IllegalArgumentException("TLC state limits must be positive");
+        }
+        this.maximumStates = maximumStates;
+        this.maximumStateBytes = maximumStateBytes;
     }
 
     public static TlcRunner forCurrentJava(Path applicationJar, Path toolsJar) {
@@ -55,6 +67,16 @@ public final class TlcRunner {
                 Path.of(System.getProperty("java.home"), "bin", "java"),
                 applicationJar.toAbsolutePath(),
                 toolsJar.toAbsolutePath());
+    }
+
+    public static TlcRunner forCurrentJava(
+            Path applicationJar, Path toolsJar, long maximumStates, long maximumStateBytes) {
+        return new TlcRunner(
+                Path.of(System.getProperty("java.home"), "bin", "java"),
+                applicationJar.toAbsolutePath(),
+                toolsJar.toAbsolutePath(),
+                maximumStates,
+                maximumStateBytes);
     }
 
     public TlcExecution run(
@@ -84,8 +106,8 @@ public final class TlcRunner {
                 "-XX:+UseParallelGC",
                 "-Djava.io.tmpdir=" + temporary,
                 "-Dtla.mutant.state.path=" + output,
-                "-Dtla.mutant.state.maxStates=1000000",
-                "-Dtla.mutant.state.maxBytes=67108864",
+                "-Dtla.mutant.state.maxStates=" + maximumStates,
+                "-Dtla.mutant.state.maxBytes=" + maximumStateBytes,
                 "-cp",
                 applicationJar + System.getProperty("path.separator") + toolsJar,
                 "tlc2.TLC",

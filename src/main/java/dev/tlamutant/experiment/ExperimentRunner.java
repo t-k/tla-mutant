@@ -132,6 +132,7 @@ public final class ExperimentRunner {
                     "NOT_EVALUATED",
                     "STATE_UNRESOLVED",
                     "invalid",
+                    "post-mutation-sany-rejection",
                     baseline.states().size(),
                     0,
                     null);
@@ -144,8 +145,10 @@ public final class ExperimentRunner {
         String relationName = "STATE_UNRESOLVED";
         String verdict;
         String witness = null;
+        String diagnosticReason = null;
         if (mutant.status() == ExecutionStatus.COMPLETED && mutant.oracle() == OracleOutcome.KILLED_STATE_SAFETY) {
-            verdict = "meaningful-kill";
+            verdict = "state-invariant-kill-unattributed";
+            diagnosticReason = "configured-state-invariant-violation; type attribution not run";
         } else if (mutant.status() == ExecutionStatus.COMPLETED && mutant.oracle() == OracleOutcome.PASSED) {
             StateRelationAnalyzer.Analysis relation = relationAnalyzer.analyze(baseline.states(), mutant.states());
             relationName = relation.relation().name();
@@ -158,6 +161,7 @@ public final class ExperimentRunner {
                     : relation.relation().name().toLowerCase().replace('_', '-');
         } else {
             verdict = "unresolved";
+            diagnosticReason = diagnosticReason(mutant);
         }
         return new MutationResult(
                 candidate.id(),
@@ -169,9 +173,28 @@ public final class ExperimentRunner {
                 mutant.oracle().name(),
                 relationName,
                 verdict,
+                diagnosticReason,
                 baseline.states().size(),
                 mutant.states().size(),
                 witness);
+    }
+
+    private static String diagnosticReason(TlcExecution execution) {
+        String codes = execution.events().stream()
+                .filter(event -> event.severity() > 0)
+                .map(event -> Integer.toString(event.code()))
+                .distinct()
+                .sorted()
+                .collect(java.util.stream.Collectors.joining(","));
+        String reason =
+                execution.status().name().toLowerCase(java.util.Locale.ROOT).replace('_', '-');
+        if (!codes.isEmpty()) {
+            reason += "; tool-event-codes=" + codes;
+        }
+        if (execution.outputTruncated()) {
+            reason += "; output-truncated";
+        }
+        return reason;
     }
 
     private static void copyModel(Path source, Path destination) throws IOException {

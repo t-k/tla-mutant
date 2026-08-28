@@ -5,8 +5,8 @@
   "reviewStatus" : "proxy-agent-review; human-review-pending",
   "entryCount" : 10,
   "completedEntries" : 10,
-  "generatedMutants" : 21,
-  "evaluatedMutants" : 17,
+  "generatedMutants" : 17,
+  "evaluatedMutants" : 15,
   "gapCandidates" : 0,
   "entries" : [ {
     "id" : "cigarette-smokers",
@@ -31,6 +31,7 @@
         "oracleOutcome" : "NOT_EVALUATED",
         "stateRelation" : "STATE_UNRESOLVED",
         "verdict" : "unresolved",
+        "diagnosticReason" : "tool-error; tool-event-codes=1000,2103,2121,2217",
         "baselineStateCount" : 6,
         "mutantStateCount" : 7,
         "mutantOnlyWitness" : null
@@ -44,6 +45,7 @@
         "oracleOutcome" : "NOT_EVALUATED",
         "stateRelation" : "STATE_UNRESOLVED",
         "verdict" : "unresolved",
+        "diagnosticReason" : "tool-error; tool-event-codes=1000,2103,2121,2217",
         "baselineStateCount" : 6,
         "mutantStateCount" : 4,
         "mutantOnlyWitness" : null
@@ -59,36 +61,10 @@
       "module" : "GameOfLife.tla",
       "config" : "GameOfLife.cfg",
       "reviewStatus" : "proxy-agent-review",
-      "generatedMutants" : 2,
+      "generatedMutants" : 0,
       "evaluatedMutants" : 0,
       "gapCandidates" : 0,
-      "results" : [ {
-        "id" : "brl-c53ad5f864c4fa0567de",
-        "family" : "BRL",
-        "definition" : "sc",
-        "original" : ">",
-        "replacement" : ">=",
-        "executionStatus" : "TOOL_ERROR",
-        "oracleOutcome" : "NOT_EVALUATED",
-        "stateRelation" : "STATE_UNRESOLVED",
-        "verdict" : "unresolved",
-        "baselineStateCount" : 65536,
-        "mutantStateCount" : 0,
-        "mutantOnlyWitness" : null
-      }, {
-        "id" : "brl-eb1cf2790452ad5f5086",
-        "family" : "BRL",
-        "definition" : "sc",
-        "original" : ">",
-        "replacement" : ">=",
-        "executionStatus" : "TOOL_ERROR",
-        "oracleOutcome" : "NOT_EVALUATED",
-        "stateRelation" : "STATE_UNRESOLVED",
-        "verdict" : "unresolved",
-        "baselineStateCount" : 65536,
-        "mutantStateCount" : 0,
-        "mutantOnlyWitness" : null
-      } ]
+      "results" : [ ]
     }
   }, {
     "id" : "chameneos",
@@ -100,23 +76,10 @@
       "module" : "Chameneos.tla",
       "config" : "Chameneos.cfg",
       "reviewStatus" : "proxy-agent-review",
-      "generatedMutants" : 2,
-      "evaluatedMutants" : 2,
+      "generatedMutants" : 1,
+      "evaluatedMutants" : 1,
       "gapCandidates" : 0,
       "results" : [ {
-        "id" : "brl-ada35128d35506f49fc3",
-        "family" : "BRL",
-        "definition" : "Meet",
-        "original" : "<",
-        "replacement" : "<=",
-        "executionStatus" : "COMPLETED",
-        "oracleOutcome" : "KILLED_STATE_SAFETY",
-        "stateRelation" : "STATE_UNRESOLVED",
-        "verdict" : "meaningful-kill",
-        "baselineStateCount" : 34534,
-        "mutantStateCount" : 39316,
-        "mutantOnlyWitness" : null
-      }, {
         "id" : "uoi-303c50cfe2d67cddd2c1",
         "family" : "UOI",
         "definition" : "Meet",
@@ -125,7 +88,8 @@
         "executionStatus" : "COMPLETED",
         "oracleOutcome" : "KILLED_STATE_SAFETY",
         "stateRelation" : "STATE_UNRESOLVED",
-        "verdict" : "meaningful-kill",
+        "verdict" : "state-invariant-kill-unattributed",
+        "diagnosticReason" : "configured-state-invariant-violation; type attribution not run",
         "baselineStateCount" : 34534,
         "mutantStateCount" : 1216,
         "mutantOnlyWitness" : null
@@ -154,6 +118,7 @@
         "oracleOutcome" : "PASSED",
         "stateRelation" : "STATE_EQUAL",
         "verdict" : "state-equal",
+        "diagnosticReason" : null,
         "baselineStateCount" : 12,
         "mutantStateCount" : 12,
         "mutantOnlyWitness" : null
@@ -167,6 +132,7 @@
         "oracleOutcome" : "PASSED",
         "stateRelation" : "STATE_EQUAL",
         "verdict" : "state-equal",
+        "diagnosticReason" : null,
         "baselineStateCount" : 12,
         "mutantStateCount" : 12,
         "mutantOnlyWitness" : null
@@ -195,6 +161,7 @@
         "oracleOutcome" : "PASSED",
         "stateRelation" : "STATE_EQUAL",
         "verdict" : "state-equal",
+        "diagnosticReason" : null,
         "baselineStateCount" : 12,
         "mutantStateCount" : 12,
         "mutantOnlyWitness" : null
@@ -208,6 +175,7 @@
         "oracleOutcome" : "PASSED",
         "stateRelation" : "STATE_EQUAL",
         "verdict" : "state-equal",
+        "diagnosticReason" : null,
         "baselineStateCount" : 12,
         "mutantStateCount" : 12,
         "mutantOnlyWitness" : null
@@ -236,6 +204,7 @@
         "oracleOutcome" : "PASSED",
         "stateRelation" : "STATE_EQUAL",
         "verdict" : "state-equal",
+        "diagnosticReason" : null,
         "baselineStateCount" : 3016,
         "mutantStateCount" : 3016,
         "mutantOnlyWitness" : null
@@ -264,6 +233,7 @@
         "oracleOutcome" : "PASSED",
         "stateRelation" : "STATE_EQUAL",
         "verdict" : "state-equal",
+        "diagnosticReason" : null,
         "baselineStateCount" : 64,
         "mutantStateCount" : 64,
         "mutantOnlyWitness" : null
@@ -277,6 +247,7 @@
         "oracleOutcome" : "PASSED",
         "stateRelation" : "STATE_EQUAL",
         "verdict" : "state-equal",
+        "diagnosticReason" : null,
         "baselineStateCount" : 64,
         "mutantStateCount" : 64,
         "mutantOnlyWitness" : null
@@ -305,6 +276,7 @@
         "oracleOutcome" : "PASSED",
         "stateRelation" : "STATE_EQUAL",
         "verdict" : "state-equal",
+        "diagnosticReason" : null,
         "baselineStateCount" : 1245,
         "mutantStateCount" : 1245,
         "mutantOnlyWitness" : null
@@ -333,6 +305,7 @@
         "oracleOutcome" : "PASSED",
         "stateRelation" : "STATE_EQUAL",
         "verdict" : "state-equal",
+        "diagnosticReason" : null,
         "baselineStateCount" : 46656,
         "mutantStateCount" : 46656,
         "mutantOnlyWitness" : null
@@ -346,6 +319,7 @@
         "oracleOutcome" : "PASSED",
         "stateRelation" : "STATE_EQUAL",
         "verdict" : "state-equal",
+        "diagnosticReason" : null,
         "baselineStateCount" : 46656,
         "mutantStateCount" : 46656,
         "mutantOnlyWitness" : null
@@ -359,6 +333,7 @@
         "oracleOutcome" : "PASSED",
         "stateRelation" : "STATE_EQUAL",
         "verdict" : "state-equal",
+        "diagnosticReason" : null,
         "baselineStateCount" : 46656,
         "mutantStateCount" : 46656,
         "mutantOnlyWitness" : null
@@ -374,23 +349,10 @@
       "module" : "AsyncTerminationDetection.tla",
       "config" : "AsyncTerminationDetection.cfg",
       "reviewStatus" : "proxy-agent-review",
-      "generatedMutants" : 4,
-      "evaluatedMutants" : 4,
+      "generatedMutants" : 3,
+      "evaluatedMutants" : 3,
       "gapCandidates" : 0,
       "results" : [ {
-        "id" : "brl-0d296a565571c01667fc",
-        "family" : "BRL",
-        "definition" : "RcvMsg",
-        "original" : ">",
-        "replacement" : ">=",
-        "executionStatus" : "COMPLETED",
-        "oracleOutcome" : "KILLED_STATE_SAFETY",
-        "stateRelation" : "STATE_UNRESOLVED",
-        "verdict" : "meaningful-kill",
-        "baselineStateCount" : 4097,
-        "mutantStateCount" : 18,
-        "mutantOnlyWitness" : null
-      }, {
         "id" : "gcd-8f4e9a3d5aefb340ff6a",
         "family" : "GCD",
         "definition" : "RcvMsg",
@@ -399,7 +361,8 @@
         "executionStatus" : "COMPLETED",
         "oracleOutcome" : "KILLED_STATE_SAFETY",
         "stateRelation" : "STATE_UNRESOLVED",
-        "verdict" : "meaningful-kill",
+        "verdict" : "state-invariant-kill-unattributed",
+        "diagnosticReason" : "configured-state-invariant-violation; type attribution not run",
         "baselineStateCount" : 4097,
         "mutantStateCount" : 18,
         "mutantOnlyWitness" : null
@@ -412,7 +375,8 @@
         "executionStatus" : "COMPLETED",
         "oracleOutcome" : "KILLED_STATE_SAFETY",
         "stateRelation" : "STATE_UNRESOLVED",
-        "verdict" : "meaningful-kill",
+        "verdict" : "state-invariant-kill-unattributed",
+        "diagnosticReason" : "configured-state-invariant-violation; type attribution not run",
         "baselineStateCount" : 4097,
         "mutantStateCount" : 22,
         "mutantOnlyWitness" : null
@@ -426,6 +390,7 @@
         "oracleOutcome" : "PASSED",
         "stateRelation" : "STATE_EQUAL",
         "verdict" : "state-equal",
+        "diagnosticReason" : null,
         "baselineStateCount" : 4097,
         "mutantStateCount" : 4097,
         "mutantOnlyWitness" : null
