@@ -80,20 +80,30 @@ public final class PodmanRunner {
                     identity.gid(),
                     limits);
             containerCreateAttempted = true;
-            containerId = runChecked(create).trim();
-            if (!containerId.matches("[0-9a-f]{64}")) {
+            String createOutput = runChecked(create).trim();
+            if (!createOutput.matches("[0-9a-f]{64}")) {
                 throw new IllegalStateException("Podman returned an invalid container identity");
             }
+            containerId = createOutput;
             verifyContainer(containerId, name, runToken);
             return startAttached(containerId, effectiveTimeout);
         } finally {
+            boolean restoreInterrupt = Thread.interrupted();
             try {
-                if (containerCreateAttempted) {
-                    cleanupContainer(containerId, name, runToken);
+                try {
+                    if (containerCreateAttempted) {
+                        cleanupContainer(containerId, name, runToken);
+                    }
+                } finally {
+                    restoreInterrupt |= Thread.interrupted();
+                    if (volumeCreateAttempted) {
+                        cleanupVolume(scratchVolume, runToken);
+                    }
                 }
             } finally {
-                if (volumeCreateAttempted) {
-                    cleanupVolume(scratchVolume, runToken);
+                restoreInterrupt |= Thread.interrupted();
+                if (restoreInterrupt) {
+                    Thread.currentThread().interrupt();
                 }
             }
         }
@@ -407,11 +417,35 @@ public final class PodmanRunner {
         if (process == null || !process.isAlive()) {
             return;
         }
+        boolean restoreInterrupt = Thread.interrupted();
         try {
             terminate(process);
         } catch (InterruptedException exception) {
-            Thread.currentThread().interrupt();
+            restoreInterrupt = true;
+            Thread.interrupted();
             process.destroyForcibly();
+            try {
+                if (!process.waitFor(5, TimeUnit.SECONDS)) {
+                    throw new IllegalStateException("Exact child process could not be reaped after interruption");
+                }
+            } catch (InterruptedException secondInterrupt) {
+                restoreInterrupt = true;
+                Thread.interrupted();
+                process.destroyForcibly();
+                try {
+                    if (!process.waitFor(5, TimeUnit.SECONDS)) {
+                        throw new IllegalStateException("Exact child process could not be reaped after interruption");
+                    }
+                } catch (InterruptedException repeatedInterrupt) {
+                    restoreInterrupt = true;
+                    throw new IllegalStateException(
+                            "Repeated interruption prevented exact child reap", repeatedInterrupt);
+                }
+            }
+        } finally {
+            if (restoreInterrupt) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
