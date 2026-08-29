@@ -2,7 +2,7 @@
 
 `tla-mutant` is an experimental vertical slice for mutation analysis of TLA+ State Invariants. It intentionally implements only three mutation families: guard-conjunct deletion (GCD), boundary relaxation (BRL), and update off-by-one (UOI).
 
-The first pinned 10-specification experiment produced no witness-bearing state-expanding survivors. The historical v2 GCD-stratified 15-specification follow-up produced nine reproducible witness-bearing state expansions across six specifications, domains, and family clusters. This supports continuing the bounded GCD-focused experiment, but human review of the proposed invariant improvements remains pending and two large baselines exceeded the fixed state limit. See the [original assessment](docs/experiments/vertical-slice-assessment.md) and [v2 stratified assessment](docs/experiments/gcd-stratified-assessment-v2.md) before extending the implementation.
+The first pinned 10-specification experiment produced no witness-bearing state-expanding survivors. The hardened v5 GCD-stratified 15-specification follow-up produced nine reproducible witness-bearing state expansions across six specifications, domains, and family clusters while binding the run to exact census, manifest, policy, and TLA+ Tools bytes. This supports continuing the bounded GCD-focused experiment, but human review of the proposed invariant improvements remains pending and two large baselines exceeded the fixed state limit. See the [original assessment](docs/experiments/vertical-slice-assessment.md), [hardened stratified assessment](docs/experiments/gcd-stratified-assessment.md), and [historical v2 assessment](docs/experiments/gcd-stratified-assessment-v2.md) before extending the implementation.
 
 ## Requirements
 
