@@ -2,7 +2,7 @@
 
 `tla-mutant` is an experimental vertical slice for mutation analysis of TLA+ State Invariants. It intentionally implements only three mutation families: guard-conjunct deletion (GCD), boundary relaxation (BRL), and update off-by-one (UOI).
 
-The first pinned 10-specification experiment produced no witness-bearing state-expanding survivors. The hardened v7 GCD-stratified 15-specification follow-up produced nine reproducible witness-bearing state expansions across six specifications, domains, and family clusters while binding every mounted application, corpus, policy, and tool input and requiring an explicit terminal record for every census site. Human review of the proposed invariant improvements remains pending and two large baselines exceeded the fixed state limit. See the [current stratified assessment](docs/experiments/gcd-stratified-assessment.md), [failed v6 instrumentation assessment](docs/experiments/gcd-stratified-assessment-v6-failed.md), [historical v5 assessment](docs/experiments/gcd-stratified-assessment-v5.md), and [original assessment](docs/experiments/vertical-slice-assessment.md) before extending the implementation.
+The first pinned 10-specification experiment produced no witness-bearing state-expanding survivors. The historical v7 GCD-stratified 15-specification follow-up produced nine witness-bearing state expansions across six specifications, domains, and family clusters while binding every mounted input and requiring an explicit terminal record for every census site. Profile v8 preserves that cohort and runtime semantics while making the bound application JAR byte-reproducible from source. Human review of the proposed invariant improvements remains pending. See the [historical v7 assessment](docs/experiments/gcd-stratified-assessment-v7.md), [failed v6 instrumentation assessment](docs/experiments/gcd-stratified-assessment-v6-failed.md), [historical v5 assessment](docs/experiments/gcd-stratified-assessment-v5.md), and [original assessment](docs/experiments/vertical-slice-assessment.md) before extending the implementation.
 
 ## Requirements
 
@@ -53,7 +53,7 @@ Then consume that exact census:
 java -jar build/libs/tla-mutant-all.jar gcd-stratified-experiment \
   --manifest corpus/gcd-stratified-manifest.json \
   --census-report docs/experiments/gcd-stratified-census.json \
-  --expected-census-sha256 02e6609b70e59be83b21a71027d372ab3c5d99c3fa41afb6ee67af75cfb7cc2a \
+  --expected-census-sha256 FROZEN_V8_CENSUS_SHA256 \
   --policy config/execution-policy.json \
   --tools-jar .tools/tla2tools-1.8.0.jar \
   --cache-dir .corpus \
@@ -61,4 +61,4 @@ java -jar build/libs/tla-mutant-all.jar gcd-stratified-experiment \
   --markdown-report docs/experiments/gcd-stratified.md
 ```
 
-The expected census digest must come from the reviewed frozen-census commit, not from an unreviewed file calculated immediately before execution. The v7 census has 51 sites, 45 conforming sites, at least one conforming site in every enriched entry, application SHA-256 `c3249a97341f5635ff34af529f4c6d06c489a173a065c5d307b86b3de73613eb`, and census SHA-256 `02e6609b70e59be83b21a71027d372ab3c5d99c3fa41afb6ee67af75cfb7cc2a`; a second write-once run was byte-identical. Frozen census paths are write-once, so use a new output path for a repeat run. The failed v6 instrumentation run used census SHA-256 `38223477282fc0b9c673f9e40f9cc1a754cf9bf1ccd8dd75c1969e203faacced`; its artifacts use the `-v6` suffix. The historical v5 census uses the `-v5` suffix, and the historical v2 artifacts use the `-v2` suffix.
+The expected census digest must come from the reviewed frozen-census commit, not from an unreviewed file calculated immediately before execution. Replace the placeholder only after the v8 census and two independent no-build-cache clean application builds are committed and byte-verified. Frozen census paths are write-once, so use a new output path for a repeat run. The historical v7 census uses the `-v7` suffix, the failed v6 instrumentation uses the `-v6` suffix, and earlier historical artifacts remain versioned.

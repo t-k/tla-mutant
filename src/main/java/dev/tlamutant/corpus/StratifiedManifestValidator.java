@@ -14,7 +14,8 @@ public final class StratifiedManifestValidator {
             "gcd-stratified-v4",
             "gcd-stratified-v5",
             "gcd-stratified-v6",
-            "gcd-stratified-v7");
+            "gcd-stratified-v7",
+            "gcd-stratified-v8");
     private static final String CONTROL = "control";
     private static final String ENRICHED = "gcd-enriched";
     private static final String CONTROL_STRATUM = "control-baseline";

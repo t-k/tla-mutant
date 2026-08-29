@@ -1,4 +1,4 @@
-# GCD-Stratified Experiment Assessment, Hardened v7
+# GCD-Stratified Experiment Assessment, Historical v7
 
 ## Decision
 
@@ -25,7 +25,7 @@ The schema-version-3 census embeds exact application, manifest, policy, and TLA+
 
 The transition classifier follows the actual action operand of `[][Next]_vars` and excludes fairness-only actions. Guard conformance rejects negative, conditional, primed, enabled, temporal, and action expressions. A positive compound predicate may conform as one action-level top-level conjunct, while its inner state-only sites do not conform without an action-successor sibling. Direct shared definitions remain excluded from mutation; nested shared value helpers are expanded only to classify the larger guard's syntax.
 
-Profile v6 first established the application- and corpus-bound census but exposed an instrumentation defect during mutation: path-to-path copying preserved owner-read-only permissions in mutant workspaces. Its census and failed mutation artifacts remain versioned and are not product evidence. Profile v7 keeps the same cohort and mutation semantics, copies verified content into newly created mutable scratch files, and has a real read-only-input integration regression. The v7 census was run twice to separate write-once paths and was byte-identical.
+Profile v6 first established the application- and corpus-bound census but exposed an instrumentation defect during mutation: path-to-path copying preserved owner-read-only permissions in mutant workspaces. Its census and failed mutation artifacts remain versioned and are not product evidence. Profile v7 keeps the same cohort and mutation semantics, copies verified content into newly created mutable scratch files, and has a real read-only-input integration regression. The v7 census was run twice to separate write-once paths and was byte-identical. A later review found that the Gradle fat JAR retained build timestamps, so a clean rebuild could not reconstruct the bound application digest. The v7 census and experiment remain internally bound historical evidence; profile v8 adds reproducible archive metadata before repeating the evidence run.
 
 ## Results
 
@@ -37,7 +37,8 @@ Profile v6 first established the application- and corpus-bound census but expose
 | Completed baselines | 13 |
 | Census GCD sites and terminal records | 51/51 |
 | Conforming census sites | 45 |
-| GCD mutants evaluated from completed baselines | 42 |
+| GCD terminal results from completed baselines | 42 |
+| Completed GCD evaluations | 38 |
 | State Invariant kills, unattributed | 7 |
 | State-equal GCD results | 22 |
 | State-expanding GCD results | 9 |
@@ -89,4 +90,4 @@ The candidate interpretation is unchanged from the historical v2 and v5 proxy re
 
 Keep the implementation at vertical-slice scale. The next decision should be a short human review of the four strongest proposals. If at least one is accepted as a useful specification improvement, proceed to Type-only attribution and focused resolution of the four tool-error mutants. Do not implement the remaining long-form product sections yet.
 
-Raw v7 evidence is available in [the frozen census](gcd-stratified-census.json), [the JSON report](gcd-stratified.json), and [the readable report](gcd-stratified.md). The failed v6 instrumentation is documented in [its assessment](gcd-stratified-assessment-v6-failed.md), and the hardened historical result remains available in [the v5 assessment](gcd-stratified-assessment-v5.md).
+Raw v7 evidence is available in [the frozen census](gcd-stratified-census-v7.json), [the JSON report](gcd-stratified-v7.json), and [the readable report](gcd-stratified-v7.md). The failed v6 instrumentation is documented in [its assessment](gcd-stratified-assessment-v6-failed.md), and the hardened historical result remains available in [the v5 assessment](gcd-stratified-assessment-v5.md).

@@ -43,7 +43,8 @@ final class StratifiedManifestValidatorTest {
                 "gcd-stratified-v4",
                 "gcd-stratified-v5",
                 "gcd-stratified-v6",
-                "gcd-stratified-v7")) {
+                "gcd-stratified-v7",
+                "gcd-stratified-v8")) {
             CorpusManifest manifest = new CorpusManifest(
                     original.version(),
                     profile,

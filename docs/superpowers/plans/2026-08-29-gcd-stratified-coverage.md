@@ -38,7 +38,7 @@ The public-source investigation at commit `ed3cc4c35f7001d7cec08a22dcd698dae7570
 ## Specification Delta
 
 - S01: Schema-version-1 manifests and original reports remain reproducible.
-- S02: Schema-version-2 profiles `gcd-stratified-v1` through `gcd-stratified-v7` contain exactly five controls and ten enriched entries; v2 is the outcome-free cohort reselection, v3 is the first review-driven instrumentation amendment, v4 corrects positive compound classification, v5 separates nested shared-value syntax from direct shared-definition mutation, v6 binds every mounted input and reports every site terminal, and v7 preserves mutable mutant workspaces when the mounted corpus snapshot is read-only. Every instrumentation profile retains the cohort, and failed instrumentation runs remain versioned audit evidence.
+- S02: Schema-version-2 profiles `gcd-stratified-v1` through `gcd-stratified-v8` contain exactly five controls and ten enriched entries; v2 is the outcome-free cohort reselection, v3 is the first review-driven instrumentation amendment, v4 corrects positive compound classification, v5 separates nested shared-value syntax from direct shared-definition mutation, v6 binds every mounted input and reports every site terminal, v7 preserves mutable mutant workspaces when the mounted corpus snapshot is read-only, and v8 makes the application JAR byte-reproducible from source. Every instrumentation profile retains the cohort, and failed or superseded instrumentation runs remain versioned audit evidence.
 - S03: Selection metadata is finite, bounded, allowlisted, and immutable for the run.
 - S04: Public census parsing occurs only inside rootless Podman.
 - S05: Census output contains structural attributes only and cannot contain mutation outcomes.
@@ -143,6 +143,7 @@ Constraints:
 - T17: The gate fails for two candidates in one domain or cluster and passes only for 2+ specifications, domains, and clusters.
 - T18: Original and stratified reports coexist and README reproduction commands identify both.
 - T19: A read-only snapshotted corpus input still produces writable mutant workspaces and evaluates all fixture mutants.
+- T20: Two no-build-cache clean fat JAR builds from the same source are byte-identical and match the application identity in the frozen census.
 
 ## Optional Verification Suggestions
 
