@@ -2,6 +2,7 @@ package dev.tlamutant.prospective;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.tlamutant.security.Digests;
@@ -103,8 +104,11 @@ final class HistoricalArtifactFreezeIntegrationTest {
                         ProspectiveReceipt.class);
         ProspectiveReceipt.Artifact executionApplication = receipt.artifact("application");
         ProspectiveClosureAssessment.InputArtifact assessedApplication = artifact(assessment, "application");
+        ProspectiveClosureAssessment.InputArtifact assessedValidator = artifact(assessment, "validator-application");
         assertEquals(executionApplication.sha256(), assessedApplication.sha256());
         assertEquals(executionApplication.sizeBytes(), assessedApplication.sizeBytes());
+        assertNotEquals(assessedApplication.sha256(), assessedValidator.sha256());
+        assertNotEquals(assessedApplication.sizeBytes(), assessedValidator.sizeBytes());
     }
 
     private static void assertIdentity(String relativePath, Identity expected) throws Exception {
@@ -122,6 +126,8 @@ final class HistoricalArtifactFreezeIntegrationTest {
 
     private static void assertIdentity(Path path, ProspectiveClosureAssessment.InputArtifact expected)
             throws Exception {
+        assertEquals(false, Files.isSymbolicLink(path), path + " must not be a symbolic link");
+        assertEquals(true, Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS), path + " must be regular");
         assertEquals(expected.sizeBytes(), Files.size(path), path + " size");
         assertEquals(expected.sha256(), Digests.sha256(path, 128L * 1024 * 1024), path + " SHA-256");
     }
