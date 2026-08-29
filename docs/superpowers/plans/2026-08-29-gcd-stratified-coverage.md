@@ -139,7 +139,7 @@ Constraints:
 - T14: A GCD fixture produces `STATE_EXPANDING` or `STATE_INCOMPARABLE` with a non-null witness.
 - T15: The 15-entry public experiment records baseline and all mutation failures without replacement.
 - T16: Repeated experiment runs preserve candidate IDs, relations, witnesses, and denominator totals.
-- T16 evidence: v7 reproduced 51 unique terminal records with 7 unattributed kills, 22 state-equal, 9 state-expanding, and 13 unresolved sites. Both runs had nine identical witness-bearing candidates across six specifications, domains, and clusters after excluding failed-baseline runtime diagnostics.
+- T16 evidence: v8 reproduced 51 unique terminal records with 7 unattributed kills, 22 state-equal, 9 state-expanding, and 13 unresolved sites. Both v8 runs and historical v7 had nine identical witness-bearing candidates across six specifications, domains, and clusters after excluding failed-baseline runtime diagnostics.
 - T17: The gate fails for two candidates in one domain or cluster and passes only for 2+ specifications, domains, and clusters.
 - T18: Original and stratified reports coexist and README reproduction commands identify both.
 - T19: A read-only snapshotted corpus input still produces writable mutant workspaces and evaluates all fixture mutants.
