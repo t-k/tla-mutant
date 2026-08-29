@@ -133,7 +133,7 @@ final class MutatorIntegrationTest {
         GcdCensusReport report = new GcdCensusAnalyzer().analyze(root, "GcdShapes.tla", "GcdShapes.cfg");
 
         assertEquals(
-                List.of("Positive", "x < 10", "Nested", "p = C"),
+                List.of("Positive", "x < 10", "Nested", "p \\in SharedDomain"),
                 report.sites().stream()
                         .filter(site -> site.conforms())
                         .map(site -> site.guard())
@@ -148,6 +148,7 @@ final class MutatorIntegrationTest {
         assertTrue(report.sites().stream()
                 .filter(site -> site.definition().equals("Nested"))
                 .noneMatch(site -> site.conforms()));
+        assertTrue(report.sites().stream().noneMatch(site -> site.guard().equals("SharedGuard")));
     }
 
     @Test

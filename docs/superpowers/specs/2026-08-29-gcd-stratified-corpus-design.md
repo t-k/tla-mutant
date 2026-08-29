@@ -180,7 +180,7 @@ Repository-owned fixtures cover:
 
 - a positive state guard plus complete successor update;
 - a guard whose remaining conjunction has no action-level successor;
-- a positive compound top-level predicate whose inner conjuncts lack an action-successor sibling, plus negative, primed, property-shared, and conditional conjuncts;
+- a positive compound top-level predicate whose inner conjuncts lack an action-successor sibling, a positive guard that uses a nested shared value helper, plus negative, primed, directly property-shared, and conditional conjuncts;
 - multiple GCD sites in one action;
 - a GCD mutation that produces a non-null mutant-only witness and a GCD-specific expanding or incomparable relation.
 

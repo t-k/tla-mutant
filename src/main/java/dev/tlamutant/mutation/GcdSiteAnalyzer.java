@@ -85,9 +85,6 @@ public final class GcdSiteAnalyzer {
                 OperatorDefinition referenced =
                         project.definitions().get(definition.getName().toString());
                 if (referenced != null) {
-                    if (!referenced.eligibleForModelMutation()) {
-                        return false;
-                    }
                     return isPositiveCurrentStateGuard(project, definition.getBody(), ancestors);
                 }
             }

@@ -126,7 +126,7 @@ Constraints:
 - T02: A valid schema-version-2 stratified manifest has 5 controls, 10 enriched entries, 3+ domains, 3+ enriched strata, and bounded rationales.
 - T03: Wrong cohort counts, missing selection fields, unknown values, duplicate IDs, unsafe clusters, and oversized rationales fail before fetch.
 - T04: A direct state guard beside primed updates produces one conforming census site with the same ID as GCD generation.
-- T05: A negative, primed, property-shared, conditional, or successor-only conjunct never becomes a conforming census guard. A positive compound predicate may conform only as a whole action-level top-level conjunct; its inner conjuncts remain nonconforming when they have no action-successor sibling.
+- T05: A negative, primed, directly property-shared, conditional, or successor-only conjunct never becomes a conforming census guard. A positive compound predicate may conform only as a whole action-level top-level conjunct; its inner conjuncts remain nonconforming when they have no action-successor sibling. A shared value helper nested inside a larger positive guard is syntax-expanded but is not itself mutated.
 - T06: An enriched entry with no conforming site aborts the mutation phase and is not replaced.
 - T07: Census JSON contains no verdict, oracle, state relation, state count, or witness field.
 - T08: Hostile census text cannot inject raw HTML, links, tables, ANSI, controls, bidi text, or unbounded output.
