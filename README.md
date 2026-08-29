@@ -53,7 +53,7 @@ Then consume that exact census:
 java -jar build/libs/tla-mutant-all.jar gcd-stratified-experiment \
   --manifest corpus/gcd-stratified-manifest.json \
   --census-report docs/experiments/gcd-stratified-census.json \
-  --expected-census-sha256 FROZEN_V6_CENSUS_SHA256 \
+  --expected-census-sha256 38223477282fc0b9c673f9e40f9cc1a754cf9bf1ccd8dd75c1969e203faacced \
   --policy config/execution-policy.json \
   --tools-jar .tools/tla2tools-1.8.0.jar \
   --cache-dir .corpus \
@@ -61,4 +61,4 @@ java -jar build/libs/tla-mutant-all.jar gcd-stratified-experiment \
   --markdown-report docs/experiments/gcd-stratified.md
 ```
 
-The expected census digest must come from the reviewed frozen-census commit, not from an unreviewed file calculated immediately before execution. Replace the placeholder only after the v6 census is independently repeated and committed. Frozen census paths are write-once, so use a new output path for a repeat run. The historical v5 census had 51 sites, 45 conforming sites, at least one conforming site in every enriched entry, and SHA-256 `66e1b8ddcdd80e9e51383749c2eb1a117d72bdfe2b40fabf126bcba14fcc22c1`; its artifacts use the `-v5` suffix. The historical v2 artifacts use the `-v2` suffix.
+The expected census digest must come from the reviewed frozen-census commit, not from an unreviewed file calculated immediately before execution. The v6 census has 51 sites, 45 conforming sites, at least one conforming site in every enriched entry, and SHA-256 `38223477282fc0b9c673f9e40f9cc1a754cf9bf1ccd8dd75c1969e203faacced`; a second write-once run was byte-identical. Frozen census paths are write-once, so use a new output path for a repeat run. The historical v5 census has SHA-256 `66e1b8ddcdd80e9e51383749c2eb1a117d72bdfe2b40fabf126bcba14fcc22c1` and its artifacts use the `-v5` suffix. The historical v2 artifacts use the `-v2` suffix.
