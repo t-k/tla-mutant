@@ -38,6 +38,8 @@ The first preregistration failed before mutation. Its audit artifact records one
 
 The 13 unresolved sites consist of four tool-error mutant runs and all nine sites from two specifications whose baselines exceeded the 100,000 canonical-state limit. `cf1s-folklore` and `bcast-folklore` remain in every denominator; they were not replaced or silently dropped. Exit code 2 records these incomplete entries after the JSON and Markdown reports are atomically written.
 
+The control cohort produced four expanding sites from 14, while the enriched cohort produced five from 37. This experiment was not designed or powered to establish an uplift in expansion rate, and the nonliteral-action eligibility repair changed the executable candidate universe after v1. The result therefore supports the feasibility of finding useful candidates in a stratified vertical slice; it does not causally establish that stratification alone improved the rate.
+
 The experiment was repeated. Candidate IDs, execution status, oracle outcome, state relation, baseline and mutant state counts, mutant-only witnesses, summaries, and gate status matched exactly. Diagnostics containing TLC seeds, timestamps, temporary paths, and throughput were excluded from semantic comparison.
 
 ## Proxy Invariant Review
@@ -63,6 +65,7 @@ Four of six affected specifications therefore produce a concrete, compact improv
 - Four completed-entry GCD runs ended in tool errors and remain unresolved.
 - BRL still has no eligible candidate in this corpus, and UOI coverage is narrow. These families do not yet justify general conclusions.
 - Static GCD conformance enriches for action shape, not for mutation outcome. The observed expansion rate is not a prevalence estimate for public TLA+ specifications.
+- The eligibility repair and versioned corpus reselection are co-interventions. The current evidence cannot separate their contributions to candidate discovery.
 - State-set expansion does not establish a harmful behavior, temporal defect, or requirements mismatch.
 
 ## Recommendation
