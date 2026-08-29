@@ -132,7 +132,8 @@ public record ProspectiveProtocol(
                 throw new IllegalArgumentException("Prospective entry requires at least one configured invariant");
             }
             Set<String> allOracles = new HashSet<>(typeInvariants);
-            if (!allOracles.addAll(legacyTargetInvariants)) {
+            allOracles.addAll(legacyTargetInvariants);
+            if (allOracles.size() != typeInvariants.size() + legacyTargetInvariants.size()) {
                 throw new IllegalArgumentException("Prospective oracle names must be unique");
             }
             Objects.requireNonNull(limits, "limits");

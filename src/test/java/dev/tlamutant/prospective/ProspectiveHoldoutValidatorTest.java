@@ -157,6 +157,24 @@ final class ProspectiveHoldoutValidatorTest {
                 "The upstream config checks Safety only."));
     }
 
+    @Test
+    void permitsATypeOracleWhenTheUpstreamConfigHasNoLegacyTargetInvariant() {
+        assertDoesNotThrow(() -> new ProspectiveProtocol.Entry(
+                "coffee-can",
+                "state-machine",
+                ProspectiveProtocol.STANDARD_RISK,
+                "coffee-can",
+                "CoffeeCan.tla",
+                "APCoffeeCan.cfg",
+                List.of(
+                        "specifications/CoffeeCan/CoffeeCan.tla",
+                        "specifications/CoffeeCan/APCoffeeCan.cfg"),
+                List.of("TypeInvariant"),
+                List.of(),
+                ENTRY_LIMITS,
+                "The upstream config checks a type invariant only."));
+    }
+
     private static Fixture fixture() throws Exception {
         HistoricalSourceRegistry registry = historicalRegistry("historical/Old.tla", 'f', 77);
         List<CorpusManifest.Entry> manifestEntries = new ArrayList<>();
