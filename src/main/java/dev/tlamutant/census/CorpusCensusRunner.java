@@ -4,9 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.tlamutant.config.ExecutionPolicy;
 import dev.tlamutant.corpus.CorpusFetcher;
+import dev.tlamutant.corpus.CorpusInputSnapshot;
 import dev.tlamutant.corpus.CorpusManifest;
 import dev.tlamutant.sandbox.PodmanExecution;
 import dev.tlamutant.sandbox.PodmanRunner;
+import dev.tlamutant.security.StrictJson;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -39,12 +42,16 @@ public final class CorpusCensusRunner {
     private CorpusCensusEntryResult runEntry(CorpusManifest manifest, CorpusManifest.Entry entry) {
         try {
             Path input = fetcher.fetch(manifest, entry, policy.limits(), cacheRoot);
-            PodmanRunner sandbox = new PodmanRunner(policy.containerImage(), applicationJar, toolsJar, entry.limits());
-            PodmanExecution execution = sandbox.runCensus(
-                    input,
-                    entry.rootModule(),
-                    entry.config(),
-                    Duration.ofSeconds(entry.limits().wallClockSeconds()));
+            PodmanExecution execution;
+            try (CorpusInputSnapshot snapshot = CorpusInputSnapshot.create(input, entry)) {
+                PodmanRunner sandbox =
+                        new PodmanRunner(policy.containerImage(), applicationJar, toolsJar, entry.limits());
+                execution = sandbox.runCensus(
+                        snapshot.root(),
+                        entry.rootModule(),
+                        entry.config(),
+                        Duration.ofSeconds(entry.limits().wallClockSeconds()));
+            }
             if (execution.timedOut()) {
                 return incomplete(entry, "TIMEOUT", "The bounded sandbox wall clock expired");
             }
@@ -55,12 +62,12 @@ public final class CorpusCensusRunner {
                 return incomplete(entry, "SANDBOX_ERROR", execution.stderr() + "\n" + execution.stdout());
             }
             try {
-                GcdCensusReport report = mapper.readValue(execution.stdout(), GcdCensusReport.class);
+                GcdCensusReport report = StrictJson.parse(mapper, execution.stdout(), GcdCensusReport.class);
                 return completed(entry, report);
             } catch (JsonProcessingException exception) {
                 return incomplete(entry, "INVALID_REPORT", "Sandbox output was not a GCD census report");
             }
-        } catch (RuntimeException exception) {
+        } catch (IOException | RuntimeException exception) {
             return incomplete(
                     entry, "FETCH_OR_SANDBOX_ERROR", exception.getClass().getSimpleName());
         }

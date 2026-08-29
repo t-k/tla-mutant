@@ -11,9 +11,10 @@ public record CorpusCensusReport(
         CensusInputIdentity inputs,
         List<CorpusCensusEntryResult> entries) {
     public CorpusCensusReport {
-        if ((schemaVersion != 1 && schemaVersion != 2)
+        if ((schemaVersion != 1 && schemaVersion != 2 && schemaVersion != 3)
                 || (schemaVersion == 1 && inputs != null)
-                || (schemaVersion == 2 && inputs == null)) {
+                || (schemaVersion == 2 && (inputs == null || inputs.application() != null))
+                || (schemaVersion == 3 && (inputs == null || inputs.application() == null))) {
             throw new IllegalArgumentException("Unsupported corpus census schema");
         }
         Objects.requireNonNull(profile, "profile");
@@ -37,6 +38,6 @@ public record CorpusCensusReport(
             String commit,
             CensusInputIdentity inputs,
             List<CorpusCensusEntryResult> entries) {
-        return new CorpusCensusReport(2, profile, repository, commit, inputs, entries);
+        return new CorpusCensusReport(3, profile, repository, commit, inputs, entries);
     }
 }

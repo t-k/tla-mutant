@@ -11,6 +11,11 @@ final class CorpusCensusReportTest {
             new CensusInputIdentity.Artifact("a".repeat(64), 10),
             new CensusInputIdentity.Artifact("b".repeat(64), 20),
             new CensusInputIdentity.Artifact("c".repeat(64), 30));
+    private static final CensusInputIdentity COMPLETE_INPUTS = new CensusInputIdentity(
+            new CensusInputIdentity.Artifact("a".repeat(64), 10),
+            new CensusInputIdentity.Artifact("b".repeat(64), 20),
+            new CensusInputIdentity.Artifact("c".repeat(64), 30),
+            new CensusInputIdentity.Artifact("d".repeat(64), 40));
 
     @Test
     void keepsSchemaOneAuditCompatibilityAndRequiresIdentityForSchemaTwo() {
@@ -20,6 +25,11 @@ final class CorpusCensusReportTest {
                 () -> new CorpusCensusReport(2, "gcd-stratified-v3", "repository", "commit", null, List.of()));
         assertDoesNotThrow(
                 () -> new CorpusCensusReport(2, "gcd-stratified-v3", "repository", "commit", INPUTS, List.of()));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new CorpusCensusReport(3, "gcd-stratified-v6", "repository", "commit", INPUTS, List.of()));
+        assertDoesNotThrow(() ->
+                new CorpusCensusReport(3, "gcd-stratified-v6", "repository", "commit", COMPLETE_INPUTS, List.of()));
     }
 
     @Test

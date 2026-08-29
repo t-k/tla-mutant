@@ -84,12 +84,12 @@ final class CensusConformanceValidatorTest {
     }
 
     @Test
-    void mutationGateRequiresSchemaTwoWithExactInputIdentity() {
+    void mutationGateRequiresSchemaThreeWithExactInputIdentity() {
         CorpusManifest manifest = manifest();
         CorpusCensusReport legacy = report(manifest, 5);
         CensusInputIdentity expected = inputs('a');
         CorpusCensusReport bound = new CorpusCensusReport(
-                2, legacy.profile(), legacy.repository(), legacy.commit(), expected, legacy.entries());
+                3, legacy.profile(), legacy.repository(), legacy.commit(), expected, legacy.entries());
 
         assertSame(bound, CensusConformanceValidator.validateBoundInputs(manifest, bound, expected));
         assertThrows(
@@ -104,7 +104,8 @@ final class CensusConformanceValidatorTest {
         return new CensusInputIdentity(
                 new CensusInputIdentity.Artifact(String.valueOf(first).repeat(64), 10),
                 new CensusInputIdentity.Artifact("b".repeat(64), 20),
-                new CensusInputIdentity.Artifact("c".repeat(64), 30));
+                new CensusInputIdentity.Artifact("c".repeat(64), 30),
+                new CensusInputIdentity.Artifact("e".repeat(64), 40));
     }
 
     private static CorpusCensusReport report(CorpusManifest manifest, int firstClusterSiteCount) {

@@ -30,10 +30,11 @@ public record GcdStratifiedReport(
         int uoiGenerated,
         int uoiEvaluated,
         List<GcdOutcomeSummary> summaries,
+        List<GcdTerminalOutcome> gcdOutcomes,
         CorpusCensusReport census,
         CorpusExperimentReport experiment) {
     public GcdStratifiedReport {
-        if ((schemaVersion != 1 && schemaVersion != 2)
+        if ((schemaVersion != 1 && schemaVersion != 2 && schemaVersion != 3)
                 || censusSha256 == null
                 || !censusSha256.matches("[0-9a-f]{64}")
                 || censusSizeBytes <= 0
@@ -53,6 +54,17 @@ public record GcdStratifiedReport(
         Objects.requireNonNull(census, "census");
         Objects.requireNonNull(experiment, "experiment");
         summaries = List.copyOf(summaries);
+        if (gcdOutcomes == null) {
+            if (schemaVersion == 3) {
+                throw new IllegalArgumentException("Schema 3 requires explicit GCD terminal outcomes");
+            }
+            gcdOutcomes = List.of();
+        } else {
+            gcdOutcomes = List.copyOf(gcdOutcomes);
+        }
+        if (schemaVersion == 3 && gcdOutcomes.size() != censusSiteCount) {
+            throw new IllegalArgumentException("Every census GCD site requires one terminal outcome");
+        }
     }
 
     public static GcdStratifiedReport create(
@@ -71,6 +83,7 @@ public record GcdStratifiedReport(
         int brlEvaluated = 0;
         int uoiGenerated = 0;
         int uoiEvaluated = 0;
+        List<GcdTerminalOutcome> gcdOutcomes = new java.util.ArrayList<>();
 
         for (int index = 0; index < manifest.entries().size(); index++) {
             CorpusManifest.Entry expected = manifest.entries().get(index);
@@ -110,6 +123,8 @@ public record GcdStratifiedReport(
             boolean specificationHasWitness = false;
             for (GcdCensusSite site : censusEntry.report().sites()) {
                 MutationResult result = gcdResults.get(site.candidateId());
+                MutationResult terminal = result == null ? unresolved(experimentEntry, site) : result;
+                gcdOutcomes.add(new GcdTerminalOutcome(expected.id(), terminal));
                 Bucket bucket = result == null ? Bucket.UNRESOLVED : bucket(result);
                 boolean witnessBearing = result != null && witnessBearing(result);
                 specificationBuckets.add(bucket);
@@ -142,7 +157,7 @@ public record GcdStratifiedReport(
                         ? "human-review-eligible"
                         : "insufficient-witness-bearing-gcd-candidates";
         return new GcdStratifiedReport(
-                2,
+                3,
                 manifest.profile(),
                 manifest.repository(),
                 manifest.commit(),
@@ -157,8 +172,26 @@ public record GcdStratifiedReport(
                 uoiGenerated,
                 uoiEvaluated,
                 summaries,
+                gcdOutcomes,
                 census,
                 experiment);
+    }
+
+    private static MutationResult unresolved(CorpusEntryResult entry, GcdCensusSite site) {
+        return new MutationResult(
+                site.candidateId(),
+                "GCD",
+                site.definition(),
+                site.guard(),
+                "TRUE",
+                "BASELINE_UNRESOLVED",
+                "NOT_EVALUATED",
+                "STATE_UNRESOLVED",
+                "unresolved",
+                "Baseline entry status: " + entry.status(),
+                0,
+                0,
+                null);
     }
 
     private static void requireOuterIdentity(

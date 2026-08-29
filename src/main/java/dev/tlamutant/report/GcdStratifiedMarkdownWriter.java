@@ -94,6 +94,30 @@ public final class GcdStratifiedMarkdownWriter {
                     .append(" |\n");
         }
 
+        markdown.append("\n## GCD terminal outcomes\n\n")
+                .append("Every frozen census site has exactly one terminal record.\n\n")
+                .append("| Entry | Candidate | Status | Oracle | State relation | Verdict | Diagnostic |\n")
+                .append("| --- | --- | --- | --- | --- | --- | --- |\n");
+        for (dev.tlamutant.experiment.GcdTerminalOutcome outcome : report.gcdOutcomes()) {
+            MutationResult result = outcome.result();
+            markdown.append("| ")
+                    .append(MarkdownSanitizer.tableCell(outcome.entryId()))
+                    .append(" | ")
+                    .append(MarkdownSanitizer.tableCell(result.id()))
+                    .append(" | ")
+                    .append(MarkdownSanitizer.tableCell(result.executionStatus()))
+                    .append(" | ")
+                    .append(MarkdownSanitizer.tableCell(result.oracleOutcome()))
+                    .append(" | ")
+                    .append(MarkdownSanitizer.tableCell(result.stateRelation()))
+                    .append(" | ")
+                    .append(MarkdownSanitizer.tableCell(result.verdict()))
+                    .append(" | ")
+                    .append(MarkdownSanitizer.tableCell(
+                            result.diagnosticReason() == null ? "-" : result.diagnosticReason()))
+                    .append(" |\n");
+        }
+
         markdown.append("\n## Non-GCD transparency totals\n\n")
                 .append("| Family | Generated | Evaluated |\n")
                 .append("| --- | ---: | ---: |\n")

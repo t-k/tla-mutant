@@ -34,6 +34,7 @@ final class GcdStratifiedReportTest {
 
         assertEquals(2, overall.specifications());
         assertEquals(3, overall.totalSites());
+        assertEquals(3, fixture.report().gcdOutcomes().size());
         assertEquals(2, overall.specificationsStateEqual());
         assertEquals(
                 overall.totalSites(),
@@ -81,6 +82,35 @@ final class GcdStratifiedReportTest {
         assertEquals(1, report.brlEvaluated());
         assertEquals(1, report.uoiGenerated());
         assertEquals(0, report.uoiEvaluated());
+        assertEquals(7, report.gcdOutcomes().size());
+    }
+
+    @Test
+    void emitsOneExplicitUnresolvedTerminalRecordWhenTheBaselineHasNoReport() {
+        Fixture fixture = fixture(
+                List.of(entry("failed", "domain-a", "cluster-a")),
+                List.of(List.of(result(0, "STATE_EQUAL", "state-equal", null))));
+        CorpusEntryResult original = fixture.experiment().entries().getFirst();
+        CorpusExperimentReport incomplete = new CorpusExperimentReport(
+                1,
+                REPOSITORY,
+                COMMIT,
+                "proxy-agent-review; human-review-pending",
+                1,
+                0,
+                0,
+                0,
+                0,
+                List.of(new CorpusEntryResult(original.id(), original.domain(), "SANDBOX_ERROR", "bounded", null)));
+
+        GcdStratifiedReport report =
+                GcdStratifiedReport.create(fixture.manifest(), fixture.census(), "f".repeat(64), 100, incomplete);
+
+        assertEquals(1, report.gcdOutcomes().size());
+        GcdTerminalOutcome outcome = report.gcdOutcomes().getFirst();
+        assertEquals("BASELINE_UNRESOLVED", outcome.result().executionStatus());
+        assertEquals("STATE_UNRESOLVED", outcome.result().stateRelation());
+        assertEquals("unresolved", outcome.result().verdict());
     }
 
     @Test

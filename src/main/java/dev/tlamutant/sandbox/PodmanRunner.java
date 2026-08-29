@@ -6,6 +6,8 @@ import dev.tlamutant.config.ExecutionPolicy;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -507,7 +509,17 @@ public final class PodmanRunner {
                 retained.write(buffer, 0, keep);
                 total += count;
             }
-            return new Capture(retained.toString(StandardCharsets.UTF_8), total > limit);
+            try {
+                String text = StandardCharsets.UTF_8
+                        .newDecoder()
+                        .onMalformedInput(CodingErrorAction.REPORT)
+                        .onUnmappableCharacter(CodingErrorAction.REPORT)
+                        .decode(java.nio.ByteBuffer.wrap(retained.toByteArray()))
+                        .toString();
+                return new Capture(text, total > limit);
+            } catch (CharacterCodingException exception) {
+                throw new IOException("Command output is not strict UTF-8", exception);
+            }
         }
     }
 }

@@ -12,7 +12,7 @@ public final class CensusConformanceValidator {
 
     public static CorpusCensusReport validateBoundInputs(
             CorpusManifest manifest, CorpusCensusReport census, CensusInputIdentity expectedInputs) {
-        if (census.schemaVersion() != 2 || !Objects.equals(census.inputs(), expectedInputs)) {
+        if (census.schemaVersion() != 3 || !Objects.equals(census.inputs(), expectedInputs)) {
             throw new IllegalArgumentException("Census inputs do not match the exact experiment inputs");
         }
         return validate(manifest, census);

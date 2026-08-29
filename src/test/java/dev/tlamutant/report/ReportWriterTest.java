@@ -131,6 +131,7 @@ final class ReportWriterTest {
                 0,
                 0,
                 List.of(summary),
+                List.of(),
                 census,
                 experiment);
 

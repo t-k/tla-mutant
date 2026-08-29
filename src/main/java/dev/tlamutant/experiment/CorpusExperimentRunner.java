@@ -4,9 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.tlamutant.config.ExecutionPolicy;
 import dev.tlamutant.corpus.CorpusFetcher;
+import dev.tlamutant.corpus.CorpusInputSnapshot;
 import dev.tlamutant.corpus.CorpusManifest;
 import dev.tlamutant.sandbox.PodmanExecution;
 import dev.tlamutant.sandbox.PodmanRunner;
+import dev.tlamutant.security.StrictJson;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -58,15 +61,19 @@ public final class CorpusExperimentRunner {
     private CorpusEntryResult runEntry(CorpusManifest manifest, CorpusManifest.Entry entry) {
         try {
             Path input = fetcher.fetch(manifest, entry, policy.limits(), cacheRoot);
-            PodmanRunner sandbox = new PodmanRunner(policy.containerImage(), applicationJar, toolsJar, entry.limits());
-            List<String> stateInvariants = new ArrayList<>(entry.typeInvariants());
-            stateInvariants.addAll(entry.targetInvariants());
-            PodmanExecution execution = sandbox.run(
-                    input,
-                    entry.rootModule(),
-                    entry.config(),
-                    Duration.ofSeconds(entry.limits().wallClockSeconds()),
-                    stateInvariants);
+            PodmanExecution execution;
+            try (CorpusInputSnapshot snapshot = CorpusInputSnapshot.create(input, entry)) {
+                PodmanRunner sandbox =
+                        new PodmanRunner(policy.containerImage(), applicationJar, toolsJar, entry.limits());
+                List<String> stateInvariants = new ArrayList<>(entry.typeInvariants());
+                stateInvariants.addAll(entry.targetInvariants());
+                execution = sandbox.run(
+                        snapshot.root(),
+                        entry.rootModule(),
+                        entry.config(),
+                        Duration.ofSeconds(entry.limits().wallClockSeconds()),
+                        stateInvariants);
+            }
             if (execution.timedOut()) {
                 return incomplete(entry, "TIMEOUT", "The bounded sandbox wall clock expired");
             }
@@ -77,12 +84,12 @@ public final class CorpusExperimentRunner {
                 return incomplete(entry, "SANDBOX_ERROR", execution.stderr() + "\n" + execution.stdout());
             }
             try {
-                ExperimentReport report = mapper.readValue(execution.stdout(), ExperimentReport.class);
+                ExperimentReport report = StrictJson.parse(mapper, execution.stdout(), ExperimentReport.class);
                 return new CorpusEntryResult(entry.id(), entry.domain(), "COMPLETED", null, report);
             } catch (JsonProcessingException exception) {
                 return incomplete(entry, "INVALID_REPORT", "Sandbox output was not an experiment report");
             }
-        } catch (RuntimeException exception) {
+        } catch (IOException | RuntimeException exception) {
             return incomplete(
                     entry, "FETCH_OR_SANDBOX_ERROR", exception.getClass().getSimpleName());
         }

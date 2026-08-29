@@ -24,6 +24,7 @@ import dev.tlamutant.report.GcdStratifiedMarkdownWriter;
 import dev.tlamutant.report.JsonReportWriter;
 import dev.tlamutant.report.MarkdownReportWriter;
 import dev.tlamutant.security.BoundedFileSnapshot;
+import dev.tlamutant.security.ExperimentOutputValidator;
 import dev.tlamutant.security.TemporaryFileSnapshot;
 import dev.tlamutant.tlc.TlcRunner;
 import java.nio.file.Files;
@@ -49,6 +50,7 @@ import picocli.CommandLine;
 public final class Main implements Runnable {
     private static final long MAXIMUM_MANIFEST_BYTES = 8L * 1024 * 1024;
     private static final long MAXIMUM_POLICY_BYTES = 1024L * 1024;
+    private static final long MAXIMUM_APPLICATION_BYTES = 128L * 1024 * 1024;
     private static final long MAXIMUM_TOOLS_BYTES = 128L * 1024 * 1024;
 
     public static void main(String[] arguments) {
@@ -81,19 +83,30 @@ public final class Main implements Runnable {
         @Override
         public Integer call() throws Exception {
             ObjectMapper mapper = new ObjectMapper();
-            CorpusManifest manifest = mapper.readValue(manifestPath.toFile(), CorpusManifest.class);
-            ExecutionPolicy policy = mapper.readValue(policyPath.toFile(), ExecutionPolicy.class);
-            Path applicationJar = Path.of(Main.class
-                    .getProtectionDomain()
-                    .getCodeSource()
-                    .getLocation()
-                    .toURI());
-            CorpusExperimentReport report =
-                    new CorpusExperimentRunner(applicationJar, toolsJar, cacheDirectory, policy).run(manifest);
-            Files.createDirectories(jsonReport.toAbsolutePath().getParent());
-            mapper.writerWithDefaultPrettyPrinter().writeValue(jsonReport.toFile(), report);
-            Files.createDirectories(markdownReport.toAbsolutePath().getParent());
-            Files.writeString(markdownReport, new CorpusMarkdownReportWriter().render(report));
+            BoundedFileSnapshot manifestSnapshot = BoundedFileSnapshot.read(manifestPath, MAXIMUM_MANIFEST_BYTES);
+            BoundedFileSnapshot policySnapshot = BoundedFileSnapshot.read(policyPath, MAXIMUM_POLICY_BYTES);
+            BoundedFileSnapshot toolsSnapshot = BoundedFileSnapshot.read(toolsJar, MAXIMUM_TOOLS_BYTES);
+            Path applicationJar = applicationJar();
+            BoundedFileSnapshot applicationSnapshot =
+                    BoundedFileSnapshot.read(applicationJar, MAXIMUM_APPLICATION_BYTES);
+            CorpusManifest manifest = manifestSnapshot.parse(mapper, CorpusManifest.class);
+            ExecutionPolicy policy = policySnapshot.parse(mapper, ExecutionPolicy.class);
+            Files.createDirectories(cacheDirectory.toAbsolutePath().normalize());
+            ExperimentOutputValidator.Outputs outputs = ExperimentOutputValidator.validate(
+                    jsonReport,
+                    markdownReport,
+                    List.of(manifestPath, policyPath, toolsJar, applicationJar),
+                    List.of(cacheDirectory));
+            CorpusExperimentReport report;
+            try (TemporaryFileSnapshot frozenApplication =
+                            TemporaryFileSnapshot.create(applicationSnapshot, "application.jar");
+                    TemporaryFileSnapshot frozenTools = TemporaryFileSnapshot.create(toolsSnapshot, "tla2tools.jar")) {
+                report = new CorpusExperimentRunner(
+                                frozenApplication.path(), frozenTools.path(), cacheDirectory, policy)
+                        .run(manifest);
+            }
+            new AtomicJsonWriter().write(outputs.json(), report);
+            new AtomicTextWriter().write(outputs.markdown(), new CorpusMarkdownReportWriter().render(report));
             System.out.println(mapper.writeValueAsString(report));
             return report.completedEntries() == report.entryCount() ? 0 : 2;
         }
@@ -155,18 +168,18 @@ public final class Main implements Runnable {
             BoundedFileSnapshot manifestSnapshot = BoundedFileSnapshot.read(manifestPath, MAXIMUM_MANIFEST_BYTES);
             BoundedFileSnapshot policySnapshot = BoundedFileSnapshot.read(policyPath, MAXIMUM_POLICY_BYTES);
             BoundedFileSnapshot toolsSnapshot = BoundedFileSnapshot.read(toolsJar, MAXIMUM_TOOLS_BYTES);
+            Path applicationJar = applicationJar();
+            BoundedFileSnapshot applicationSnapshot =
+                    BoundedFileSnapshot.read(applicationJar, MAXIMUM_APPLICATION_BYTES);
             CorpusManifest manifest = manifestSnapshot.parse(mapper, CorpusManifest.class);
             ExecutionPolicy policy = policySnapshot.parse(mapper, ExecutionPolicy.class);
             StratifiedManifestValidator.validate(manifest, policy.limits());
-            CensusInputIdentity inputs = inputs(manifestSnapshot, policySnapshot, toolsSnapshot);
-            Path applicationJar = Path.of(Main.class
-                    .getProtectionDomain()
-                    .getCodeSource()
-                    .getLocation()
-                    .toURI());
+            CensusInputIdentity inputs = inputs(manifestSnapshot, policySnapshot, toolsSnapshot, applicationSnapshot);
             CorpusCensusReport census;
-            try (TemporaryFileSnapshot frozenTools = TemporaryFileSnapshot.create(toolsSnapshot, "tla2tools.jar")) {
-                census = new CorpusCensusRunner(applicationJar, frozenTools.path(), cacheDirectory, policy)
+            try (TemporaryFileSnapshot frozenApplication =
+                            TemporaryFileSnapshot.create(applicationSnapshot, "application.jar");
+                    TemporaryFileSnapshot frozenTools = TemporaryFileSnapshot.create(toolsSnapshot, "tla2tools.jar")) {
+                census = new CorpusCensusRunner(frozenApplication.path(), frozenTools.path(), cacheDirectory, policy)
                         .run(manifest, inputs);
             }
             Path validOutput = censusReportPath.toAbsolutePath().normalize();
@@ -221,6 +234,9 @@ public final class Main implements Runnable {
             BoundedFileSnapshot manifestSnapshot = BoundedFileSnapshot.read(manifestPath, MAXIMUM_MANIFEST_BYTES);
             BoundedFileSnapshot policySnapshot = BoundedFileSnapshot.read(policyPath, MAXIMUM_POLICY_BYTES);
             BoundedFileSnapshot toolsSnapshot = BoundedFileSnapshot.read(toolsJar, MAXIMUM_TOOLS_BYTES);
+            Path applicationJar = applicationJar();
+            BoundedFileSnapshot applicationSnapshot =
+                    BoundedFileSnapshot.read(applicationJar, MAXIMUM_APPLICATION_BYTES);
             CorpusManifest manifest = manifestSnapshot.parse(mapper, CorpusManifest.class);
             ExecutionPolicy policy = policySnapshot.parse(mapper, ExecutionPolicy.class);
             StratifiedManifestValidator.validate(manifest, policy.limits());
@@ -235,35 +251,47 @@ public final class Main implements Runnable {
                 throw new IllegalArgumentException("Frozen census SHA-256 does not match the trusted expected value");
             }
             CorpusCensusReport census = censusSnapshot.parse(mapper, CorpusCensusReport.class);
-            CensusInputIdentity inputs = inputs(manifestSnapshot, policySnapshot, toolsSnapshot);
+            CensusInputIdentity inputs = inputs(manifestSnapshot, policySnapshot, toolsSnapshot, applicationSnapshot);
             CensusConformanceValidator.validateBoundInputs(manifest, census, inputs);
 
-            Path applicationJar = Path.of(Main.class
-                    .getProtectionDomain()
-                    .getCodeSource()
-                    .getLocation()
-                    .toURI());
+            Files.createDirectories(cacheDirectory.toAbsolutePath().normalize());
+            ExperimentOutputValidator.Outputs outputs = ExperimentOutputValidator.validate(
+                    jsonReportPath,
+                    markdownReportPath,
+                    List.of(manifestPath, censusReportPath, policyPath, toolsJar, applicationJar),
+                    List.of(cacheDirectory));
             CorpusExperimentReport experiment;
-            try (TemporaryFileSnapshot frozenTools = TemporaryFileSnapshot.create(toolsSnapshot, "tla2tools.jar")) {
-                experiment = new CorpusExperimentRunner(applicationJar, frozenTools.path(), cacheDirectory, policy)
+            try (TemporaryFileSnapshot frozenApplication =
+                            TemporaryFileSnapshot.create(applicationSnapshot, "application.jar");
+                    TemporaryFileSnapshot frozenTools = TemporaryFileSnapshot.create(toolsSnapshot, "tla2tools.jar")) {
+                experiment = new CorpusExperimentRunner(
+                                frozenApplication.path(), frozenTools.path(), cacheDirectory, policy)
                         .run(manifest);
             }
             GcdStratifiedReport report = GcdStratifiedReport.create(
                     manifest, census, censusSnapshot.sha256(), censusSnapshot.sizeBytes(), experiment);
-            new AtomicJsonWriter().write(jsonReportPath, report);
-            new AtomicTextWriter().write(markdownReportPath, new GcdStratifiedMarkdownWriter().render(report));
+            new AtomicJsonWriter().write(outputs.json(), report);
+            new AtomicTextWriter().write(outputs.markdown(), new GcdStratifiedMarkdownWriter().render(report));
             System.out.println(mapper.writeValueAsString(report));
             return experiment.completedEntries() == experiment.entryCount() ? 0 : 2;
         }
     }
 
     private static CensusInputIdentity inputs(
-            BoundedFileSnapshot manifest, BoundedFileSnapshot policy, BoundedFileSnapshot tools) {
-        return new CensusInputIdentity(artifact(manifest), artifact(policy), artifact(tools));
+            BoundedFileSnapshot manifest,
+            BoundedFileSnapshot policy,
+            BoundedFileSnapshot tools,
+            BoundedFileSnapshot application) {
+        return new CensusInputIdentity(artifact(manifest), artifact(policy), artifact(tools), artifact(application));
     }
 
     private static CensusInputIdentity.Artifact artifact(BoundedFileSnapshot snapshot) {
         return new CensusInputIdentity.Artifact(snapshot.sha256(), snapshot.sizeBytes());
+    }
+
+    private static Path applicationJar() throws Exception {
+        return Path.of(
+                Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
     }
 
     @CommandLine.Command(
