@@ -2,7 +2,6 @@ package dev.tlamutant.mutation;
 
 import dev.tlamutant.semantic.OperatorDefinition;
 import dev.tlamutant.semantic.SemanticProject;
-import dev.tlamutant.semantic.SemanticRole;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -18,27 +17,8 @@ final class MutationSupport {
     static List<OperatorDefinition> nextModelDefinitions(SemanticProject project) {
         return project.eligibleModelDefinitions().stream()
                 .filter(definition -> definition.sourceModule().equals(project.rootModule()))
-                .filter(definition -> isBelowConfiguredTransition(project, definition))
+                .filter(definition -> project.transitionDefinitions().contains(definition.name()))
                 .toList();
-    }
-
-    private static boolean isBelowConfiguredTransition(SemanticProject project, OperatorDefinition definition) {
-        String path = definition.rootPaths().getOrDefault(SemanticRole.MODEL, "");
-        if (path.startsWith("NEXT ")) {
-            return true;
-        }
-        if (!path.startsWith("SPECIFICATION ")) {
-            return false;
-        }
-        String[] steps = path.split(" -> ");
-        if (steps.length < 2) {
-            return false;
-        }
-        OperatorDefinition transition = project.definitions().get(steps[1]);
-        return transition != null
-                && transition.level() == 2
-                && transition.eligibleForModelMutation()
-                && transition.sourceModule().equals(project.rootModule());
     }
 
     static boolean isEligibleReferencedDefinition(SemanticProject project, SemanticNode node) {

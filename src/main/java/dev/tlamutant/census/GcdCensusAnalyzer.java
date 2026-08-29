@@ -27,7 +27,7 @@ public final class GcdCensusAnalyzer {
                                 site.guardLevel(),
                                 site.remainingStateConjuncts(),
                                 site.actionSuccessorConjuncts(),
-                                site.guardLevel() <= 1 && site.hasActionSuccessor()))
+                                site.conforms()))
                         .toList();
         return new GcdCensusReport(1, moduleFile, configFile, sites);
     }

@@ -111,6 +111,44 @@ final class MutatorIntegrationTest {
     }
 
     @Test
+    void excludesFairnessOnlyActionsFromConfiguredSpecification() throws IOException {
+        Path root = Path.of("src/testFixtures/resources/tla/specification-fairness");
+        SemanticProject project = new SanyAnalyzer().analyze(root, "FairSpec.tla", "FairSpec.cfg");
+        SourceDocument source = SourceDocument.read(root.resolve("FairSpec.tla"));
+
+        assertEquals(
+                List.of("NextGuard"),
+                new GcdMutator()
+                        .generate(project, source).stream()
+                                .map(MutationCandidate::original)
+                                .toList());
+        assertFalse(project.transitionDefinitions().contains("FairOnly"));
+        assertTrue(project.transitionDefinitions().containsAll(List.of("Next", "NextGuard", "NextUpdate")));
+    }
+
+    @Test
+    void classifiesOnlyPositiveCurrentStateTopLevelConjunctsAsConforming() throws IOException {
+        Path root = Path.of("src/testFixtures/resources/tla/gcd-shapes");
+
+        GcdCensusReport report = new GcdCensusAnalyzer().analyze(root, "GcdShapes.tla", "GcdShapes.cfg");
+
+        assertEquals(
+                List.of("Positive", "x < 10"),
+                report.sites().stream()
+                        .filter(site -> site.definition().equals("Next"))
+                        .filter(site -> site.conforms())
+                        .map(site -> site.guard())
+                        .toList());
+        assertEquals(
+                List.of("~Positive", "Conditional", "Nested", "ENABLED Primed"),
+                report.sites().stream()
+                        .filter(site -> site.definition().equals("Next"))
+                        .filter(site -> !site.conforms())
+                        .map(site -> site.guard())
+                        .toList());
+    }
+
+    @Test
     void sharesExactGcdEligibilityWhileSeparatingSuccessorCapableSites() throws IOException {
         Path root = Path.of("src/testFixtures/resources/tla/census");
         SemanticProject project = new SanyAnalyzer().analyze(root, "CensusFixture.tla", "CensusFixture.cfg");

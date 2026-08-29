@@ -21,7 +21,7 @@ public record GcdCensusSite(
                 || guardLevel < 0
                 || remainingStateConjuncts < 0
                 || actionSuccessorConjuncts < 0
-                || conforms != (guardLevel <= 1 && actionSuccessorConjuncts > 0)) {
+                || (conforms && (guardLevel > 1 || actionSuccessorConjuncts == 0))) {
             throw new IllegalArgumentException("Invalid GCD census site");
         }
     }

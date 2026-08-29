@@ -4,7 +4,9 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import tla2sany.drivers.FrontEndException;
@@ -13,8 +15,14 @@ import tla2sany.drivers.SanyExitCode;
 import tla2sany.drivers.SanySettings;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.output.SilentSanyOutput;
+import tla2sany.semantic.LetInNode;
 import tla2sany.semantic.ModuleNode;
+import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpDefNode;
+import tla2sany.semantic.SemanticNode;
+import tla2sany.semantic.SubstInNode;
+import tlc2.tool.BuiltInOPs;
+import tlc2.tool.ToolGlobals;
 import tlc2.tool.impl.ModelConfig;
 import tlc2.util.Vect;
 import util.FilenameToStream;
@@ -63,8 +71,101 @@ public final class SanyAnalyzer {
         config.parse();
         ModuleNode module = specification.getRootModule();
         List<RoleGraph.Root> roots = configuredRoots(module, config);
-        return new SemanticProject(
-                moduleName, RoleGraph.classify(moduleName, module.getOpDefs(), roots), specification);
+        Map<String, OperatorDefinition> definitions = RoleGraph.classify(moduleName, module.getOpDefs(), roots);
+        Set<String> transitions = configuredTransitionDefinitions(module, config, definitions);
+        return new SemanticProject(moduleName, definitions, transitions, specification);
+    }
+
+    private static Set<String> configuredTransitionDefinitions(
+            ModuleNode module, ModelConfig config, Map<String, OperatorDefinition> definitions) {
+        Set<OpDefNode> roots = new HashSet<>();
+        if (nonBlank(config.getNext())) {
+            roots.add(requireDefinition(module, "NEXT", config.getNext()));
+        } else {
+            OpDefNode specification = requireDefinition(module, "SPECIFICATION", config.getSpec());
+            List<SemanticNode> actions = new ArrayList<>();
+            collectSquareActions(specification.getBody(), new HashSet<>(), actions);
+            if (actions.size() != 1) {
+                throw new IllegalArgumentException(
+                        "Configured SPECIFICATION must contain exactly one [] [Next]_vars action");
+            }
+            collectReferencedDefinitions(actions.getFirst(), new HashSet<>(), roots);
+        }
+
+        Set<String> result = new HashSet<>();
+        ArrayList<OpDefNode> pending = new ArrayList<>(roots);
+        while (!pending.isEmpty()) {
+            OpDefNode definition = pending.removeLast();
+            String name = definition.getName().toString();
+            OperatorDefinition known = definitions.get(name);
+            if (known == null || !result.add(name)) {
+                continue;
+            }
+            Set<OpDefNode> references = new HashSet<>();
+            collectReferencedDefinitions(definition.getBody(), new HashSet<>(), references);
+            pending.addAll(references);
+        }
+        return Set.copyOf(result);
+    }
+
+    private static void collectSquareActions(SemanticNode node, Set<Integer> visited, List<SemanticNode> result) {
+        if (node == null || !visited.add(node.getUid())) {
+            return;
+        }
+        if (node instanceof LetInNode letIn) {
+            collectSquareActions(letIn.getBody(), visited, result);
+            return;
+        }
+        if (node instanceof SubstInNode substitution) {
+            collectSquareActions(substitution.getBody(), visited, result);
+            return;
+        }
+        if (!(node instanceof OpApplNode application)) {
+            return;
+        }
+        int opcode = BuiltInOPs.getOpCode(application.getOperator().getName());
+        if (opcode == ToolGlobals.OPCODE_wf || opcode == ToolGlobals.OPCODE_sf) {
+            return;
+        }
+        if (application.getOperator() instanceof OpDefNode definition && definition.getArity() == 0) {
+            collectSquareActions(definition.getBody(), visited, result);
+            return;
+        }
+        if (opcode == ToolGlobals.OPCODE_box
+                && application.getArgs().length == 1
+                && application.getArgs()[0] instanceof OpApplNode squareAction
+                && squareAction.hasOpcode(ToolGlobals.OPCODE_sa)
+                && squareAction.getArgs().length == 2) {
+            result.add(squareAction.getArgs()[0]);
+            return;
+        }
+        for (SemanticNode child : application.getChildren()) {
+            collectSquareActions(child, visited, result);
+        }
+    }
+
+    private static void collectReferencedDefinitions(
+            SemanticNode node, Set<Integer> visited, Set<OpDefNode> definitions) {
+        if (node == null || !visited.add(node.getUid())) {
+            return;
+        }
+        if (node instanceof OpApplNode application && application.getOperator() instanceof OpDefNode definition) {
+            definitions.add(definition);
+        }
+        SemanticNode[] children = node.getChildren();
+        if (children != null) {
+            for (SemanticNode child : children) {
+                collectReferencedDefinitions(child, visited, definitions);
+            }
+        }
+    }
+
+    private static OpDefNode requireDefinition(ModuleNode module, String label, String name) {
+        OpDefNode definition = module.getOpDef(name);
+        if (definition == null) {
+            throw new IllegalArgumentException("Configured root cannot be resolved: " + label + " " + name);
+        }
+        return definition;
     }
 
     private static List<RoleGraph.Root> configuredRoots(ModuleNode module, ModelConfig config) {
@@ -103,10 +204,7 @@ public final class SanyAnalyzer {
     }
 
     private static RoleGraph.Root root(ModuleNode module, SemanticRole role, String label, String name) {
-        OpDefNode definition = module.getOpDef(name);
-        if (definition == null) {
-            throw new IllegalArgumentException("Configured root cannot be resolved: " + label + " " + name);
-        }
+        OpDefNode definition = requireDefinition(module, label, name);
         return new RoleGraph.Root(role, label + " " + name, definition);
     }
 

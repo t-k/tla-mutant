@@ -3,12 +3,18 @@ package dev.tlamutant.semantic;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import tla2sany.modanalyzer.SpecObj;
 
-public record SemanticProject(String rootModule, Map<String, OperatorDefinition> definitions, SpecObj specification) {
+public record SemanticProject(
+        String rootModule,
+        Map<String, OperatorDefinition> definitions,
+        Set<String> transitionDefinitions,
+        SpecObj specification) {
     public SemanticProject {
         Objects.requireNonNull(rootModule, "rootModule");
         definitions = Map.copyOf(definitions);
+        transitionDefinitions = Set.copyOf(transitionDefinitions);
         Objects.requireNonNull(specification, "specification");
     }
 
