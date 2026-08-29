@@ -133,19 +133,21 @@ final class MutatorIntegrationTest {
         GcdCensusReport report = new GcdCensusAnalyzer().analyze(root, "GcdShapes.tla", "GcdShapes.cfg");
 
         assertEquals(
-                List.of("Positive", "x < 10"),
+                List.of("Positive", "x < 10", "Nested", "p = C"),
                 report.sites().stream()
-                        .filter(site -> site.definition().equals("Next"))
                         .filter(site -> site.conforms())
                         .map(site -> site.guard())
                         .toList());
         assertEquals(
-                List.of("~Positive", "Conditional", "Nested", "ENABLED Primed"),
+                List.of("~Positive", "Conditional", "ENABLED Primed"),
                 report.sites().stream()
-                        .filter(site -> site.definition().equals("Next"))
+                        .filter(site -> site.definition().equals("Core"))
                         .filter(site -> !site.conforms())
                         .map(site -> site.guard())
                         .toList());
+        assertTrue(report.sites().stream()
+                .filter(site -> site.definition().equals("Nested"))
+                .noneMatch(site -> site.conforms()));
     }
 
     @Test

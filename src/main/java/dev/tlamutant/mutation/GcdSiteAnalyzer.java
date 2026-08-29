@@ -74,9 +74,6 @@ public final class GcdSiteAnalyzer {
             if (opcode == ToolGlobals.OPCODE_lnot
                     || opcode == ToolGlobals.OPCODE_ite
                     || opcode == ToolGlobals.OPCODE_case
-                    || opcode == ToolGlobals.OPCODE_cl
-                    || opcode == ToolGlobals.OPCODE_land
-                    || opcode == ToolGlobals.OPCODE_lor
                     || opcode == ToolGlobals.OPCODE_implies
                     || opcode == ToolGlobals.OPCODE_equiv
                     || opcode == ToolGlobals.OPCODE_enabled
