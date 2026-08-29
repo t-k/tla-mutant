@@ -40,6 +40,27 @@ final class ProspectiveReceiptTest {
     }
 
     @Test
+    void acceptsOnlyTheExactInterventionRoleSets() {
+        ProspectiveReceipt census = receipt(
+                "intervention-census", ProspectiveReceipt.INTERVENTION_CENSUS_ROLES);
+        ProspectiveReceipt experiment = receipt(
+                "intervention-experiment", ProspectiveReceipt.INTERVENTION_EXPERIMENT_ROLES);
+
+        assertEquals(
+                ProspectiveReceipt.INTERVENTION_CENSUS_ROLES,
+                census.artifacts().stream()
+                        .map(ProspectiveReceipt.Artifact::role)
+                        .collect(java.util.stream.Collectors.toUnmodifiableSet()));
+        assertEquals(
+                ProspectiveReceipt.INTERVENTION_EXPERIMENT_ROLES,
+                experiment.artifacts().stream()
+                        .map(ProspectiveReceipt.Artifact::role)
+                        .collect(java.util.stream.Collectors.toUnmodifiableSet()));
+        assertTrue(ProspectiveReceipt.INTERVENTION_EXPERIMENT_ROLES.contains("v11-census"));
+        assertTrue(ProspectiveReceipt.INTERVENTION_EXPERIMENT_ROLES.contains("census-receipt"));
+    }
+
+    @Test
     void rejectsMissingExtraDuplicateAndInvalidArtifactIdentity() {
         List<ProspectiveReceipt.Artifact> missing = artifacts(ProspectiveReceipt.DISCOVERY_ROLES);
         missing.removeLast();
@@ -178,7 +199,10 @@ final class ProspectiveReceiptTest {
     }
 
     private ProspectiveReceipt receipt(String phase, java.util.Set<String> roles) {
-        return new ProspectiveReceipt(1, phase, "gcd-prospective-v10", artifacts(roles));
+        String profile = phase.startsWith("intervention-")
+                ? "gcd-prospective-v11"
+                : "gcd-prospective-v10";
+        return new ProspectiveReceipt(1, phase, profile, artifacts(roles));
     }
 
     private static List<ProspectiveReceipt.Artifact> artifacts(java.util.Set<String> roles) {

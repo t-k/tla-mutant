@@ -30,7 +30,37 @@ public final class ProspectiveInterventionValidator {
         Objects.requireNonNull(review, "review");
         Objects.requireNonNull(derivedCensus, "derivedCensus");
         Objects.requireNonNull(globalLimits, "globalLimits");
-        validateOuterIdentity(v10, v11, derivedCensus);
+        ValidatedCorpusManifest validated = validateManifest(v10, v11, dossier, ledger, review, globalLimits);
+        validateCensusIdentity(v11, derivedCensus);
+
+        Set<ProspectiveReviewDossier.CandidateKey> selected = new HashSet<>(review.selectedInterventions());
+        for (int index = 0; index < v10.entries().size(); index++) {
+            CorpusManifest.Entry base = v10.entries().get(index);
+            ProspectiveReviewDossier.CandidateKey key = selected.stream()
+                    .filter(candidate -> candidate.entryId().equals(base.id()))
+                    .findFirst()
+                    .orElse(null);
+            if (key != null) {
+                requireCandidateInDerivedCensus(key, derivedCensus.census().entries().get(index));
+            }
+        }
+        return validated;
+    }
+
+    public static ValidatedCorpusManifest validateManifest(
+            CorpusManifest v10,
+            CorpusManifest v11,
+            ProspectiveReviewDossier dossier,
+            ProspectiveReviewLedger ledger,
+            ProspectiveReviewValidator.ValidatedReview review,
+            ExecutionPolicy.Limits globalLimits) {
+        Objects.requireNonNull(v10, "v10");
+        Objects.requireNonNull(v11, "v11");
+        Objects.requireNonNull(dossier, "dossier");
+        Objects.requireNonNull(ledger, "ledger");
+        Objects.requireNonNull(review, "review");
+        Objects.requireNonNull(globalLimits, "globalLimits");
+        validateManifestOuterIdentity(v10, v11);
         if (!review.isBoundTo(dossier, ledger)
                 || review.eligible() != dossier.candidates().size()
                 || review.reviewed() != ledger.decisions().size()
@@ -78,14 +108,11 @@ public final class ProspectiveInterventionValidator {
             }
             ProspectiveReviewLedger.Decision decision = decisions.get(key);
             validateSelectedEdit(base, derived, decision);
-            requireCandidateInDerivedCensus(
-                    key, derivedCensus.census().entries().get(index));
         }
         return new ValidatedCorpusManifest(v11, "prospective-v11");
     }
 
-    private static void validateOuterIdentity(
-            CorpusManifest v10, CorpusManifest v11, ProspectiveCensusReport derivedCensus) {
+    private static void validateManifestOuterIdentity(CorpusManifest v10, CorpusManifest v11) {
         if (v10.version() != 4
                 || !"gcd-prospective-v10".equals(v10.profile())
                 || v11.version() != 5
@@ -93,8 +120,13 @@ public final class ProspectiveInterventionValidator {
                 || !v10.repository().equals(v11.repository())
                 || !v10.commit().equals(v11.commit())
                 || !v10.license().equals(v11.license())
-                || v10.entries().size() != v11.entries().size()
-                || !v11.profile().equals(derivedCensus.census().profile())
+                || v10.entries().size() != v11.entries().size()) {
+            throw new IllegalArgumentException("Prospective intervention outer identity is invalid");
+        }
+    }
+
+    private static void validateCensusIdentity(CorpusManifest v11, ProspectiveCensusReport derivedCensus) {
+        if (!v11.profile().equals(derivedCensus.census().profile())
                 || !v11.repository().equals(derivedCensus.census().repository())
                 || !v11.commit().equals(derivedCensus.census().commit())
                 || v11.entries().size() != derivedCensus.census().entries().size()) {

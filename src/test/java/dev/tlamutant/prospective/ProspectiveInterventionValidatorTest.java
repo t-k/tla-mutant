@@ -25,6 +25,14 @@ final class ProspectiveInterventionValidatorTest {
     void bindsTheSelectedReviewPredicateToTheSameRootEntryAndCandidate() throws Exception {
         Fixture fixture = fixture();
 
+        ValidatedCorpusManifest preregistered = ProspectiveInterventionValidator.validateManifest(
+                fixture.v10(),
+                fixture.v11(),
+                fixture.dossier(),
+                fixture.ledger(),
+                fixture.review(),
+                GLOBAL);
+
         ValidatedCorpusManifest validated = ProspectiveInterventionValidator.validate(
                 fixture.v10(),
                 fixture.v11(),
@@ -34,10 +42,26 @@ final class ProspectiveInterventionValidatorTest {
                 fixture.derivedCensus(),
                 GLOBAL);
 
+        assertEquals("prospective-v11", preregistered.purpose());
         assertEquals("prospective-v11", validated.purpose());
         assertEquals(
                 List.of("ReviewedInvariant"),
                 validated.manifest().entries().getFirst().adoptedTargetInvariants());
+    }
+
+    @Test
+    void preregistrationValidationDoesNotRequireOutcomeBearingCensusData() throws Exception {
+        Fixture fixture = fixture();
+
+        ValidatedCorpusManifest validated = ProspectiveInterventionValidator.validateManifest(
+                fixture.v10(),
+                fixture.v11(),
+                fixture.dossier(),
+                fixture.ledger(),
+                fixture.review(),
+                GLOBAL);
+
+        assertEquals(fixture.v11(), validated.manifest());
     }
 
     @Test
