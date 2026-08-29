@@ -14,10 +14,14 @@ import dev.tlamutant.experiment.CorpusExperimentReport;
 import dev.tlamutant.experiment.CorpusExperimentRunner;
 import dev.tlamutant.experiment.ExperimentReport;
 import dev.tlamutant.experiment.ExperimentRunner;
+import dev.tlamutant.experiment.GcdStratifiedReport;
 import dev.tlamutant.report.AtomicJsonWriter;
+import dev.tlamutant.report.AtomicTextWriter;
 import dev.tlamutant.report.CorpusMarkdownReportWriter;
+import dev.tlamutant.report.GcdStratifiedMarkdownWriter;
 import dev.tlamutant.report.JsonReportWriter;
 import dev.tlamutant.report.MarkdownReportWriter;
+import dev.tlamutant.security.Digests;
 import dev.tlamutant.tlc.TlcRunner;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,6 +37,7 @@ import picocli.CommandLine;
             Main.ExperimentCommand.class,
             Main.CensusCommand.class,
             Main.GcdStratifiedCensusCommand.class,
+            Main.GcdStratifiedExperimentCommand.class,
             Main.CorpusExperimentCommand.class,
             Main.ValidateManifestCommand.class
         })
@@ -149,6 +154,70 @@ public final class Main implements Runnable {
             CensusConformanceValidator.validate(manifest, census);
             System.out.println(mapper.writeValueAsString(census));
             return 0;
+        }
+    }
+
+    @CommandLine.Command(
+            name = "gcd-stratified-experiment",
+            mixinStandardHelpOptions = true,
+            description = "Run the preregistered corpus only after validating its frozen GCD census.")
+    static final class GcdStratifiedExperimentCommand implements Callable<Integer> {
+        @CommandLine.Option(names = "--manifest", required = true)
+        Path manifestPath;
+
+        @CommandLine.Option(names = "--census-report", required = true)
+        Path censusReportPath;
+
+        @CommandLine.Option(names = "--policy", required = true)
+        Path policyPath;
+
+        @CommandLine.Option(names = "--tools-jar", required = true)
+        Path toolsJar;
+
+        @CommandLine.Option(names = "--cache-dir", required = true)
+        Path cacheDirectory;
+
+        @CommandLine.Option(names = "--json-report", required = true)
+        Path jsonReportPath;
+
+        @CommandLine.Option(names = "--markdown-report", required = true)
+        Path markdownReportPath;
+
+        @Override
+        public Integer call() throws Exception {
+            ObjectMapper mapper = new ObjectMapper();
+            CorpusManifest manifest = mapper.readValue(manifestPath.toFile(), CorpusManifest.class);
+            ExecutionPolicy policy = mapper.readValue(policyPath.toFile(), ExecutionPolicy.class);
+            StratifiedManifestValidator.validate(manifest, policy.limits());
+            Path censusPath = censusReportPath.toAbsolutePath().normalize();
+            if (!Files.isRegularFile(censusPath) || Files.isSymbolicLink(censusPath)) {
+                throw new IllegalArgumentException("Frozen census must be a real regular file");
+            }
+            long maximumCensusBytes = Math.addExact(
+                    Math.multiplyExact(
+                            policy.limits().stdoutBytes(), manifest.entries().size()),
+                    1_048_576L);
+            long censusSizeBytes = Files.size(censusPath);
+            if (censusSizeBytes <= 0 || censusSizeBytes > maximumCensusBytes) {
+                throw new IllegalArgumentException("Frozen census size is outside the exact corpus bound");
+            }
+            CorpusCensusReport census = mapper.readValue(censusPath.toFile(), CorpusCensusReport.class);
+            CensusConformanceValidator.validate(manifest, census);
+            String censusSha256 = Digests.sha256(censusPath, maximumCensusBytes);
+
+            Path applicationJar = Path.of(Main.class
+                    .getProtectionDomain()
+                    .getCodeSource()
+                    .getLocation()
+                    .toURI());
+            CorpusExperimentReport experiment =
+                    new CorpusExperimentRunner(applicationJar, toolsJar, cacheDirectory, policy).run(manifest);
+            GcdStratifiedReport report =
+                    GcdStratifiedReport.create(manifest, census, censusSha256, censusSizeBytes, experiment);
+            new AtomicJsonWriter().write(jsonReportPath, report);
+            new AtomicTextWriter().write(markdownReportPath, new GcdStratifiedMarkdownWriter().render(report));
+            System.out.println(mapper.writeValueAsString(report));
+            return experiment.completedEntries() == experiment.entryCount() ? 0 : 2;
         }
     }
 
