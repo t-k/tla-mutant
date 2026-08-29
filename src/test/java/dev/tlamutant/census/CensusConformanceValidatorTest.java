@@ -83,6 +83,30 @@ final class CensusConformanceValidatorTest {
                 () -> CensusConformanceValidator.validate(manifest, report(manifest, 6)));
     }
 
+    @Test
+    void mutationGateRequiresSchemaTwoWithExactInputIdentity() {
+        CorpusManifest manifest = manifest();
+        CorpusCensusReport legacy = report(manifest, 5);
+        CensusInputIdentity expected = inputs('a');
+        CorpusCensusReport bound = new CorpusCensusReport(
+                2, legacy.profile(), legacy.repository(), legacy.commit(), expected, legacy.entries());
+
+        assertSame(bound, CensusConformanceValidator.validateBoundInputs(manifest, bound, expected));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> CensusConformanceValidator.validateBoundInputs(manifest, legacy, expected));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> CensusConformanceValidator.validateBoundInputs(manifest, bound, inputs('d')));
+    }
+
+    private static CensusInputIdentity inputs(char first) {
+        return new CensusInputIdentity(
+                new CensusInputIdentity.Artifact(String.valueOf(first).repeat(64), 10),
+                new CensusInputIdentity.Artifact("b".repeat(64), 20),
+                new CensusInputIdentity.Artifact("c".repeat(64), 30));
+    }
+
     private static CorpusCensusReport report(CorpusManifest manifest, int firstClusterSiteCount) {
         List<CorpusCensusEntryResult> entries = new ArrayList<>();
         int candidate = 0;

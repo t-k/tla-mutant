@@ -28,12 +28,12 @@ public final class CorpusCensusRunner {
         this.policy = Objects.requireNonNull(policy, "policy");
     }
 
-    public CorpusCensusReport run(CorpusManifest manifest) {
+    public CorpusCensusReport run(CorpusManifest manifest, CensusInputIdentity inputs) {
         List<CorpusCensusEntryResult> results = new ArrayList<>();
         for (CorpusManifest.Entry entry : manifest.entries()) {
             results.add(runEntry(manifest, entry));
         }
-        return CorpusCensusReport.create(manifest.profile(), manifest.repository(), manifest.commit(), results);
+        return CorpusCensusReport.create(manifest.profile(), manifest.repository(), manifest.commit(), inputs, results);
     }
 
     private CorpusCensusEntryResult runEntry(CorpusManifest manifest, CorpusManifest.Entry entry) {

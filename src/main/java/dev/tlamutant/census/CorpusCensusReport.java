@@ -4,9 +4,16 @@ import java.util.List;
 import java.util.Objects;
 
 public record CorpusCensusReport(
-        int schemaVersion, String profile, String repository, String commit, List<CorpusCensusEntryResult> entries) {
+        int schemaVersion,
+        String profile,
+        String repository,
+        String commit,
+        CensusInputIdentity inputs,
+        List<CorpusCensusEntryResult> entries) {
     public CorpusCensusReport {
-        if (schemaVersion != 1) {
+        if ((schemaVersion != 1 && schemaVersion != 2)
+                || (schemaVersion == 1 && inputs != null)
+                || (schemaVersion == 2 && inputs == null)) {
             throw new IllegalArgumentException("Unsupported corpus census schema");
         }
         Objects.requireNonNull(profile, "profile");
@@ -15,8 +22,21 @@ public record CorpusCensusReport(
         entries = List.copyOf(entries);
     }
 
+    public CorpusCensusReport(
+            int schemaVersion,
+            String profile,
+            String repository,
+            String commit,
+            List<CorpusCensusEntryResult> entries) {
+        this(schemaVersion, profile, repository, commit, null, entries);
+    }
+
     public static CorpusCensusReport create(
-            String profile, String repository, String commit, List<CorpusCensusEntryResult> entries) {
-        return new CorpusCensusReport(1, profile, repository, commit, entries);
+            String profile,
+            String repository,
+            String commit,
+            CensusInputIdentity inputs,
+            List<CorpusCensusEntryResult> entries) {
+        return new CorpusCensusReport(2, profile, repository, commit, inputs, entries);
     }
 }

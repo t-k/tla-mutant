@@ -2,6 +2,7 @@ package dev.tlamutant.cli;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.tlamutant.census.CensusConformanceValidator;
+import dev.tlamutant.census.CensusInputIdentity;
 import dev.tlamutant.census.CorpusCensusReport;
 import dev.tlamutant.census.CorpusCensusRunner;
 import dev.tlamutant.census.GcdCensusAnalyzer;
@@ -18,10 +19,12 @@ import dev.tlamutant.experiment.GcdStratifiedReport;
 import dev.tlamutant.report.AtomicJsonWriter;
 import dev.tlamutant.report.AtomicTextWriter;
 import dev.tlamutant.report.CorpusMarkdownReportWriter;
+import dev.tlamutant.report.FrozenJsonWriter;
 import dev.tlamutant.report.GcdStratifiedMarkdownWriter;
 import dev.tlamutant.report.JsonReportWriter;
 import dev.tlamutant.report.MarkdownReportWriter;
-import dev.tlamutant.security.Digests;
+import dev.tlamutant.security.BoundedFileSnapshot;
+import dev.tlamutant.security.TemporaryFileSnapshot;
 import dev.tlamutant.tlc.TlcRunner;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,6 +47,10 @@ import picocli.CommandLine;
             Main.ValidateManifestCommand.class
         })
 public final class Main implements Runnable {
+    private static final long MAXIMUM_MANIFEST_BYTES = 8L * 1024 * 1024;
+    private static final long MAXIMUM_POLICY_BYTES = 1024L * 1024;
+    private static final long MAXIMUM_TOOLS_BYTES = 128L * 1024 * 1024;
+
     public static void main(String[] arguments) {
         System.exit(new CommandLine(new Main()).execute(arguments));
     }
@@ -139,21 +146,41 @@ public final class Main implements Runnable {
         @CommandLine.Option(names = "--census-report", required = true)
         Path censusReportPath;
 
+        @CommandLine.Option(names = "--failed-census-report", required = true)
+        Path failedCensusReportPath;
+
         @Override
         public Integer call() throws Exception {
             ObjectMapper mapper = new ObjectMapper();
-            CorpusManifest manifest = mapper.readValue(manifestPath.toFile(), CorpusManifest.class);
-            ExecutionPolicy policy = mapper.readValue(policyPath.toFile(), ExecutionPolicy.class);
+            BoundedFileSnapshot manifestSnapshot = BoundedFileSnapshot.read(manifestPath, MAXIMUM_MANIFEST_BYTES);
+            BoundedFileSnapshot policySnapshot = BoundedFileSnapshot.read(policyPath, MAXIMUM_POLICY_BYTES);
+            BoundedFileSnapshot toolsSnapshot = BoundedFileSnapshot.read(toolsJar, MAXIMUM_TOOLS_BYTES);
+            CorpusManifest manifest = manifestSnapshot.parse(mapper, CorpusManifest.class);
+            ExecutionPolicy policy = policySnapshot.parse(mapper, ExecutionPolicy.class);
             StratifiedManifestValidator.validate(manifest, policy.limits());
+            CensusInputIdentity inputs = inputs(manifestSnapshot, policySnapshot, toolsSnapshot);
             Path applicationJar = Path.of(Main.class
                     .getProtectionDomain()
                     .getCodeSource()
                     .getLocation()
                     .toURI());
-            CorpusCensusReport census =
-                    new CorpusCensusRunner(applicationJar, toolsJar, cacheDirectory, policy).run(manifest);
-            new AtomicJsonWriter().write(censusReportPath, census);
-            CensusConformanceValidator.validate(manifest, census);
+            CorpusCensusReport census;
+            try (TemporaryFileSnapshot frozenTools = TemporaryFileSnapshot.create(toolsSnapshot, "tla2tools.jar")) {
+                census = new CorpusCensusRunner(applicationJar, frozenTools.path(), cacheDirectory, policy)
+                        .run(manifest, inputs);
+            }
+            Path validOutput = censusReportPath.toAbsolutePath().normalize();
+            Path failedOutput = failedCensusReportPath.toAbsolutePath().normalize();
+            if (validOutput.equals(failedOutput)) {
+                throw new IllegalArgumentException("Valid and failed census reports require different paths");
+            }
+            try {
+                CensusConformanceValidator.validateBoundInputs(manifest, census, inputs);
+            } catch (RuntimeException failure) {
+                new FrozenJsonWriter().writeNew(failedOutput, census);
+                throw failure;
+            }
+            new FrozenJsonWriter().writeNew(validOutput, census);
             System.out.println(mapper.writeValueAsString(census));
             return 0;
         }
@@ -169,6 +196,9 @@ public final class Main implements Runnable {
 
         @CommandLine.Option(names = "--census-report", required = true)
         Path censusReportPath;
+
+        @CommandLine.Option(names = "--expected-census-sha256", required = true)
+        String expectedCensusSha256;
 
         @CommandLine.Option(names = "--policy", required = true)
         Path policyPath;
@@ -188,39 +218,52 @@ public final class Main implements Runnable {
         @Override
         public Integer call() throws Exception {
             ObjectMapper mapper = new ObjectMapper();
-            CorpusManifest manifest = mapper.readValue(manifestPath.toFile(), CorpusManifest.class);
-            ExecutionPolicy policy = mapper.readValue(policyPath.toFile(), ExecutionPolicy.class);
+            BoundedFileSnapshot manifestSnapshot = BoundedFileSnapshot.read(manifestPath, MAXIMUM_MANIFEST_BYTES);
+            BoundedFileSnapshot policySnapshot = BoundedFileSnapshot.read(policyPath, MAXIMUM_POLICY_BYTES);
+            BoundedFileSnapshot toolsSnapshot = BoundedFileSnapshot.read(toolsJar, MAXIMUM_TOOLS_BYTES);
+            CorpusManifest manifest = manifestSnapshot.parse(mapper, CorpusManifest.class);
+            ExecutionPolicy policy = policySnapshot.parse(mapper, ExecutionPolicy.class);
             StratifiedManifestValidator.validate(manifest, policy.limits());
-            Path censusPath = censusReportPath.toAbsolutePath().normalize();
-            if (!Files.isRegularFile(censusPath) || Files.isSymbolicLink(censusPath)) {
-                throw new IllegalArgumentException("Frozen census must be a real regular file");
-            }
             long maximumCensusBytes = Math.addExact(
                     Math.multiplyExact(
                             policy.limits().stdoutBytes(), manifest.entries().size()),
                     1_048_576L);
-            long censusSizeBytes = Files.size(censusPath);
-            if (censusSizeBytes <= 0 || censusSizeBytes > maximumCensusBytes) {
-                throw new IllegalArgumentException("Frozen census size is outside the exact corpus bound");
+            BoundedFileSnapshot censusSnapshot = BoundedFileSnapshot.read(censusReportPath, maximumCensusBytes);
+            if (expectedCensusSha256 == null
+                    || !expectedCensusSha256.matches("[0-9a-f]{64}")
+                    || !expectedCensusSha256.equals(censusSnapshot.sha256())) {
+                throw new IllegalArgumentException("Frozen census SHA-256 does not match the trusted expected value");
             }
-            CorpusCensusReport census = mapper.readValue(censusPath.toFile(), CorpusCensusReport.class);
-            CensusConformanceValidator.validate(manifest, census);
-            String censusSha256 = Digests.sha256(censusPath, maximumCensusBytes);
+            CorpusCensusReport census = censusSnapshot.parse(mapper, CorpusCensusReport.class);
+            CensusInputIdentity inputs = inputs(manifestSnapshot, policySnapshot, toolsSnapshot);
+            CensusConformanceValidator.validateBoundInputs(manifest, census, inputs);
 
             Path applicationJar = Path.of(Main.class
                     .getProtectionDomain()
                     .getCodeSource()
                     .getLocation()
                     .toURI());
-            CorpusExperimentReport experiment =
-                    new CorpusExperimentRunner(applicationJar, toolsJar, cacheDirectory, policy).run(manifest);
-            GcdStratifiedReport report =
-                    GcdStratifiedReport.create(manifest, census, censusSha256, censusSizeBytes, experiment);
+            CorpusExperimentReport experiment;
+            try (TemporaryFileSnapshot frozenTools = TemporaryFileSnapshot.create(toolsSnapshot, "tla2tools.jar")) {
+                experiment = new CorpusExperimentRunner(applicationJar, frozenTools.path(), cacheDirectory, policy)
+                        .run(manifest);
+            }
+            GcdStratifiedReport report = GcdStratifiedReport.create(
+                    manifest, census, censusSnapshot.sha256(), censusSnapshot.sizeBytes(), experiment);
             new AtomicJsonWriter().write(jsonReportPath, report);
             new AtomicTextWriter().write(markdownReportPath, new GcdStratifiedMarkdownWriter().render(report));
             System.out.println(mapper.writeValueAsString(report));
             return experiment.completedEntries() == experiment.entryCount() ? 0 : 2;
         }
+    }
+
+    private static CensusInputIdentity inputs(
+            BoundedFileSnapshot manifest, BoundedFileSnapshot policy, BoundedFileSnapshot tools) {
+        return new CensusInputIdentity(artifact(manifest), artifact(policy), artifact(tools));
+    }
+
+    private static CensusInputIdentity.Artifact artifact(BoundedFileSnapshot snapshot) {
+        return new CensusInputIdentity.Artifact(snapshot.sha256(), snapshot.sizeBytes());
     }
 
     @CommandLine.Command(

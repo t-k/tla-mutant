@@ -10,6 +10,14 @@ import java.util.Set;
 public final class CensusConformanceValidator {
     private CensusConformanceValidator() {}
 
+    public static CorpusCensusReport validateBoundInputs(
+            CorpusManifest manifest, CorpusCensusReport census, CensusInputIdentity expectedInputs) {
+        if (census.schemaVersion() != 2 || !Objects.equals(census.inputs(), expectedInputs)) {
+            throw new IllegalArgumentException("Census inputs do not match the exact experiment inputs");
+        }
+        return validate(manifest, census);
+    }
+
     public static CorpusCensusReport validate(CorpusManifest manifest, CorpusCensusReport census) {
         Objects.requireNonNull(manifest, "manifest");
         Objects.requireNonNull(census, "census");
