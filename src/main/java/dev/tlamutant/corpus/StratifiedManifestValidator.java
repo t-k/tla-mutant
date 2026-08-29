@@ -40,6 +40,7 @@ public final class StratifiedManifestValidator {
             if (!ids.add(entry.id())) {
                 throw new IllegalArgumentException("Corpus entry IDs must be unique");
             }
+            requireIdentifier(entry.domain(), "domain");
             domains.add(entry.domain());
             CorpusManifest.Selection selection = Objects.requireNonNull(entry.selection(), "selection");
             requireIdentifier(selection.familyCluster(), "familyCluster");
@@ -82,8 +83,20 @@ public final class StratifiedManifestValidator {
     }
 
     private static void requireRationale(String rationale) {
-        if (rationale == null || rationale.isBlank() || rationale.length() > 500) {
+        if (rationale == null
+                || rationale.isBlank()
+                || rationale.length() > 500
+                || rationale.codePoints().anyMatch(StratifiedManifestValidator::isMisleadingCodePoint)) {
             throw new IllegalArgumentException("selectionRationale must contain 1 to 500 characters");
         }
+    }
+
+    private static boolean isMisleadingCodePoint(int codePoint) {
+        return Character.isISOControl(codePoint)
+                || codePoint == 0x061C
+                || codePoint == 0x200E
+                || codePoint == 0x200F
+                || (codePoint >= 0x202A && codePoint <= 0x202E)
+                || (codePoint >= 0x2066 && codePoint <= 0x2069);
     }
 }

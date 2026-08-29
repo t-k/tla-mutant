@@ -104,6 +104,28 @@ final class StratifiedManifestValidatorTest {
         assertThrows(IllegalArgumentException.class, () -> StratifiedManifestValidator.validate(oversized, GLOBAL));
     }
 
+    @Test
+    void rejectsUnboundedOrMisleadingIdentityText() {
+        CorpusManifest oversizedId =
+                withEntry(0, withId(manifest(5, 10).entries().get(0), "a".repeat(65)));
+        CorpusManifest oversizedDomain =
+                withEntry(0, withDomain(manifest(5, 10).entries().get(0), "a".repeat(65)));
+        CorpusManifest bidiDomain =
+                withEntry(0, withDomain(manifest(5, 10).entries().get(0), "domain\u202Ename"));
+        CorpusManifest controlRationale = replaceSelection(
+                5, selection("gcd-enriched", "lifecycle-or-pc-ordering", "cluster-5", "reason\u001B[31m"));
+
+        for (CorpusManifest invalid : List.of(oversizedId, oversizedDomain, bidiDomain, controlRationale)) {
+            assertThrows(IllegalArgumentException.class, () -> StratifiedManifestValidator.validate(invalid, GLOBAL));
+        }
+    }
+
+    private static CorpusManifest withEntry(int index, CorpusManifest.Entry replacement) {
+        List<CorpusManifest.Entry> entries = new ArrayList<>(manifest(5, 10).entries());
+        entries.set(index, replacement);
+        return withSelections(entries);
+    }
+
     private static CorpusManifest replaceSelection(int index, CorpusManifest.Selection selection) {
         List<CorpusManifest.Entry> entries = new ArrayList<>(manifest(5, 10).entries());
         entries.set(index, withSelection(entries.get(index), selection));

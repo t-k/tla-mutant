@@ -14,6 +14,7 @@ public final class ManifestValidator {
     private static final long MAX_TOTAL_SOURCE_BYTES = 32L * 1024 * 1024;
     private static final int MAX_INVARIANTS_PER_ENTRY = 64;
     private static final Pattern OPERATOR_NAME = Pattern.compile("[A-Za-z_][A-Za-z0-9_]{0,127}");
+    private static final Pattern ENTRY_ID = Pattern.compile("[a-z0-9][a-z0-9-]{0,63}");
 
     private ManifestValidator() {}
 
@@ -21,8 +22,8 @@ public final class ManifestValidator {
         Objects.requireNonNull(entry, "entry");
         requireText(entry.id(), "id");
         SafeRelativePath id = SafeRelativePath.parse(entry.id());
-        if (id.value().contains("/")) {
-            throw new IllegalArgumentException("id must be one portable path segment");
+        if (id.value().contains("/") || !ENTRY_ID.matcher(id.value()).matches()) {
+            throw new IllegalArgumentException("id must be one safe bounded identifier");
         }
         requireText(entry.domain(), "domain");
         SafeRelativePath rootModule = SafeRelativePath.parse(entry.rootModule());
