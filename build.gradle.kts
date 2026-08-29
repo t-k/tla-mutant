@@ -1,3 +1,4 @@
+import org.gradle.api.tasks.bundling.AbstractArchiveTask
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -213,6 +214,13 @@ tasks.compileJava {
 
 tasks.jar {
     manifest.attributes["Main-Class"] = application.mainClass.get()
+}
+
+tasks.withType<AbstractArchiveTask>().configureEach {
+    isPreserveFileTimestamps = false
+    isReproducibleFileOrder = true
+    filePermissions { unix("0644") }
+    dirPermissions { unix("0755") }
 }
 
 val fatJar by tasks.registering(Jar::class) {
