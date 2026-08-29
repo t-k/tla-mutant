@@ -68,14 +68,25 @@ public final class ProspectiveClosureValidator {
     private static ProspectiveClosureAssessment.Outcome classify(
             ProspectiveReviewDossier.Candidate candidate, MutationResult source, MutationResult intervention) {
         if (!ProspectiveDiscoveryReport.isEligible(source)
+                || !"GCD".equals(source.family())
+                || !candidate.definition().equals(source.definition())
+                || !candidate.originalGuard().equals(source.original())
+                || !candidate.replacement().equals(source.replacement())
                 || !candidate.executionStatus().equals(source.executionStatus())
                 || !candidate.oracleOutcome().equals(source.oracleOutcome())
                 || !candidate.stateRelation().equals(source.stateRelation())
+                || !candidate.verdict().equals(source.verdict())
+                || candidate.baselineStateCount() != source.baselineStateCount()
+                || candidate.mutantStateCount() != source.mutantStateCount()
                 || !candidate.mutantOnlyWitness().equals(source.mutantOnlyWitness())) {
             throw new IllegalArgumentException("Prospective source candidate no longer matches the frozen dossier");
         }
         if (intervention == null) {
             return unresolved(candidate.key(), source, null, "Selected intervention result is missing");
+        }
+        if (!sameMutation(source, intervention)) {
+            return unresolved(
+                    candidate.key(), source, intervention, "Selected intervention mutant identity differs from v10");
         }
         KillAttribution attribution = intervention.attribution();
         if (attribution == null) {
@@ -111,6 +122,14 @@ public final class ProspectiveClosureValidator {
             return unresolved(candidate.key(), source, intervention, "Full adopted-oracle kill evidence is incomplete");
         }
         return outcome(candidate.key(), "CLOSED", "All preregistered closure conditions passed", source, intervention);
+    }
+
+    private static boolean sameMutation(MutationResult source, MutationResult intervention) {
+        return "GCD".equals(intervention.family())
+                && source.family().equals(intervention.family())
+                && source.definition().equals(intervention.definition())
+                && source.original().equals(intervention.original())
+                && source.replacement().equals(intervention.replacement());
     }
 
     private static ProspectiveClosureAssessment.Outcome unresolved(

@@ -42,6 +42,21 @@ final class ProspectiveClosureValidatorTest {
         assertEquals("CLOSED", assessment.outcomes().getFirst().status());
     }
 
+    @Test
+    void rejectsASelectedIdWhoseMutationDefinitionWasSubstituted() throws Exception {
+        Fixture fixture = fixture(true);
+        ObjectNode interventionJson = (ObjectNode) mapper.valueToTree(fixture.intervention());
+        ObjectNode target = (ObjectNode) findResult(interventionJson, ENTRY, CANDIDATE);
+        target.put("definition", "SubstitutedDefinition");
+        ProspectiveDiscoveryReport substituted = mapper.treeToValue(interventionJson, ProspectiveDiscoveryReport.class);
+
+        ProspectiveClosureAssessment assessment = ProspectiveClosureValidator.evaluate(
+                fixture.dossier(), fixture.ledger(), fixture.review(), fixture.source(), substituted);
+
+        assertEquals("UNRESOLVED", assessment.closureStatus());
+        assertEquals("UNRESOLVED", assessment.outcomes().getFirst().status());
+    }
+
     private Fixture fixture(boolean corrected) throws Exception {
         ProspectiveReviewDossier dossier = read(
                 Path.of("docs/experiments/gcd-prospective-review-dossier-v10.json"), ProspectiveReviewDossier.class);
@@ -55,7 +70,7 @@ final class ProspectiveClosureValidatorTest {
         ProspectiveDiscoveryReport source =
                 read(Path.of("docs/experiments/gcd-prospective-v10.json"), ProspectiveDiscoveryReport.class);
         JsonNode interventionJson = mapper.readTree(
-                Path.of("docs/experiments/gcd-prospective-v11.json").toFile());
+                Path.of("docs/experiments/gcd-prospective-v11-incomplete.json").toFile());
         if (corrected) {
             JsonNode sourceResult = findResult(sourceNode(source), ENTRY, CANDIDATE);
             ObjectNode target = (ObjectNode) findResult(interventionJson, ENTRY, CANDIDATE);

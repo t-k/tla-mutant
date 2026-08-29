@@ -750,6 +750,12 @@ public final class Main implements Runnable {
         @CommandLine.Option(names = "--v11-result", required = true)
         Path v11Result;
 
+        @CommandLine.Option(
+                names = "--execution-application",
+                required = true,
+                description = "Application JAR whose digest is bound by the experiment receipt.")
+        Path executionApplication;
+
         @CommandLine.Option(names = "--cache-dir", required = true)
         Path cacheDirectory;
 
@@ -763,7 +769,7 @@ public final class Main implements Runnable {
             if (resultPath.equals(outputPath) || Files.exists(outputPath)) {
                 throw new IllegalArgumentException("Prospective closure result and output paths must be disjoint");
             }
-            Map<String, Path> paths = inputs.paths(applicationJar());
+            Map<String, Path> paths = inputs.paths(executionApplication);
             paths.put("census-receipt", censusReceipt);
             paths.put("v11-census", v11Census);
             ProspectiveInterventionPreflight.ValidatedInputs validated = new ProspectiveInterventionPreflight()

@@ -13,5 +13,10 @@ final class ProspectiveInterventionCommandTest {
         assertTrue(command.getSubcommands().containsKey("prospective-intervention-census"));
         assertTrue(command.getSubcommands().containsKey("prospective-intervention-experiment"));
         assertTrue(command.getSubcommands().containsKey("validate-prospective-closure"));
+        assertTrue(command.getSubcommands()
+                .get("validate-prospective-closure")
+                .getCommandSpec()
+                .optionsMap()
+                .containsKey("--execution-application"));
     }
 }
