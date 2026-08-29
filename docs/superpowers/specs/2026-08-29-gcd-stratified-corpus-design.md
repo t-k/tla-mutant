@@ -56,16 +56,18 @@ The first experiment artifacts and `corpus/manifest.json` remain unchanged. The 
 
 | ID | Domain | Stratum | Repository files | Prospective rationale |
 | --- | --- | --- | --- | --- |
-| `lock` | mutual exclusion | guarded-admission-positive-control | `specifications/locks_auxiliary_vars/Lock.tla`, `Lock.cfg` | `l1` separates `lock = 1` from successor updates to `lock` and `pc`. |
-| `peterson` | mutual exclusion | guarded-admission-positive-control | `specifications/locks_auxiliary_vars/Peterson.tla`, `Peterson.cfg` | `a3` separates an admission guard from the `pc = "cs"` successor. |
+| `lamport-mutex` | distributed mutual exclusion | guarded-admission-positive-control | `specifications/lamport_mutex/MCLamportMutex.tla`, `LamportMutex.tla`, `MCLamportMutex.cfg` | `Enter` separates acknowledgement and ordering guards from the critical-section update. |
+| `dining-philosophers` | concurrency | lifecycle-or-pc-ordering | `specifications/DiningPhilosophers/DiningPhilosophers.tla`, `DiningPhilosophers.cfg` | `Think` and `Eat` separate program-counter guards from fork, hunger, and program-counter updates. |
 | `simple-allocator` | resource allocation | guarded-admission-positive-control | `specifications/allocator/SimpleAllocator.tla`, `SimpleAllocator.cfg` | `Allocate` separates availability from allocation updates. |
 | `voucher-life-cycle` | lifecycle | lifecycle-or-pc-ordering | `specifications/byihive/VoucherLifeCycle.tla`, `VoucherLifeCycle.cfg` | Lifecycle guards are separated from voucher-state updates. |
 | `tcommit` | transaction protocol | lifecycle-or-pc-ordering | `specifications/transaction_commit/TCommit.tla`, `TCommit.cfg` | `Prepare` separates the working-state guard from RM-state update. |
 | `missionaries-and-cannibals` | planning puzzle | type-only-gap-prospect | `specifications/MissionariesAndCannibals/MissionariesAndCannibals.tla`, `MissionariesAndCannibals.cfg` | Boat-load enablement is separated from shore and boat updates; `Solution` is a goal predicate, not an invariant oracle. |
 | `readers-writers` | concurrency | guarded-admission-positive-control | `specifications/ReadersWriters/MC.tla`, `ReadersWriters.tla`, `MC.cfg` | Reader/writer admission guards are separated from queue and ownership updates. |
-| `teaching-concurrency-simple` | concurrent program | lifecycle-or-pc-ordering | `specifications/TeachingConcurrency/Simple.tla`, `Simple.cfg` | Program-counter guards are separated from variable and PC updates. |
+| `slush-small` | probabilistic consensus | type-only-gap-prospect | `specifications/SlushProtocol/Slush.tla`, `SlushSmall.cfg` | Color and program-counter guards are separated from pick, message, and program-counter updates in the fixed small model. |
 | `single-lane-bridge` | traffic safety | collision-or-capacity | `specifications/SingleLaneBridge/MC.tla`, `SingleLaneBridge.tla`, `MC.cfg` | `MoveInsideBridge` separates membership and collision guards from location updates. |
 | `bcast-folklore` | reliable broadcast | type-only-gap-prospect | `specifications/bcastFolklore/bcastFolklore.tla`, `bcastFolklore.cfg` | The crash-bound guard is separated from crash-state updates while the existing configuration declares only its existing state invariant. |
+
+The original source-shape shortlist included `lock`, `peterson`, and `teaching-concurrency-simple`. Before any census or mutation run, dependency inspection showed that all three import `TLAPS`, which is supplied by the separate TLAPM proof-library distribution rather than the pinned Examples revision or the pinned TLA+ Tools JAR. Adding that separate supply chain would widen the approved sandbox provenance boundary. The preregistration therefore replaces them with `lamport-mutex`, `dining-philosophers`, and `slush-small`, selected by the same outcome-free source-shape criteria. No mutation outcome was inspected when making this amendment.
 
 No family cluster may contribute more than 25% of all GCD sites. If the preregistered census violates this limit, the mutation phase must not start; a replacement cohort requires a new versioned preregistration rather than an in-place edit. The report must show both specification-weighted and site-weighted denominators so a large specification cannot silently dominate the result.
 

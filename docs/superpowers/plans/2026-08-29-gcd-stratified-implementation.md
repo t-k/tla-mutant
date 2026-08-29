@@ -455,7 +455,7 @@ Use a temporary clone or GitHub raw blobs at commit `ed3cc4c35f7001d7cec08a22dcd
 
 - [ ] **Step 2: Write the manifest with the approved cohort**
 
-Copy the five control entries byte-for-byte in meaning from `corpus/manifest.json`, adding selection metadata. Add the ten enriched entries and their existing configured State Invariants. Do not add or remove an invariant merely to change survival. For MissionariesAndCannibals, omit `Solution` because it is a goal predicate configured to be reached, not a State Invariant oracle; retain its declared type invariant.
+Copy the five control entries byte-for-byte in meaning from `corpus/manifest.json`, adding selection metadata. Add the ten enriched entries and their existing configured State Invariants. Do not add or remove an invariant merely to change survival. For MissionariesAndCannibals, omit `Solution` because it is a goal predicate configured to be reached, not a State Invariant oracle; retain its declared type invariant. Apply the outcome-free dependency amendment in the design: use `lamport-mutex`, `dining-philosophers`, and `slush-small` instead of the three candidates that require the separately distributed TLAPM proof library.
 
 - [ ] **Step 3: Add manifest identity tests**
 

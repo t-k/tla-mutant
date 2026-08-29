@@ -1,0 +1,222 @@
+{
+  "version": 2,
+  "profile": "gcd-stratified-v1",
+  "repository": "https://github.com/tlaplus/Examples",
+  "commit": "ed3cc4c35f7001d7cec08a22dcd698dae7570dc3",
+  "license": "MIT",
+  "entries": [
+    {
+      "id": "channel",
+      "domain": "interface-protocol",
+      "rootModule": "Channel.tla",
+      "config": "Channel.cfg",
+      "files": [
+        {"path": "Channel.tla", "repositoryPath": "specifications/SpecifyingSystems/AsynchronousInterface/Channel.tla", "sha256": "8b2cbd4533a157ae0760e3117e3c008fb9a31dc3673005fc8b537d3879de1bfc", "sizeBytes": 761},
+        {"path": "Channel.cfg", "repositoryPath": "specifications/SpecifyingSystems/AsynchronousInterface/Channel.cfg", "sha256": "1d5437ab52c06defaa83bd3b860310e94865e2e19b60524d56c4de08f13c068f", "sizeBytes": 1085}
+      ],
+      "typeInvariants": ["TypeInvariant"],
+      "targetInvariants": [],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "selection": {"cohort": "control", "gcdStratum": "control-baseline", "familyCluster": "asynchronous-interface", "selectionRationale": "Small state-equal GCD control retained from the original vertical slice."}
+    },
+    {
+      "id": "nbacc-ray97",
+      "domain": "consensus",
+      "rootModule": "nbacc_ray97.tla",
+      "config": "nbacc_ray97.cfg",
+      "files": [
+        {"path": "nbacc_ray97.tla", "repositoryPath": "specifications/nbacc_ray97/nbacc_ray97.tla", "sha256": "c763b946f4135a439c67daa5b3d4ce55977726855b8af8198e453fc795c2f353", "sizeBytes": 4267},
+        {"path": "nbacc_ray97.cfg", "repositoryPath": "specifications/nbacc_ray97/nbacc_ray97.cfg", "sha256": "dc4f86156dab28a6b053805dade4dc803f851c681083d540bfdae2928d2e7871", "sizeBytes": 52}
+      ],
+      "typeInvariants": ["TypeOK"],
+      "targetInvariants": [],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "selection": {"cohort": "control", "gcdStratum": "control-baseline", "familyCluster": "nonblocking-atomic-commit", "selectionRationale": "State-equal distributed-protocol control retained from the original vertical slice."}
+    },
+    {
+      "id": "barrier",
+      "domain": "synchronization",
+      "rootModule": "Barrier.tla",
+      "config": "Barrier.cfg",
+      "files": [
+        {"path": "Barrier.tla", "repositoryPath": "specifications/barriers/Barrier.tla", "sha256": "e4a28b2900e3769602e700c3d474e5ac2147a1187ce80ef2f365a029abc5c220", "sizeBytes": 849},
+        {"path": "Barrier.cfg", "repositoryPath": "specifications/barriers/Barrier.cfg", "sha256": "493424bad25906d0c8202fc727fec04cec8edba8e09ab89ebab06a577e54d6e1", "sizeBytes": 76}
+      ],
+      "typeInvariants": ["TypeOK"],
+      "targetInvariants": [],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "selection": {"cohort": "control", "gcdStratum": "control-baseline", "familyCluster": "barrier", "selectionRationale": "State-equal synchronization control retained from the original vertical slice."}
+    },
+    {
+      "id": "token-ring",
+      "domain": "self-stabilization",
+      "rootModule": "TokenRing.tla",
+      "config": "TokenRing.cfg",
+      "files": [
+        {"path": "TokenRing.tla", "repositoryPath": "specifications/ewd426/TokenRing.tla", "sha256": "e13841dfa43b3bd65a35d53c0c7c02bf8de42bb6864bd202ba30b724b33a056f", "sizeBytes": 2124},
+        {"path": "TokenRing.cfg", "repositoryPath": "specifications/ewd426/TokenRing.cfg", "sha256": "8dcdfc79502bc6074033e444e96adb838b89224a53a00a4d21fac94a7a70c740", "sizeBytes": 141}
+      ],
+      "typeInvariants": ["TypeOK"],
+      "targetInvariants": [],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "selection": {"cohort": "control", "gcdStratum": "control-baseline", "familyCluster": "token-ring", "selectionRationale": "Larger state-equal control retained from the original vertical slice."}
+    },
+    {
+      "id": "asynchronous-termination-detection",
+      "domain": "termination-detection",
+      "rootModule": "AsyncTerminationDetection.tla",
+      "config": "AsyncTerminationDetection.cfg",
+      "files": [
+        {"path": "AsyncTerminationDetection.tla", "repositoryPath": "specifications/ewd998/AsyncTerminationDetection.tla", "sha256": "c1b15be68a73c6e5f69c5c09f2736870182a9b0765ad9860452240119911b030", "sizeBytes": 4783},
+        {"path": "AsyncTerminationDetection.cfg", "repositoryPath": "specifications/ewd998/AsyncTerminationDetection.cfg", "sha256": "6affac15002d814a67775f16affa001d9e01c2a758a9d35dbfbaccdd1fc9f5c6", "sizeBytes": 128}
+      ],
+      "typeInvariants": ["TypeOK"],
+      "targetInvariants": [],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "selection": {"cohort": "control", "gcdStratum": "control-baseline", "familyCluster": "termination-detection", "selectionRationale": "Configured-invariant kills and a state-equal GCD result make this a retained mixed control."}
+    },
+    {
+      "id": "lamport-mutex",
+      "domain": "distributed-mutual-exclusion",
+      "rootModule": "MCLamportMutex.tla",
+      "config": "MCLamportMutex.cfg",
+      "files": [
+        {"path": "MCLamportMutex.tla", "repositoryPath": "specifications/lamport_mutex/MCLamportMutex.tla", "sha256": "2ebf6f863f504f76cfcb4a3bc8228aae1c5a896e7f2f8d046f8ab763656ccca8", "sizeBytes": 243},
+        {"path": "LamportMutex.tla", "repositoryPath": "specifications/lamport_mutex/LamportMutex.tla", "sha256": "dfa726da541fb0515ad482c3b5ca82c81b6f54df6626c3b9edfcebedc2a9c05a", "sizeBytes": 8922},
+        {"path": "MCLamportMutex.cfg", "repositoryPath": "specifications/lamport_mutex/MCLamportMutex.cfg", "sha256": "b91d46fb0a2f3af22fa65147c4c971d5cb9e42d141f63ad9035aa30cad51d118", "sizeBytes": 153}
+      ],
+      "typeInvariants": ["TypeOK"],
+      "targetInvariants": ["BoundedNetwork", "Mutex"],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "selection": {"cohort": "gcd-enriched", "gcdStratum": "guarded-admission-positive-control", "familyCluster": "distributed-mutex", "selectionRationale": "Enter separates acknowledgement and ordering guards from the critical-section update."}
+    },
+    {
+      "id": "dining-philosophers",
+      "domain": "concurrency",
+      "rootModule": "DiningPhilosophers.tla",
+      "config": "DiningPhilosophers.cfg",
+      "files": [
+        {"path": "DiningPhilosophers.tla", "repositoryPath": "specifications/DiningPhilosophers/DiningPhilosophers.tla", "sha256": "2290c338922895e78990171ce5a5bfe80c9470bd5c9bb1ff8f58ed1563f6d4ff", "sizeBytes": 7827},
+        {"path": "DiningPhilosophers.cfg", "repositoryPath": "specifications/DiningPhilosophers/DiningPhilosophers.cfg", "sha256": "9a96d81b6117e554a654f0eec209f9e768527bd2b2693350ae38d8140b73a8d5", "sizeBytes": 142}
+      ],
+      "typeInvariants": ["TypeOK"],
+      "targetInvariants": ["ExclusiveAccess"],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "selection": {"cohort": "gcd-enriched", "gcdStratum": "lifecycle-or-pc-ordering", "familyCluster": "dining-philosophers", "selectionRationale": "Think and Eat separate program-counter guards from fork, hunger, and program-counter updates."}
+    },
+    {
+      "id": "simple-allocator",
+      "domain": "resource-allocation",
+      "rootModule": "SimpleAllocator.tla",
+      "config": "SimpleAllocator.cfg",
+      "files": [
+        {"path": "SimpleAllocator.tla", "repositoryPath": "specifications/allocator/SimpleAllocator.tla", "sha256": "39180889fb44ea7cbba47e97c2fa727a54c43f8f7ff983caf61d67eb0a2db0e3", "sizeBytes": 4494},
+        {"path": "SimpleAllocator.cfg", "repositoryPath": "specifications/allocator/SimpleAllocator.cfg", "sha256": "584308b2df46126ebb5423d58186ec149ae5048c348b6cb48f052fb3ec5305ca", "sizeBytes": 253}
+      ],
+      "typeInvariants": ["TypeInvariant"],
+      "targetInvariants": ["ResourceMutex"],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "selection": {"cohort": "gcd-enriched", "gcdStratum": "guarded-admission-positive-control", "familyCluster": "allocator", "selectionRationale": "Allocate separates resource availability from allocation updates."}
+    },
+    {
+      "id": "voucher-life-cycle",
+      "domain": "lifecycle",
+      "rootModule": "VoucherLifeCycle.tla",
+      "config": "VoucherLifeCycle.cfg",
+      "files": [
+        {"path": "VoucherLifeCycle.tla", "repositoryPath": "specifications/byihive/VoucherLifeCycle.tla", "sha256": "6eadee511ab80cc35f389104c8b558677ba5572ce621422a0f0ffdebdc72505f", "sizeBytes": 5739},
+        {"path": "VoucherLifeCycle.cfg", "repositoryPath": "specifications/byihive/VoucherLifeCycle.cfg", "sha256": "51c27e2b132c95a167abc28a23c9e0c2368f609f2f0b728dbfeff199e7d81d9a", "sizeBytes": 99}
+      ],
+      "typeInvariants": ["VTypeOK"],
+      "targetInvariants": ["VConsistent"],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "selection": {"cohort": "gcd-enriched", "gcdStratum": "lifecycle-or-pc-ordering", "familyCluster": "voucher-lifecycle", "selectionRationale": "Lifecycle guards are separated from voucher-state updates."}
+    },
+    {
+      "id": "tcommit",
+      "domain": "transaction-protocol",
+      "rootModule": "TCommit.tla",
+      "config": "TCommit.cfg",
+      "files": [
+        {"path": "TCommit.tla", "repositoryPath": "specifications/transaction_commit/TCommit.tla", "sha256": "98974d8c5ee007f4f62188737c20c7dcdb05af099cc53a59c8b8651331fd925d", "sizeBytes": 4122},
+        {"path": "TCommit.cfg", "repositoryPath": "specifications/transaction_commit/TCommit.cfg", "sha256": "a896b1bb937ac8fee372e6bc05029c1ffae64acbac7ca58b02e097c40862c415", "sizeBytes": 103}
+      ],
+      "typeInvariants": ["TCTypeOK"],
+      "targetInvariants": ["TCConsistent"],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "selection": {"cohort": "gcd-enriched", "gcdStratum": "lifecycle-or-pc-ordering", "familyCluster": "transaction-commit", "selectionRationale": "Prepare separates the working-state guard from the RM-state update."}
+    },
+    {
+      "id": "missionaries-and-cannibals",
+      "domain": "planning-puzzle",
+      "rootModule": "MissionariesAndCannibals.tla",
+      "config": "MissionariesAndCannibals.cfg",
+      "files": [
+        {"path": "MissionariesAndCannibals.tla", "repositoryPath": "specifications/MissionariesAndCannibals/MissionariesAndCannibals.tla", "sha256": "afb87e6ebc4af897ab9b27f90729c0170f061f8d95444a54035df1afaf21c65a", "sizeBytes": 15962},
+        {"path": "MissionariesAndCannibals.cfg", "repositoryPath": "specifications/MissionariesAndCannibals/MissionariesAndCannibals.cfg", "sha256": "8c0b9134393385ec605f5c6cd31e1215aef6f8c7b8b20ffe1e5261c614bcd5b8", "sizeBytes": 121}
+      ],
+      "typeInvariants": ["TypeOK"],
+      "targetInvariants": [],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "selection": {"cohort": "gcd-enriched", "gcdStratum": "type-only-gap-prospect", "familyCluster": "river-crossing", "selectionRationale": "Boat-load enablement is separated from shore and boat updates; Solution is a goal predicate and is excluded from the State Invariant oracle."}
+    },
+    {
+      "id": "readers-writers",
+      "domain": "concurrency",
+      "rootModule": "MC.tla",
+      "config": "MC.cfg",
+      "files": [
+        {"path": "MC.tla", "repositoryPath": "specifications/ReadersWriters/MC.tla", "sha256": "ebaa5772aab4758cfc62d249dcae493c60008ced982f428764212feb14a33366", "sizeBytes": 287},
+        {"path": "ReadersWriters.tla", "repositoryPath": "specifications/ReadersWriters/ReadersWriters.tla", "sha256": "3b51a02efbb409271f00133e32096459e4d0db2deb196dcbbee25638d0d07c8d", "sizeBytes": 3415},
+        {"path": "MC.cfg", "repositoryPath": "specifications/ReadersWriters/MC.cfg", "sha256": "71c402125bae63c3ac0cf685d990282ab50f8b360f1cfdc8749ad9c1a33f636f", "sizeBytes": 108}
+      ],
+      "typeInvariants": ["TypeOK"],
+      "targetInvariants": ["Safety"],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "selection": {"cohort": "gcd-enriched", "gcdStratum": "guarded-admission-positive-control", "familyCluster": "readers-writers", "selectionRationale": "Reader and writer admission guards are separated from queue and ownership updates."}
+    },
+    {
+      "id": "slush-small",
+      "domain": "probabilistic-consensus",
+      "rootModule": "Slush.tla",
+      "config": "SlushSmall.cfg",
+      "files": [
+        {"path": "Slush.tla", "repositoryPath": "specifications/SlushProtocol/Slush.tla", "sha256": "95303e105352d257abfd17feb6363948f728364a0aa47b043e43fd4118e3b16f", "sizeBytes": 15827},
+        {"path": "SlushSmall.cfg", "repositoryPath": "specifications/SlushProtocol/SlushSmall.cfg", "sha256": "61aff32a7e3d47874166d83bbdaf8216dc0f7b5692b6018696fbfb5b52104ba1", "sizeBytes": 333}
+      ],
+      "typeInvariants": ["TypeInvariant"],
+      "targetInvariants": [],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "selection": {"cohort": "gcd-enriched", "gcdStratum": "type-only-gap-prospect", "familyCluster": "avalanche-consensus", "selectionRationale": "Color and program-counter guards are separated from pick, message, and program-counter updates in the fixed small model."}
+    },
+    {
+      "id": "single-lane-bridge",
+      "domain": "traffic-safety",
+      "rootModule": "MC.tla",
+      "config": "MC.cfg",
+      "files": [
+        {"path": "MC.tla", "repositoryPath": "specifications/SingleLaneBridge/MC.tla", "sha256": "ffde8f33fd0c4fdf75e6e719637837397f3607550981e40516b5a56e2b70c75e", "sizeBytes": 638},
+        {"path": "SingleLaneBridge.tla", "repositoryPath": "specifications/SingleLaneBridge/SingleLaneBridge.tla", "sha256": "57315058ea10d408fd00bf6142bcd735d5848a0f835fbb6c3721a64b9e7465a5", "sizeBytes": 4695},
+        {"path": "MC.cfg", "repositoryPath": "specifications/SingleLaneBridge/MC.cfg", "sha256": "903e5e0e79daa9e074b619acf1ffabe167bc2c5b01232da2380d279726504045", "sizeBytes": 491}
+      ],
+      "typeInvariants": [],
+      "targetInvariants": ["Invariants"],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "selection": {"cohort": "gcd-enriched", "gcdStratum": "collision-or-capacity", "familyCluster": "single-lane-bridge", "selectionRationale": "MoveInsideBridge separates membership and collision guards from location updates."}
+    },
+    {
+      "id": "bcast-folklore",
+      "domain": "reliable-broadcast",
+      "rootModule": "bcastFolklore.tla",
+      "config": "bcastFolklore.cfg",
+      "files": [
+        {"path": "bcastFolklore.tla", "repositoryPath": "specifications/bcastFolklore/bcastFolklore.tla", "sha256": "1a5daf85a82219184ce6531d1b7600bf5dfc15dd04d98a75d06cf8109496ddd3", "sizeBytes": 6903},
+        {"path": "bcastFolklore.cfg", "repositoryPath": "specifications/bcastFolklore/bcastFolklore.cfg", "sha256": "2c919ef223d3eb8a7e59a4a7f5f3ce89bf27f22e3656c9d25c27e979f31e8147", "sizeBytes": 123}
+      ],
+      "typeInvariants": ["TypeOK"],
+      "targetInvariants": [],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "selection": {"cohort": "gcd-enriched", "gcdStratum": "type-only-gap-prospect", "familyCluster": "reliable-broadcast", "selectionRationale": "The crash-bound guard is separated from crash-state updates while the existing configuration declares only TypeOK."}
+    }
+  ]
+}
