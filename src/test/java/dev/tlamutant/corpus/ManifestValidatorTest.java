@@ -76,7 +76,8 @@ final class ManifestValidatorTest {
                 files,
                 List.of("TypeOK"),
                 List.of("Safety"),
-                new ExecutionPolicy.Limits(60, 512, 32, 64, 2048, 50, 1024, 1024, 5_000, 90));
+                new ExecutionPolicy.Limits(60, 512, 32, 64, 2048, 50, 1024, 1024, 5_000, 90),
+                null);
     }
 
     private static CorpusManifest.SourceFile file(String path) {
