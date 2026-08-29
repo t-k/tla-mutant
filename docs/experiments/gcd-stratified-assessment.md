@@ -4,7 +4,7 @@
 
 The hardened v8 run confirms that the 15-specification vertical slice can discover concrete State Invariant improvement candidates with a source-reconstructable, application- and corpus-bound preregistration boundary. It still does not justify implementing the full product scope.
 
-The run found nine reproducible witness-bearing `STATE_EXPANDING` GCD survivors across six specifications, six domains, and six family clusters. Six of 15 specifications had at least one expanding site, ten had at least one state-equal site, and five retained at least one unresolved site. Human usefulness review remains `pending`, so this validates candidate discovery and provenance rather than end-user value.
+The run found nine reproducible witness-bearing `STATE_EXPANDING` GCD survivors across six specifications, six domains, and six family clusters. Six of 15 specifications had at least one expanding site, ten had at least one state-equal site, and five retained at least one unresolved site. A downstream [user-delegated qualitative review](gcd-stratified-human-review.md) accepted `NoRequestAllocationOverlap` for `simple-allocator` as an adoption-worthy model-quality improvement, so the delegated vertical-slice usefulness gate is satisfied. This is not an external human or upstream-maintainer decision and is not evidence that stratification increased the candidate rate.
 
 ## Experimental Boundary
 
@@ -63,20 +63,20 @@ The control cohort produced four expanding sites from 14, while the enriched coh
 
 ## Candidate Review
 
-The candidate interpretation is unchanged from the historical v2, v5, and v7 proxy reviews because v8 reproduced the same outcome set.
+The proxy interpretation is unchanged from the historical v2, v5, and v7 runs because v8 reproduced the same outcome set. The final column records the later delegated agent decision without modifying the frozen execution report.
 
-| Specification | Plausible improvement | Proxy assessment |
-| --- | --- | --- |
-| `nbacc-ray97` | Add vote-consistency and decision-implies-vote-sent invariants. | Strong |
-| `asynchronous-termination-detection` | Register the existing `Safe == terminationDetected => terminated` predicate as a target State Invariant. | Strongest |
-| `dining-philosophers` | Derive local phase coherence between `pc`, hunger, and fork ownership. | Promising, domain review required |
-| `simple-allocator` | Add `NoRequestAllocationOverlap == \A c \in Clients : unsat[c] \cap alloc[c] = {}`. | Strong |
-| `missionaries-and-cannibals` | Investigate a state-only predecessor or capacity invariant. | Weak-to-promising, domain review required |
-| `glowing-raccoon-clean` | Add `HotImpliesNoHybrid == tee = "Hot" => hybrid = 0`. | Strong |
+| Specification | Plausible improvement | Proxy assessment | Delegated reviewer decision |
+| --- | --- | --- | --- |
+| `nbacc-ray97` | Add vote-consistency and decision-implies-vote-sent invariants. | Strong | `NEEDS_DOMAIN_OWNER`; split and name the two requirements. |
+| `asynchronous-termination-detection` | Register the existing `Safe == terminationDetected => terminated` predicate as a target State Invariant. | Strongest | `CONFIGURATION_FIX`; excluded as discovery evidence because the pinned cfg already registers `Safe`. |
+| `dining-philosophers` | Derive local phase coherence between `pc`, hunger, and fork ownership. | Promising, domain review required | Not reviewed in this four-candidate gate. |
+| `simple-allocator` | Add `NoRequestAllocationOverlap == \A c \in Clients : unsat[c] \cap alloc[c] = {}`. | Strong | `ACCEPT`; exact, inductive, nonvacuous, and nonredundant. |
+| `missionaries-and-cannibals` | Investigate a state-only predecessor or capacity invariant. | Weak-to-promising, domain review required | Not reviewed in this four-candidate gate. |
+| `glowing-raccoon-clean` | Add `HotImpliesNoHybrid == tee = "Hot" => hybrid = 0`. | Strong | `NEEDS_STRENGTHENING_AND_DOMAIN_OWNER`; reachable-state evidence exists, but the predicate is not 1-inductive alone. |
 
 ## Limitations
 
-- Human usefulness status remains `pending`. A domain owner may reject any proposal as redundant, intentionally omitted, or outside the abstraction boundary.
+- The execution artifact retains its historical `pending` field, while the downstream delegated review accepts one proposal for the vertical-slice gate. This does not represent acceptance by an external human domain owner or the upstream specification maintainer.
 - `cf1s-folklore` and `bcast-folklore` exceeded the fixed 100,000 canonical-state baseline limit. Their nine sites remain explicit unresolved terminal records.
 - Four completed-entry GCD runs ended in tool errors and remain unresolved.
 - Seven State Invariant kills remain unattributed because Type-only reruns are outside this slice.
@@ -86,6 +86,6 @@ The candidate interpretation is unchanged from the historical v2, v5, and v7 pro
 
 ## Recommendation
 
-Keep the implementation at vertical-slice scale. The next decision should be a short human review of the four strongest proposals. If at least one is accepted as a useful specification improvement, proceed to Type-only attribution and focused resolution of the four tool-error mutants. Do not implement the remaining long-form product sections yet.
+Keep the implementation at vertical-slice scale. The delegated reviewer gate has accepted one useful specification improvement, so the next justified work is Type-only attribution and focused resolution of the four tool-error mutants. Correct the omitted `Safe` target only through a newly preregistered corpus version. External human or upstream adoption remains separate. Do not implement the remaining long-form product sections yet.
 
-Raw v8 evidence is available in [the frozen census](gcd-stratified-census.json), [the JSON report](gcd-stratified.json), and [the readable report](gcd-stratified.md). Historical v7 evidence is documented in [its assessment](gcd-stratified-assessment-v7.md), and the failed v6 instrumentation remains documented separately.
+Raw v8 evidence is available in [the frozen census](gcd-stratified-census.json), [the JSON report](gcd-stratified.json), and [the readable report](gcd-stratified.md). The downstream decision is recorded in [the delegated review report](gcd-stratified-human-review.md). Historical v7 evidence is documented in [its assessment](gcd-stratified-assessment-v7.md), and the failed v6 instrumentation remains documented separately.

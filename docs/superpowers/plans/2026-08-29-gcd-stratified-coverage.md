@@ -105,7 +105,7 @@ Constraints:
 | O12 | lifecycle | Census and experiment leave no container, volume, process, or writable host output. | Critical | 2 | covered |
 | O13 | regression | A repository fixture proves a GCD-specific expanding/incomparable witness. | High | 2 | covered |
 | O14 | corpus | All 15 preregistered entries and at least three domains are reported without replacement. | High | 2 | covered_with_two_incomplete_baselines |
-| O15 | decision | The human-review gate is calculated from distinct specification, domain, and cluster identities. | High | 2 | automated_gate_covered_human_review_pending |
+| O15 | decision | The human-review gate is calculated from distinct specification, domain, and cluster identities. | High | 2 | delegated_review_complete_external_human_pending |
 
 ## Coverage Ledger
 
@@ -118,7 +118,7 @@ Constraints:
 | O11 | report writer hostile-input tests | generated artifact inspection | layer_overlap | covered | JSON and Markdown contain the same nine witnesses and all unresolved categories. |
 | O12 | sandbox containment test | post-run exact resource inspection | intentional_overlap | covered | No run-labeled container or volume remained after census or experiment. |
 | O13 | local TLC fixture | final public result consistency | regression_overlap | covered | Public candidates are not required for test success. |
-| O14–O15 | manifest/corpus run | assessment gate calculation | layer_overlap | automated_gate_covered | Six specifications, domains, and clusters meet the proxy gate; human usefulness remains pending. |
+| O14–O15 | manifest/corpus run | assessment and downstream delegated review | layer_overlap | delegated_review_complete_external_human_pending | Six specifications, domains, and clusters meet the proxy gate; delegated agent review accepts `NoRequestAllocationOverlap` and excludes the pre-existing `Safe` assertion from discovery evidence. The original external-human gate remains pending. |
 
 ## Test Scenarios
 
@@ -144,6 +144,8 @@ Constraints:
 - T18: Original and stratified reports coexist and README reproduction commands identify both.
 - T19: A read-only snapshotted corpus input still produces writable mutant workspaces and evaluates all fixture mutants.
 - T20: Two no-build-cache clean fat JAR builds from the same source are byte-identical and match the application identity in the frozen census.
+- T21: Downstream delegated review accepts only an exact, inductive, nonvacuous, nonredundant predicate aligned with the pinned source abstraction and records configuration artifacts separately.
+- T21 evidence: `docs/experiments/gcd-stratified-human-review.md` accepts `NoRequestAllocationOverlap`, records its action-by-action preservation argument, and excludes `Safe` because the pinned module and cfg already contain it.
 
 ## Optional Verification Suggestions
 
@@ -164,4 +166,4 @@ None. The user approved the exact 5-control/10-enriched design and delegated exe
 - D02: Type-only attribution remains deferred.
 - D03: Mixed positive/negative use of one GCD helper remains a conservative-eligibility debt.
 - D04: Deterministic malformed-output and interrupted-cleanup injection for census remains desirable before a general-purpose security claim.
-- D05: Human usefulness cannot be automated; a proxy dossier is not acceptance.
+- D05: Human usefulness cannot be automated. The v8 user-delegated agent review accepts `NoRequestAllocationOverlap`, but external human and upstream-maintainer adoption remain outside the experiment.
