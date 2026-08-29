@@ -124,6 +124,8 @@ public record ProspectiveReviewDossier(
             String riskClass,
             String rootModule,
             List<CorpusManifest.SourceFile> sourceFiles,
+            List<String> typeInvariants,
+            List<String> legacyTargetInvariants,
             String definition,
             String originalGuard,
             String replacement,
@@ -141,6 +143,9 @@ public record ProspectiveReviewDossier(
             ProspectiveText.requireSafeLine(riskClass, "riskClass", 64);
             ProspectiveText.requireSafeLine(rootModule, "rootModule", 256);
             sourceFiles = List.copyOf(Objects.requireNonNull(sourceFiles, "sourceFiles"));
+            typeInvariants = List.copyOf(Objects.requireNonNull(typeInvariants, "typeInvariants"));
+            legacyTargetInvariants =
+                    List.copyOf(Objects.requireNonNull(legacyTargetInvariants, "legacyTargetInvariants"));
             ProspectiveText.requireSafeLine(definition, "definition", 256);
             ProspectiveText.requireSafeMultiline(originalGuard, "originalGuard", 2000);
             ProspectiveText.requireSafeMultiline(replacement, "replacement", 2000);
@@ -161,6 +166,8 @@ public record ProspectiveReviewDossier(
                     entry.selection().gcdStratum(),
                     entry.rootModule(),
                     entry.files(),
+                    entry.typeInvariants(),
+                    entry.targetInvariants(),
                     result.definition(),
                     result.original(),
                     result.replacement(),

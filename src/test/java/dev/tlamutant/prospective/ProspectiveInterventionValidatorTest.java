@@ -96,7 +96,7 @@ final class ProspectiveInterventionValidatorTest {
         ProspectiveReviewLedger rejectedLedger = ProspectiveReviewValidatorTest.ledger(
                 fixture.dossier(),
                 List.of(ProspectiveReviewValidatorTest.reject(
-                        fixture.dossier().candidates().getFirst().key(), "REDUNDANT")));
+                        fixture.dossier().candidates().getFirst().key(), "REJECT_REDUNDANT")));
         ProspectiveReviewValidator.ValidatedReview rejectedReview =
                 ProspectiveReviewValidator.validate(fixture.dossier(), DOSSIER_ARTIFACT, rejectedLedger, 3);
 
@@ -118,6 +118,43 @@ final class ProspectiveInterventionValidatorTest {
                         fixture.dossier(),
                         rejectedLedger,
                         rejectedReview,
+                        fixture.derivedCensus(),
+                        GLOBAL));
+    }
+
+    @Test
+    void rejectsAValidatedReviewCapabilityBoundToDifferentLedgerEvidence() throws Exception {
+        Fixture fixture = fixture();
+        ProspectiveReviewLedger.Decision original = fixture.ledger().decisions().getFirst();
+        ProspectiveReviewLedger.Evidence otherEvidence = new ProspectiveReviewLedger.Evidence(
+                "Other exact predicate evidence.",
+                "Other witness evidence.",
+                "Other baseline evidence.",
+                "Other preservation evidence.",
+                "Other nonvacuity evidence.",
+                "Other nonredundancy evidence.",
+                "Other abstraction evidence.");
+        ProspectiveReviewLedger.Decision otherDecision = new ProspectiveReviewLedger.Decision(
+                original.key(),
+                original.terminalDecision(),
+                original.operator(),
+                original.predicate(),
+                original.predicateSha256(),
+                original.criteria(),
+                otherEvidence);
+        ProspectiveReviewLedger otherLedger =
+                ProspectiveReviewValidatorTest.ledger(fixture.dossier(), List.of(otherDecision));
+        ProspectiveReviewValidator.ValidatedReview otherReview =
+                ProspectiveReviewValidator.validate(fixture.dossier(), DOSSIER_ARTIFACT, otherLedger, 3);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> ProspectiveInterventionValidator.validate(
+                        fixture.v10(),
+                        fixture.v11(),
+                        fixture.dossier(),
+                        fixture.ledger(),
+                        otherReview,
                         fixture.derivedCensus(),
                         GLOBAL));
     }

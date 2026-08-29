@@ -62,11 +62,14 @@ The discovery phase introduces these machine-readable inputs:
 - `corpus/gcd-prospective-manifest-v10.json`: exact source bytes and State Invariant classification;
 - `docs/experiments/gcd-prospective-receipt-v10.json`: SHA-256 and size of the registry, protocol, manifest, policy, TLA+ Tools JAR, and application JAR.
 
+After the v10 census is frozen, `docs/experiments/gcd-prospective-experiment-receipt-v10.json` additionally binds the discovery receipt and census bytes. The mutation command requires both receipt files and verifies that the census wrapper embeds the exact supplied discovery-receipt identity.
+
 The receipt is content-addressed rather than self-referential. Git history provides the audit evidence that the receipt and outcome-free inputs were committed before the census and that the census was committed before mutation. The census and experiment commands verify all receipt-bound bytes before public source parsing or mutation. The report records the receipt digest.
 
 The v10 phase writes these new artifacts only:
 
 - `docs/experiments/gcd-prospective-census-v10.json`;
+- `docs/experiments/gcd-prospective-experiment-receipt-v10.json`;
 - `docs/experiments/gcd-prospective-v10.json`;
 - `docs/experiments/gcd-prospective-v10.md`;
 - `docs/experiments/gcd-prospective-review-dossier-v10.json`;

@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import dev.tlamutant.census.CensusInputIdentity;
+import dev.tlamutant.config.ExecutionPolicy;
+import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
@@ -14,6 +16,14 @@ import org.junit.jupiter.api.Test;
 final class ProspectiveReviewValidatorTest {
     private static final CensusInputIdentity.Artifact DOSSIER_ARTIFACT =
             new CensusInputIdentity.Artifact("9".repeat(64), 90);
+
+    @Test
+    void validatedReviewCannotBeConstructedOutsideTheValidator() {
+        assertEquals(
+                true,
+                java.util.Arrays.stream(ProspectiveReviewValidator.ValidatedReview.class.getDeclaredConstructors())
+                        .allMatch(constructor -> Modifier.isPrivate(constructor.getModifiers())));
+    }
 
     @Test
     void acceptsAnExactBijectionWithSevenPassingCriteria() throws Exception {
@@ -34,7 +44,7 @@ final class ProspectiveReviewValidatorTest {
     void rejectsMissingDuplicateExtraAndChangedDossierIdentity() throws Exception {
         ProspectiveReviewDossier dossier = dossier(1);
         ProspectiveReviewLedger.Decision decision =
-                reject(dossier.candidates().getFirst().key(), "REDUNDANT");
+                reject(dossier.candidates().getFirst().key(), "REJECT_REDUNDANT");
         ProspectiveReviewLedger missing = ledger(dossier, List.of());
         ProspectiveReviewLedger duplicate = ledger(dossier, List.of(decision, decision));
         ProspectiveReviewLedger extra = ledger(
@@ -43,7 +53,7 @@ final class ProspectiveReviewValidatorTest {
                         decision,
                         reject(
                                 new ProspectiveReviewDossier.CandidateKey("entry-extra", "gcd-ffffffffffffffffffff"),
-                                "REDUNDANT")));
+                                "REJECT_REDUNDANT")));
         ProspectiveReviewLedger changedIdentity = new ProspectiveReviewLedger(
                 1,
                 ProspectiveProtocol.REVIEWER_MODE,
@@ -109,6 +119,67 @@ final class ProspectiveReviewValidatorTest {
         assertEquals(1, review.acceptedOverflow());
     }
 
+    @Test
+    void derivesTheInterventionCapFromTheBoundProtocolArtifact() throws Exception {
+        ProspectiveProtocol protocol = protocol(3);
+        CensusInputIdentity.Artifact protocolArtifact = new CensusInputIdentity.Artifact("4".repeat(64), 40);
+        ProspectiveReviewDossier original = dossier(1);
+        ProspectiveReviewDossier bound = new ProspectiveReviewDossier(
+                1,
+                original.profile(),
+                protocolArtifact,
+                original.manifestArtifact(),
+                original.censusArtifact(),
+                original.discoveryArtifact(),
+                original.candidates());
+        ProspectiveReviewLedger ledger =
+                ledger(bound, List.of(accept(bound.candidates().getFirst().key())));
+
+        ProspectiveReviewValidator.ValidatedReview review =
+                ProspectiveReviewValidator.validate(bound, DOSSIER_ARTIFACT, ledger, protocol, protocolArtifact);
+
+        assertEquals(1, review.selectedInterventions().size());
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> ProspectiveReviewValidator.validate(
+                        bound,
+                        DOSSIER_ARTIFACT,
+                        ledger,
+                        protocol,
+                        new CensusInputIdentity.Artifact("0".repeat(64), protocolArtifact.sizeBytes())));
+    }
+
+    private static ProspectiveProtocol protocol(int interventionCap) {
+        ExecutionPolicy.Limits limits = new ExecutionPolicy.Limits(60, 512, 32, 64, 2048, 50, 1024, 1024, 5_000, 90);
+        List<ProspectiveProtocol.Entry> entries = new ArrayList<>();
+        for (int index = 0; index < 3; index++) {
+            entries.add(new ProspectiveProtocol.Entry(
+                    "entry-" + index,
+                    "domain-" + index,
+                    ProspectiveProtocol.STANDARD_RISK,
+                    "family-" + index,
+                    "Spec" + index + ".tla",
+                    "Spec" + index + ".cfg",
+                    List.of("prospective/Spec" + index + ".tla", "prospective/Spec" + index + ".cfg"),
+                    List.of("TypeOK"),
+                    List.of("Safety"),
+                    limits,
+                    "Frozen candidate."));
+        }
+        return new ProspectiveProtocol(
+                1,
+                "gcd-prospective-v10",
+                ProspectiveProtocol.REPOSITORY,
+                "c".repeat(40),
+                3,
+                0,
+                interventionCap,
+                new ProspectiveProtocol.HistoricalSet(1, "a".repeat(64), 1, "b".repeat(64)),
+                ProspectiveProtocol.requiredEligibility(),
+                ProspectiveProtocol.requiredReviewRubric(),
+                entries);
+    }
+
     static ProspectiveReviewDossier dossier(int count) {
         ProspectiveDiscoveryReportTest.Fixture fixture = ProspectiveDiscoveryReportTest.fixture();
         ProspectiveDiscoveryReport discovery = ProspectiveDiscoveryReport.create(
@@ -135,6 +206,8 @@ final class ProspectiveReviewValidatorTest {
                     base.riskClass(),
                     base.rootModule(),
                     base.sourceFiles(),
+                    base.typeInvariants(),
+                    base.legacyTargetInvariants(),
                     base.definition(),
                     base.originalGuard(),
                     base.replacement(),

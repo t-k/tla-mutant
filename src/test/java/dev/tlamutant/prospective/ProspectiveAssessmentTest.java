@@ -1,7 +1,9 @@
 package dev.tlamutant.prospective;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import dev.tlamutant.report.ProspectiveMarkdownWriter;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -23,6 +25,10 @@ final class ProspectiveAssessmentTest {
         assertEquals(1, assessment.eligible());
         assertEquals(1, assessment.reviewed());
         assertEquals(1, assessment.accepted());
+        String markdown = new ProspectiveMarkdownWriter().renderReview(assessment);
+        assertTrue(markdown.contains("| `ACCEPT` | 1 |"));
+        assertTrue(markdown.contains("## Selected Interventions"));
+        assertTrue(markdown.contains("`entry-0` / `gcd-00000000000000000000`"));
     }
 
     @Test

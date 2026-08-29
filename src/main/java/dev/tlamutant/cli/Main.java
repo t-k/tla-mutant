@@ -23,6 +23,7 @@ import dev.tlamutant.prospective.ProspectiveCensusReport;
 import dev.tlamutant.prospective.ProspectiveCensusValidator;
 import dev.tlamutant.prospective.ProspectiveDiscoveryReport;
 import dev.tlamutant.prospective.ProspectivePreflight;
+import dev.tlamutant.prospective.ProspectiveProtocol;
 import dev.tlamutant.prospective.ProspectiveReceipt;
 import dev.tlamutant.prospective.ProspectiveReviewDossier;
 import dev.tlamutant.prospective.ProspectiveReviewLedger;
@@ -74,6 +75,7 @@ public final class Main implements Runnable {
     private static final long MAXIMUM_APPLICATION_BYTES = 128L * 1024 * 1024;
     private static final long MAXIMUM_TOOLS_BYTES = 128L * 1024 * 1024;
     private static final long MAXIMUM_PROSPECTIVE_REPORT_BYTES = 256L * 1024 * 1024;
+    private static final long MAXIMUM_PROTOCOL_BYTES = 2L * 1024 * 1024;
 
     public static void main(String[] arguments) {
         System.exit(new CommandLine(new Main()).execute(arguments));
@@ -330,6 +332,9 @@ public final class Main implements Runnable {
         @CommandLine.Option(names = "--receipt", required = true)
         Path receiptPath;
 
+        @CommandLine.Option(names = "--discovery-receipt", required = true)
+        Path discoveryReceiptPath;
+
         @CommandLine.Option(names = "--census-report", required = true)
         Path censusReportPath;
 
@@ -354,6 +359,7 @@ public final class Main implements Runnable {
             ProspectivePreflight.ValidatedExperimentInputs validated = new ProspectivePreflight()
                     .validateExperiment(new ProspectivePreflight.ExperimentPaths(
                             receiptPath,
+                            discoveryReceiptPath,
                             registryPath,
                             protocolPath,
                             manifestPath,
@@ -366,7 +372,10 @@ public final class Main implements Runnable {
             ProspectiveCensusReport census = validated.censusSnapshot().parse(mapper, ProspectiveCensusReport.class);
             CensusInputIdentity inputs = prospectiveInputs(validated.discovery());
             ProspectiveCensusValidator.validate(
-                    validated.discovery().manifest().manifest(), census, census.receipt(), inputs);
+                    validated.discovery().manifest().manifest(),
+                    census,
+                    artifact(validated.discoveryReceiptSnapshot()),
+                    inputs);
             Files.createDirectories(cacheDirectory.toAbsolutePath().normalize());
             CorpusExperimentReport experiment;
             try (TemporaryFileSnapshot frozenApplication = TemporaryFileSnapshot.create(
@@ -495,30 +504,37 @@ public final class Main implements Runnable {
         @CommandLine.Option(names = "--review", required = true)
         Path reviewPath;
 
+        @CommandLine.Option(names = "--protocol", required = true)
+        Path protocolPath;
+
         @CommandLine.Option(names = "--assessment", required = true)
         Path assessmentPath;
-
-        @CommandLine.Option(names = "--intervention-cap", defaultValue = "3")
-        int interventionCap;
 
         @Override
         public Integer call() throws Exception {
             Path dossier = dossierPath.toAbsolutePath().normalize();
             Path review = reviewPath.toAbsolutePath().normalize();
+            Path protocolPathNormalized = protocolPath.toAbsolutePath().normalize();
             Path assessment = assessmentPath.toAbsolutePath().normalize();
             if (dossier.equals(review)
+                    || dossier.equals(protocolPathNormalized)
                     || dossier.equals(assessment)
+                    || review.equals(protocolPathNormalized)
                     || review.equals(assessment)
+                    || protocolPathNormalized.equals(assessment)
                     || Files.exists(assessment)) {
                 throw new IllegalArgumentException("Prospective review paths must be disjoint and output must be new");
             }
             ObjectMapper mapper = new ObjectMapper();
             BoundedFileSnapshot dossierSnapshot = BoundedFileSnapshot.read(dossier, MAXIMUM_PROSPECTIVE_REPORT_BYTES);
             BoundedFileSnapshot reviewSnapshot = BoundedFileSnapshot.read(review, MAXIMUM_PROSPECTIVE_REPORT_BYTES);
+            BoundedFileSnapshot protocolSnapshot =
+                    BoundedFileSnapshot.read(protocolPathNormalized, MAXIMUM_PROTOCOL_BYTES);
             ProspectiveReviewDossier parsedDossier = dossierSnapshot.parse(mapper, ProspectiveReviewDossier.class);
             ProspectiveReviewLedger ledger = reviewSnapshot.parse(mapper, ProspectiveReviewLedger.class);
+            ProspectiveProtocol protocol = protocolSnapshot.parse(mapper, ProspectiveProtocol.class);
             ProspectiveReviewValidator.ValidatedReview validated = ProspectiveReviewValidator.validate(
-                    parsedDossier, artifact(dossierSnapshot), ledger, interventionCap);
+                    parsedDossier, artifact(dossierSnapshot), ledger, protocol, artifact(protocolSnapshot));
             ProspectiveAssessment result = ProspectiveAssessment.review(parsedDossier, validated);
             new FrozenTextWriter().writeNew(assessment, new ProspectiveMarkdownWriter().renderReview(result));
             System.out.println(mapper.writeValueAsString(result));

@@ -31,6 +31,7 @@ final class ProspectiveReceiptTest {
     void acceptsOnlyTheExactExperimentRoleSet() {
         ProspectiveReceipt receipt = receipt("experiment", ProspectiveReceipt.EXPERIMENT_ROLES);
 
+        assertTrue(ProspectiveReceipt.EXPERIMENT_ROLES.contains("discovery-receipt"));
         assertEquals(
                 ProspectiveReceipt.EXPERIMENT_ROLES,
                 receipt.artifacts().stream()
@@ -117,6 +118,28 @@ final class ProspectiveReceiptTest {
     }
 
     @Test
+    void rejectsOutputCacheContainmentThroughAnExistingAncestorSymlink() throws Exception {
+        Path realCache = Files.createDirectory(temporaryDirectory.resolve("real-cache"));
+        Path cacheLink = temporaryDirectory.resolve("cache-link");
+        Files.createSymbolicLink(cacheLink, realCache);
+        ProspectivePreflight.DiscoveryPaths paths = new ProspectivePreflight.DiscoveryPaths(
+                write("receipt-link-test.json", "x"),
+                write("registry-link-test.json", "x"),
+                write("protocol-link-test.json", "x"),
+                write("manifest-link-test.json", "x"),
+                write("policy-link-test.json", "x"),
+                write("tools-link-test.jar", "x"),
+                write("application-link-test.jar", "x"),
+                cacheLink,
+                List.of(realCache.resolve("result.json")));
+
+        IllegalArgumentException failure =
+                assertThrows(IllegalArgumentException.class, () -> new ProspectivePreflight().validateDiscovery(paths));
+
+        assertTrue(failure.getMessage().contains("output and cache"));
+    }
+
+    @Test
     void rejectsExistingCanonicalOutput() throws Exception {
         Path input = write("input.json", "x");
         Path receiptPath = write("receipt.json", "x");
@@ -134,6 +157,24 @@ final class ProspectiveReceiptTest {
 
         assertThrows(IllegalArgumentException.class, () -> new ProspectivePreflight().validateDiscovery(paths));
         assertDoesNotThrow(() -> Files.readString(output));
+    }
+
+    @Test
+    void bindsTheExperimentCensusToTheSuppliedDiscoveryReceiptBytes() throws Exception {
+        Path discoveryReceipt = write("discovery-receipt.json", "frozen receipt bytes");
+        dev.tlamutant.security.BoundedFileSnapshot snapshot =
+                dev.tlamutant.security.BoundedFileSnapshot.read(discoveryReceipt, 1024 * 1024);
+        ProspectiveCensusReport fixture =
+                ProspectiveDiscoveryReportTest.fixture().census();
+        ProspectiveCensusReport matching = new ProspectiveCensusReport(
+                1,
+                new dev.tlamutant.census.CensusInputIdentity.Artifact(snapshot.sha256(), snapshot.sizeBytes()),
+                fixture.census());
+
+        assertDoesNotThrow(() -> ProspectivePreflight.validateCensusDiscoveryReceipt(snapshot, matching));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> ProspectivePreflight.validateCensusDiscoveryReceipt(snapshot, fixture));
     }
 
     private ProspectiveReceipt receipt(String phase, java.util.Set<String> roles) {

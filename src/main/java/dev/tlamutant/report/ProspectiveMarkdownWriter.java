@@ -2,6 +2,7 @@ package dev.tlamutant.report;
 
 import dev.tlamutant.prospective.ProspectiveAssessment;
 import dev.tlamutant.prospective.ProspectiveDiscoveryReport;
+import dev.tlamutant.prospective.ProspectiveProtocol;
 
 public final class ProspectiveMarkdownWriter {
     public String renderDiscovery(ProspectiveDiscoveryReport report) {
@@ -44,6 +45,28 @@ public final class ProspectiveMarkdownWriter {
         markdown.append("| Accepted beyond intervention cap | ")
                 .append(assessment.acceptedOverflow())
                 .append(" |\n\n");
+        markdown.append("## Terminal Decisions\n\n");
+        markdown.append("| Decision | Count |\n|---|---:|\n");
+        for (String decision : ProspectiveProtocol.REVIEW_DECISIONS) {
+            markdown.append("| `")
+                    .append(decision)
+                    .append("` | ")
+                    .append(assessment.terminalCounts().getOrDefault(decision, 0))
+                    .append(" |\n");
+        }
+        markdown.append("\n## Selected Interventions\n\n");
+        if (assessment.selectedInterventions().isEmpty()) {
+            markdown.append("None.\n\n");
+        } else {
+            for (var key : assessment.selectedInterventions()) {
+                markdown.append("- `")
+                        .append(key.entryId())
+                        .append("` / `")
+                        .append(key.candidateId())
+                        .append("`\n");
+            }
+            markdown.append('\n');
+        }
         markdown.append(assessment.limitation()).append('\n');
         return markdown.toString();
     }

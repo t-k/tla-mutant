@@ -30,6 +30,8 @@ final class ProspectiveReviewDossierTest {
                         .toList());
         assertEquals(report.censusArtifact(), dossier.censusArtifact());
         assertEquals("{x |-> 2}", dossier.candidates().getFirst().mutantOnlyWitness());
+        assertEquals(List.of("TypeOK"), dossier.candidates().getFirst().typeInvariants());
+        assertEquals(List.of("Safety"), dossier.candidates().getFirst().legacyTargetInvariants());
     }
 
     @Test

@@ -110,6 +110,20 @@ final class ProspectiveHoldoutValidatorTest {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> ProspectiveHoldoutValidator.validate(fixture.manifest(), registry, fixture.protocol(), GLOBAL));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new ProspectiveProtocol(
+                        fixture.protocol().schemaVersion(),
+                        fixture.protocol().profile(),
+                        "https://example.invalid/other",
+                        fixture.protocol().commit(),
+                        fixture.protocol().standardRiskEntries(),
+                        fixture.protocol().highRiskEntries(),
+                        fixture.protocol().interventionCap(),
+                        fixture.protocol().historicalSet(),
+                        fixture.protocol().eligibility(),
+                        fixture.protocol().rubric(),
+                        fixture.protocol().entries()));
     }
 
     @Test
@@ -140,6 +154,20 @@ final class ProspectiveHoldoutValidatorTest {
     }
 
     @Test
+    void usesTheExactPreregisteredTerminalDecisionVocabulary() {
+        assertEquals(
+                List.of(
+                        "ACCEPT",
+                        "REJECT_ALLOWED_STATE",
+                        "REJECT_REDUNDANT",
+                        "REJECT_NON_INDUCTIVE",
+                        "CONFIGURATION_FIX",
+                        "NEEDS_DOMAIN_OWNER",
+                        "NEEDS_STRENGTHENING"),
+                ProspectiveProtocol.REVIEW_DECISIONS);
+    }
+
+    @Test
     void permitsAReviewedSafetyOracleWhenTheUpstreamConfigHasNoTypeInvariant() {
         assertDoesNotThrow(() -> new ProspectiveProtocol.Entry(
                 "readers-writers",
@@ -166,9 +194,7 @@ final class ProspectiveHoldoutValidatorTest {
                 "coffee-can",
                 "CoffeeCan.tla",
                 "APCoffeeCan.cfg",
-                List.of(
-                        "specifications/CoffeeCan/CoffeeCan.tla",
-                        "specifications/CoffeeCan/APCoffeeCan.cfg"),
+                List.of("specifications/CoffeeCan/CoffeeCan.tla", "specifications/CoffeeCan/APCoffeeCan.cfg"),
                 List.of("TypeInvariant"),
                 List.of(),
                 ENTRY_LIMITS,

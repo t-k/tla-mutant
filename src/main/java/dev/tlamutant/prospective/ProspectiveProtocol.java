@@ -23,6 +23,7 @@ public record ProspectiveProtocol(
     public static final String STANDARD_RISK = "standard-risk";
     public static final String HIGH_RISK = "high-risk-no-replacement";
     public static final String REVIEWER_MODE = "user-delegated-agent";
+    public static final String REPOSITORY = "https://github.com/tlaplus/Examples";
     public static final List<String> REVIEW_CRITERIA = List.of(
             "exact-predicate",
             "witness-falsifies-mutant",
@@ -33,12 +34,12 @@ public record ProspectiveProtocol(
             "abstraction-aligned");
     public static final List<String> REVIEW_DECISIONS = List.of(
             "ACCEPT",
-            "ALLOWED_STATE",
-            "REDUNDANT",
-            "NON_INDUCTIVE",
+            "REJECT_ALLOWED_STATE",
+            "REJECT_REDUNDANT",
+            "REJECT_NON_INDUCTIVE",
             "CONFIGURATION_FIX",
-            "DOMAIN_OWNER_REQUIRED",
-            "STRENGTHENING_REQUIRED");
+            "NEEDS_DOMAIN_OWNER",
+            "NEEDS_STRENGTHENING");
     private static final Pattern PROFILE = Pattern.compile("gcd-prospective-v[0-9]+");
     private static final Pattern COMMIT = Pattern.compile("[0-9a-f]{40}");
 
@@ -50,8 +51,8 @@ public record ProspectiveProtocol(
             throw new IllegalArgumentException("Prospective protocol profile is invalid");
         }
         ProspectiveText.requireSafeLine(repository, "repository", 500);
-        if (!repository.startsWith("https://")) {
-            throw new IllegalArgumentException("Prospective repository must use HTTPS");
+        if (!REPOSITORY.equals(repository)) {
+            throw new IllegalArgumentException("Prospective repository is not allowlisted");
         }
         if (commit == null || !COMMIT.matcher(commit).matches()) {
             throw new IllegalArgumentException("Prospective commit must be a lowercase Git SHA-1");

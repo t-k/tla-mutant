@@ -31,7 +31,8 @@ public final class ProspectiveInterventionValidator {
         Objects.requireNonNull(derivedCensus, "derivedCensus");
         Objects.requireNonNull(globalLimits, "globalLimits");
         validateOuterIdentity(v10, v11, derivedCensus);
-        if (review.eligible() != dossier.candidates().size()
+        if (!review.isBoundTo(dossier, ledger)
+                || review.eligible() != dossier.candidates().size()
                 || review.reviewed() != ledger.decisions().size()
                 || review.selectedInterventions().size() > 3) {
             throw new IllegalArgumentException("Prospective intervention review totals are inconsistent");

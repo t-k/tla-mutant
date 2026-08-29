@@ -657,6 +657,7 @@ No v10 census or mutation may precede this commit.
 
 **Files:**
 - Create: `docs/experiments/gcd-prospective-census-v10.json`
+- Create: `docs/experiments/gcd-prospective-experiment-receipt-v10.json`
 - Create: `docs/experiments/gcd-prospective-preregistration-v10.md`
 
 - [ ] **Step 1: Run the census twice to distinct new paths**
@@ -683,6 +684,8 @@ git add docs/experiments/gcd-prospective-census-v10.json docs/experiments/gcd-pr
 git commit -m "experiment: freeze prospective v10 census"
 ```
 
+Create the experiment receipt from the committed discovery receipt, the frozen census, and the unchanged registry, protocol, manifest, policy, tools, and application artifacts. Commit it with the census; no mutation may start from an experiment receipt created outside that commit.
+
 ## Task 12: Run v10 Discovery and Freeze the Dossier
 
 **Files:**
@@ -692,7 +695,7 @@ git commit -m "experiment: freeze prospective v10 census"
 
 - [ ] **Step 1: Run v10 mutation twice**
 
-Use the frozen census and receipt. Write canonical and repeat reports to distinct paths.
+Use the frozen census, the discovery receipt, and the experiment receipt. The command requires `--discovery-receipt docs/experiments/gcd-prospective-receipt-v10.json` and `--receipt docs/experiments/gcd-prospective-experiment-receipt-v10.json`. Write canonical and repeat reports to distinct paths.
 
 - [ ] **Step 2: Compare semantic results**
 

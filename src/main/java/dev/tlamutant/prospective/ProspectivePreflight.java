@@ -1,6 +1,7 @@
 package dev.tlamutant.prospective;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.tlamutant.census.CensusInputIdentity;
 import dev.tlamutant.config.ExecutionPolicy;
 import dev.tlamutant.corpus.CorpusManifest;
 import dev.tlamutant.corpus.ProspectiveHoldoutValidator;
@@ -9,6 +10,7 @@ import dev.tlamutant.security.BoundedFileSnapshot;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,6 +36,7 @@ public final class ProspectivePreflight {
         return validate(
                 "discovery",
                 paths.receipt(),
+                null,
                 paths.registry(),
                 paths.protocol(),
                 paths.manifest(),
@@ -50,6 +53,7 @@ public final class ProspectivePreflight {
         ValidatedDiscoveryInputs validated = validate(
                 "experiment",
                 paths.receipt(),
+                paths.discoveryReceipt(),
                 paths.registry(),
                 paths.protocol(),
                 paths.manifest(),
@@ -59,12 +63,16 @@ public final class ProspectivePreflight {
                 paths.census(),
                 paths.cacheDirectory(),
                 paths.outputs());
-        return new ValidatedExperimentInputs(validated, validated.snapshots().get("census"));
+        return new ValidatedExperimentInputs(
+                validated,
+                validated.snapshots().get("discovery-receipt"),
+                validated.snapshots().get("census"));
     }
 
     private ValidatedDiscoveryInputs validate(
             String phase,
             Path receiptPath,
+            Path discoveryReceiptPath,
             Path registryPath,
             Path protocolPath,
             Path manifestPath,
@@ -77,6 +85,9 @@ public final class ProspectivePreflight {
             throws IOException {
         Map<String, Path> inputPaths = new HashMap<>();
         inputPaths.put("receipt", receiptPath);
+        if (discoveryReceiptPath != null) {
+            inputPaths.put("discovery-receipt", discoveryReceiptPath);
+        }
         inputPaths.put("registry", registryPath);
         inputPaths.put("protocol", protocolPath);
         inputPaths.put("manifest", manifestPath);
@@ -101,6 +112,9 @@ public final class ProspectivePreflight {
         snapshots.put("policy", BoundedFileSnapshot.read(policyPath, MAXIMUM_POLICY_BYTES));
         snapshots.put("tools", BoundedFileSnapshot.read(toolsPath, MAXIMUM_TOOLS_BYTES));
         snapshots.put("application", BoundedFileSnapshot.read(applicationPath, MAXIMUM_APPLICATION_BYTES));
+        if (discoveryReceiptPath != null) {
+            snapshots.put("discovery-receipt", BoundedFileSnapshot.read(discoveryReceiptPath, MAXIMUM_RECEIPT_BYTES));
+        }
         if (censusPath != null) {
             snapshots.put("census", BoundedFileSnapshot.read(censusPath, MAXIMUM_CENSUS_BYTES));
         }
@@ -115,6 +129,21 @@ public final class ProspectivePreflight {
         }
         ValidatedCorpusManifest validatedManifest =
                 ProspectiveHoldoutValidator.validate(manifest, registry, protocol, policy.limits());
+        if (discoveryReceiptPath != null) {
+            BoundedFileSnapshot discoveryReceiptSnapshot = snapshots.get("discovery-receipt");
+            ProspectiveReceipt discoveryReceipt = discoveryReceiptSnapshot.parse(mapper, ProspectiveReceipt.class);
+            if (!"discovery".equals(discoveryReceipt.phase())
+                    || !receipt.profile().equals(discoveryReceipt.profile())) {
+                throw new IllegalArgumentException("Discovery receipt phase or profile does not match experiment");
+            }
+            Map<String, BoundedFileSnapshot> discoverySnapshots = new HashMap<>();
+            for (String role : ProspectiveReceipt.DISCOVERY_ROLES) {
+                discoverySnapshots.put(role, snapshots.get(role));
+            }
+            validateReceiptIdentities(discoveryReceipt, discoverySnapshots);
+            ProspectiveCensusReport census = snapshots.get("census").parse(mapper, ProspectiveCensusReport.class);
+            validateCensusDiscoveryReceipt(discoveryReceiptSnapshot, census);
+        }
         return new ValidatedDiscoveryInputs(
                 receiptSnapshot, receipt, Map.copyOf(snapshots), registry, protocol, policy, validatedManifest);
     }
@@ -136,6 +165,17 @@ public final class ProspectivePreflight {
         }
     }
 
+    static void validateCensusDiscoveryReceipt(
+            BoundedFileSnapshot discoveryReceiptSnapshot, ProspectiveCensusReport census) {
+        Objects.requireNonNull(discoveryReceiptSnapshot, "discoveryReceiptSnapshot");
+        Objects.requireNonNull(census, "census");
+        CensusInputIdentity.Artifact expectedDiscoveryReceipt = new CensusInputIdentity.Artifact(
+                discoveryReceiptSnapshot.sha256(), discoveryReceiptSnapshot.sizeBytes());
+        if (!census.receipt().equals(expectedDiscoveryReceipt)) {
+            throw new IllegalArgumentException("Prospective census is not bound to the supplied discovery receipt");
+        }
+    }
+
     private static void validatePathSeparation(
             Map<String, Path> inputPaths, Path cacheDirectory, List<Path> outputPaths) throws IOException {
         Objects.requireNonNull(cacheDirectory, "cacheDirectory");
@@ -154,10 +194,10 @@ public final class ProspectivePreflight {
             }
         }
 
-        Path normalizedCache = normalize(cacheDirectory);
+        Path normalizedCache = canonical(cacheDirectory);
         Set<Path> normalizedOutputs = new HashSet<>();
         for (Path output : outputs) {
-            Path normalizedOutput = normalize(Objects.requireNonNull(output, "output"));
+            Path normalizedOutput = canonical(Objects.requireNonNull(output, "output"));
             if (!normalizedOutputs.add(normalizedOutput)) {
                 throw new IllegalArgumentException("Prospective output paths alias each other");
             }
@@ -168,7 +208,7 @@ public final class ProspectivePreflight {
                 throw new IllegalArgumentException("Prospective output and cache paths must be disjoint");
             }
             for (Path input : inputPaths.values()) {
-                Path normalizedInput = normalize(input);
+                Path normalizedInput = canonical(input);
                 if (normalizedOutput.equals(normalizedInput)
                         || normalizedOutput.startsWith(normalizedInput)
                         || normalizedInput.startsWith(normalizedOutput)) {
@@ -177,7 +217,7 @@ public final class ProspectivePreflight {
             }
         }
         for (Path input : inputPaths.values()) {
-            Path normalizedInput = normalize(input);
+            Path normalizedInput = canonical(input);
             if (normalizedInput.equals(normalizedCache)
                     || normalizedInput.startsWith(normalizedCache)
                     || normalizedCache.startsWith(normalizedInput)) {
@@ -187,13 +227,33 @@ public final class ProspectivePreflight {
     }
 
     private static boolean sameExistingFile(Path left, Path right) throws IOException {
-        Path normalizedLeft = normalize(left);
-        Path normalizedRight = normalize(right);
-        return normalizedLeft.equals(normalizedRight) || Files.isSameFile(normalizedLeft, normalizedRight);
+        Path normalizedLeft = canonical(left);
+        Path normalizedRight = canonical(right);
+        return normalizedLeft.equals(normalizedRight)
+                || (Files.exists(normalizedLeft)
+                        && Files.exists(normalizedRight)
+                        && Files.isSameFile(normalizedLeft, normalizedRight));
     }
 
-    private static Path normalize(Path path) {
-        return path.toAbsolutePath().normalize();
+    private static Path canonical(Path path) throws IOException {
+        Path absolute = path.toAbsolutePath().normalize();
+        if (Files.isSymbolicLink(absolute)) {
+            return absolute.toRealPath();
+        }
+        ArrayDeque<Path> missing = new ArrayDeque<>();
+        Path existing = absolute;
+        while (!Files.exists(existing)) {
+            if (existing.getFileName() == null || existing.getParent() == null) {
+                throw new IllegalArgumentException("Prospective path has no existing canonical ancestor");
+            }
+            missing.addFirst(existing.getFileName());
+            existing = existing.getParent();
+        }
+        Path resolved = existing.toRealPath();
+        for (Path component : missing) {
+            resolved = resolved.resolve(component);
+        }
+        return resolved.normalize();
     }
 
     public record DiscoveryPaths(
@@ -213,6 +273,7 @@ public final class ProspectivePreflight {
 
     public record ExperimentPaths(
             Path receipt,
+            Path discoveryReceipt,
             Path registry,
             Path protocol,
             Path manifest,
@@ -240,5 +301,8 @@ public final class ProspectivePreflight {
         }
     }
 
-    public record ValidatedExperimentInputs(ValidatedDiscoveryInputs discovery, BoundedFileSnapshot censusSnapshot) {}
+    public record ValidatedExperimentInputs(
+            ValidatedDiscoveryInputs discovery,
+            BoundedFileSnapshot discoveryReceiptSnapshot,
+            BoundedFileSnapshot censusSnapshot) {}
 }

@@ -10,7 +10,7 @@ public record ProspectiveReceipt(int schemaVersion, String phase, String profile
     public static final Set<String> DISCOVERY_ROLES =
             Set.of("registry", "protocol", "manifest", "policy", "tools", "application");
     public static final Set<String> EXPERIMENT_ROLES =
-            Set.of("registry", "protocol", "manifest", "policy", "tools", "application", "census");
+            Set.of("registry", "protocol", "manifest", "policy", "tools", "application", "discovery-receipt", "census");
     private static final Pattern PROFILE = Pattern.compile("gcd-prospective-v[0-9]+");
 
     public ProspectiveReceipt {
