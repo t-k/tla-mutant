@@ -6,6 +6,8 @@ import dev.tlamutant.config.ExecutionPolicy;
 import dev.tlamutant.corpus.CorpusFetcher;
 import dev.tlamutant.corpus.CorpusInputSnapshot;
 import dev.tlamutant.corpus.CorpusManifest;
+import dev.tlamutant.corpus.ValidatedCorpusManifest;
+import dev.tlamutant.prospective.ProspectiveCensusReport;
 import dev.tlamutant.sandbox.PodmanExecution;
 import dev.tlamutant.sandbox.PodmanRunner;
 import dev.tlamutant.sandbox.SandboxInput;
@@ -52,16 +54,42 @@ public final class CorpusExperimentRunner {
             throw new IllegalArgumentException("The vertical-slice corpus must cover at least three domains");
         }
 
+        return runEntries(manifest, null, null);
+    }
+
+    public CorpusExperimentReport run(ValidatedCorpusManifest validated, ProspectiveCensusReport prospectiveCensus) {
+        Objects.requireNonNull(validated, "validated");
+        Objects.requireNonNull(prospectiveCensus, "prospectiveCensus");
+        CorpusManifest manifest = validated.manifest();
+        if (prospectiveCensus.census().entries().size() != manifest.entries().size()) {
+            throw new IllegalArgumentException("Prospective census membership differs from the validated manifest");
+        }
+        return runEntries(manifest, validated, prospectiveCensus);
+    }
+
+    private CorpusExperimentReport runEntries(
+            CorpusManifest manifest, ValidatedCorpusManifest validated, ProspectiveCensusReport prospectiveCensus) {
         List<CorpusEntryResult> results = new ArrayList<>();
-        for (CorpusManifest.Entry entry : manifest.entries()) {
-            results.add(runEntry(manifest, entry));
+        for (int index = 0; index < manifest.entries().size(); index++) {
+            CorpusManifest.Entry entry = manifest.entries().get(index);
+            if (prospectiveCensus != null
+                    && !prospectiveCensus.census().entries().get(index).status().equals("COMPLETED")) {
+                String censusStatus =
+                        prospectiveCensus.census().entries().get(index).status();
+                results.add(incomplete(entry, "CENSUS_UNRESOLVED", "Census status: " + censusStatus));
+            } else {
+                results.add(runEntry(manifest, validated, entry));
+            }
         }
         return CorpusExperimentReport.create(manifest.repository(), manifest.commit(), results);
     }
 
-    private CorpusEntryResult runEntry(CorpusManifest manifest, CorpusManifest.Entry entry) {
+    private CorpusEntryResult runEntry(
+            CorpusManifest manifest, ValidatedCorpusManifest validated, CorpusManifest.Entry entry) {
         try {
-            Path input = fetcher.fetch(manifest, entry, policy.limits(), cacheRoot);
+            Path input = validated == null
+                    ? fetcher.fetch(manifest, entry, policy.limits(), cacheRoot)
+                    : fetcher.fetch(validated, entry, policy.limits(), cacheRoot);
             PodmanExecution execution;
             try (CorpusInputSnapshot snapshot = CorpusInputSnapshot.create(input, entry)) {
                 PodmanRunner sandbox =

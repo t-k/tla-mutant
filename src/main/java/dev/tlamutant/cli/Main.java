@@ -20,14 +20,18 @@ import dev.tlamutant.experiment.GcdStratifiedReport;
 import dev.tlamutant.experiment.InvariantOracleSets;
 import dev.tlamutant.prospective.ProspectiveCensusReport;
 import dev.tlamutant.prospective.ProspectiveCensusValidator;
+import dev.tlamutant.prospective.ProspectiveDiscoveryReport;
 import dev.tlamutant.prospective.ProspectivePreflight;
+import dev.tlamutant.prospective.ProspectiveSemanticComparator;
 import dev.tlamutant.report.AtomicJsonWriter;
 import dev.tlamutant.report.AtomicTextWriter;
 import dev.tlamutant.report.CorpusMarkdownReportWriter;
 import dev.tlamutant.report.FrozenJsonWriter;
+import dev.tlamutant.report.FrozenTextWriter;
 import dev.tlamutant.report.GcdStratifiedMarkdownWriter;
 import dev.tlamutant.report.JsonReportWriter;
 import dev.tlamutant.report.MarkdownReportWriter;
+import dev.tlamutant.report.ProspectiveMarkdownWriter;
 import dev.tlamutant.sandbox.SandboxInput;
 import dev.tlamutant.security.BoundedFileSnapshot;
 import dev.tlamutant.security.ExperimentOutputValidator;
@@ -52,6 +56,8 @@ import picocli.CommandLine;
             Main.GcdStratifiedCensusCommand.class,
             Main.GcdStratifiedExperimentCommand.class,
             Main.ProspectiveCensusCommand.class,
+            Main.ProspectiveExperimentCommand.class,
+            Main.CompareProspectiveReportsCommand.class,
             Main.CorpusExperimentCommand.class,
             Main.ValidateManifestCommand.class
         })
@@ -60,6 +66,7 @@ public final class Main implements Runnable {
     private static final long MAXIMUM_POLICY_BYTES = 1024L * 1024;
     private static final long MAXIMUM_APPLICATION_BYTES = 128L * 1024 * 1024;
     private static final long MAXIMUM_TOOLS_BYTES = 128L * 1024 * 1024;
+    private static final long MAXIMUM_PROSPECTIVE_REPORT_BYTES = 256L * 1024 * 1024;
 
     public static void main(String[] arguments) {
         System.exit(new CommandLine(new Main()).execute(arguments));
@@ -296,6 +303,112 @@ public final class Main implements Runnable {
             new FrozenJsonWriter().writeNew(censusReportPath, report);
             System.out.println(mapper.writeValueAsString(report));
             return 0;
+        }
+    }
+
+    @CommandLine.Command(
+            name = "prospective-experiment",
+            mixinStandardHelpOptions = true,
+            description = "Run prospective mutations only after validating the receipt-bound frozen census.")
+    static final class ProspectiveExperimentCommand implements Callable<Integer> {
+        @CommandLine.Option(names = "--registry", required = true)
+        Path registryPath;
+
+        @CommandLine.Option(names = "--protocol", required = true)
+        Path protocolPath;
+
+        @CommandLine.Option(names = "--manifest", required = true)
+        Path manifestPath;
+
+        @CommandLine.Option(names = "--receipt", required = true)
+        Path receiptPath;
+
+        @CommandLine.Option(names = "--census-report", required = true)
+        Path censusReportPath;
+
+        @CommandLine.Option(names = "--policy", required = true)
+        Path policyPath;
+
+        @CommandLine.Option(names = "--tools-jar", required = true)
+        Path toolsJar;
+
+        @CommandLine.Option(names = "--cache-dir", required = true)
+        Path cacheDirectory;
+
+        @CommandLine.Option(names = "--json-report", required = true)
+        Path jsonReportPath;
+
+        @CommandLine.Option(names = "--markdown-report", required = true)
+        Path markdownReportPath;
+
+        @Override
+        public Integer call() throws Exception {
+            ObjectMapper mapper = new ObjectMapper();
+            ProspectivePreflight.ValidatedExperimentInputs validated = new ProspectivePreflight()
+                    .validateExperiment(new ProspectivePreflight.ExperimentPaths(
+                            receiptPath,
+                            registryPath,
+                            protocolPath,
+                            manifestPath,
+                            policyPath,
+                            toolsJar,
+                            applicationJar(),
+                            censusReportPath,
+                            cacheDirectory,
+                            List.of(jsonReportPath, markdownReportPath)));
+            ProspectiveCensusReport census = validated.censusSnapshot().parse(mapper, ProspectiveCensusReport.class);
+            CensusInputIdentity inputs = prospectiveInputs(validated.discovery());
+            ProspectiveCensusValidator.validate(
+                    validated.discovery().manifest().manifest(), census, census.receipt(), inputs);
+            Files.createDirectories(cacheDirectory.toAbsolutePath().normalize());
+            CorpusExperimentReport experiment;
+            try (TemporaryFileSnapshot frozenApplication = TemporaryFileSnapshot.create(
+                            validated.discovery().snapshots().get("application"), "application.jar");
+                    TemporaryFileSnapshot frozenTools = TemporaryFileSnapshot.create(
+                            validated.discovery().snapshots().get("tools"), "tla2tools.jar")) {
+                experiment = new CorpusExperimentRunner(
+                                frozenApplication.path(),
+                                frozenTools.path(),
+                                cacheDirectory,
+                                validated.discovery().policy())
+                        .run(validated.discovery().manifest(), census);
+            }
+            ProspectiveDiscoveryReport report = ProspectiveDiscoveryReport.create(
+                    validated.discovery().manifest().manifest(),
+                    census,
+                    artifact(validated.censusSnapshot()),
+                    artifact(validated.discovery().receiptSnapshot()),
+                    experiment);
+            new FrozenJsonWriter().writeNew(jsonReportPath, report);
+            new FrozenTextWriter()
+                    .writeNew(markdownReportPath, new ProspectiveMarkdownWriter().renderDiscovery(report));
+            System.out.println(mapper.writeValueAsString(report));
+            return 0;
+        }
+    }
+
+    @CommandLine.Command(
+            name = "compare-prospective-reports",
+            mixinStandardHelpOptions = true,
+            description = "Compare two prospective reports after removing declared diagnostic metadata.")
+    static final class CompareProspectiveReportsCommand implements Callable<Integer> {
+        @CommandLine.Option(names = "--left", required = true)
+        Path leftPath;
+
+        @CommandLine.Option(names = "--right", required = true)
+        Path rightPath;
+
+        @Override
+        public Integer call() throws Exception {
+            ObjectMapper mapper = new ObjectMapper();
+            ProspectiveDiscoveryReport left = BoundedFileSnapshot.read(leftPath, MAXIMUM_PROSPECTIVE_REPORT_BYTES)
+                    .parse(mapper, ProspectiveDiscoveryReport.class);
+            ProspectiveDiscoveryReport right = BoundedFileSnapshot.read(rightPath, MAXIMUM_PROSPECTIVE_REPORT_BYTES)
+                    .parse(mapper, ProspectiveDiscoveryReport.class);
+            ProspectiveSemanticComparator.Comparison comparison =
+                    new ProspectiveSemanticComparator().compare(left, right);
+            System.out.println(mapper.writeValueAsString(comparison));
+            return comparison.equal() ? 0 : 2;
         }
     }
 
