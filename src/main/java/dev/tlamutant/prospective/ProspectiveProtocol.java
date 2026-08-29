@@ -128,8 +128,8 @@ public record ProspectiveProtocol(
             repositoryPaths = copyPaths(repositoryPaths);
             typeInvariants = copyOperators(typeInvariants, "typeInvariants");
             legacyTargetInvariants = copyOperators(legacyTargetInvariants, "legacyTargetInvariants");
-            if (typeInvariants.isEmpty()) {
-                throw new IllegalArgumentException("Prospective entry requires a type invariant");
+            if (typeInvariants.isEmpty() && legacyTargetInvariants.isEmpty()) {
+                throw new IllegalArgumentException("Prospective entry requires at least one configured invariant");
             }
             Set<String> allOracles = new HashSet<>(typeInvariants);
             if (!allOracles.addAll(legacyTargetInvariants)) {

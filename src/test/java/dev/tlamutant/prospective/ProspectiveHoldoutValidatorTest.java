@@ -1,5 +1,6 @@
 package dev.tlamutant.prospective;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -136,6 +137,24 @@ final class ProspectiveHoldoutValidatorTest {
                         ProspectiveProtocol.REVIEWER_MODE,
                         List.of("exact-predicate"),
                         ProspectiveProtocol.REVIEW_DECISIONS));
+    }
+
+    @Test
+    void permitsAReviewedSafetyOracleWhenTheUpstreamConfigHasNoTypeInvariant() {
+        assertDoesNotThrow(() -> new ProspectiveProtocol.Entry(
+                "readers-writers",
+                "concurrency",
+                ProspectiveProtocol.STANDARD_RISK,
+                "readers-writers",
+                "ReadersWriters.tla",
+                "APReadersWriters.cfg",
+                List.of(
+                        "specifications/ReadersWriters/ReadersWriters.tla",
+                        "specifications/ReadersWriters/APReadersWriters.cfg"),
+                List.of(),
+                List.of("Safety"),
+                ENTRY_LIMITS,
+                "The upstream config checks Safety only."));
     }
 
     private static Fixture fixture() throws Exception {
