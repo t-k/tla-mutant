@@ -91,34 +91,34 @@ Constraints:
 
 | ID | Type | Required behavior or risk | Risk | Minimum checks | Status |
 | --- | --- | --- | --- | ---: | --- |
-| O01 | compatibility | Version-1 manifest and first experiment remain unchanged. | Critical | 2 | pending |
-| O02 | validation | Version-2 profile enforces 5/10 cohorts, strata, clusters, domains, and bounded rationale. | High | 2 | pending |
-| O03 | scientific invariant | Outcome fields cannot enter census or selection logic. | Critical | 2 | pending |
-| O04 | semantic | Census and mutator share exact GCD eligibility and stable candidate IDs. | Critical | 2 | pending |
-| O05 | structural | Enriched sites require current-state guard plus action-level successor sibling. | High | 2 | pending |
-| O06 | security | Public census parses only inside the approved Podman boundary. | Critical | 2 | pending |
-| O07 | failure mode | Census failure aborts mutation without entry substitution. | Critical | 2 | pending |
-| O08 | reproducibility | Manifest, census, sources, toolchain, policy, and report identities are linked. | Critical | 2 | pending |
-| O09 | denominator | Every eligible GCD site has exactly one terminal record. | Critical | 2 | pending |
-| O10 | aggregation | Site- and specification-weighted results agree with raw records. | High | 2 | pending |
-| O11 | reporting | JSON and Markdown expose strata, candidates, witnesses, and unresolved reasons safely. | High | 2 | pending |
-| O12 | lifecycle | Census and experiment leave no container, volume, process, or writable host output. | Critical | 2 | pending |
-| O13 | regression | A repository fixture proves a GCD-specific expanding/incomparable witness. | High | 2 | pending |
-| O14 | corpus | All 15 preregistered entries and at least three domains are reported without replacement. | High | 2 | pending |
-| O15 | decision | The human-review gate is calculated from distinct specification, domain, and cluster identities. | High | 2 | pending |
+| O01 | compatibility | Version-1 manifest and first experiment remain unchanged. | Critical | 2 | covered |
+| O02 | validation | Version-2 profile enforces 5/10 cohorts, strata, clusters, domains, and bounded rationale. | High | 2 | covered |
+| O03 | scientific invariant | Outcome fields cannot enter census or selection logic. | Critical | 2 | covered |
+| O04 | semantic | Census and mutator share exact GCD eligibility and stable candidate IDs. | Critical | 2 | covered |
+| O05 | structural | Enriched sites require current-state guard plus action-level successor sibling. | High | 2 | covered |
+| O06 | security | Public census parses only inside the approved Podman boundary. | Critical | 2 | covered |
+| O07 | failure mode | Census failure aborts mutation without entry substitution. | Critical | 2 | covered |
+| O08 | reproducibility | Manifest, census, sources, toolchain, policy, and report identities are linked. | Critical | 2 | covered |
+| O09 | denominator | Every eligible GCD site has exactly one terminal record. | Critical | 2 | covered_with_incomplete_entries |
+| O10 | aggregation | Site- and specification-weighted results agree with raw records. | High | 2 | covered |
+| O11 | reporting | JSON and Markdown expose strata, candidates, witnesses, and unresolved reasons safely. | High | 2 | covered |
+| O12 | lifecycle | Census and experiment leave no container, volume, process, or writable host output. | Critical | 2 | covered |
+| O13 | regression | A repository fixture proves a GCD-specific expanding/incomparable witness. | High | 2 | covered |
+| O14 | corpus | All 15 preregistered entries and at least three domains are reported without replacement. | High | 2 | covered_with_two_incomplete_baselines |
+| O15 | decision | The human-review gate is calculated from distinct specification, domain, and cluster identities. | High | 2 | automated_gate_covered_human_review_pending |
 
 ## Coverage Ledger
 
 | Obligations | Primary artifact | Independent artifact | Overlap | Planned status | Debt or note |
 | --- | --- | --- | --- | --- | --- |
-| O01–O02 | manifest validator unit tests | old manifest validation and experiment regression | regression_overlap | covered after implementation | Keep old artifact byte identity where practical. |
-| O03–O05 | census classifier integration tests | census/mutant candidate-ID consistency test | layer_overlap | covered after implementation | Static capability remains a proxy, not proof. |
-| O06–O08 | Podman command and runner tests | repeated public census with digest comparison | intentional_overlap | covered after implementation | Hostile census failure injection remains partial. |
-| O09–O10 | pure aggregation tests | raw JSON consistency assertions | layer_overlap | covered after implementation | Both denominators are mandatory. |
-| O11 | report writer hostile-input tests | generated artifact inspection | layer_overlap | covered after implementation | Markdown must include details, not aggregate only. |
-| O12 | sandbox containment test | post-run exact resource inspection | intentional_overlap | covered after implementation | Preserve run-label cleanup checks. |
-| O13 | local TLC fixture | final public result consistency | regression_overlap | covered after implementation | Public candidates are not required for test success. |
-| O14–O15 | manifest/corpus run | assessment gate calculation | layer_overlap | covered after experiment | Human usefulness remains pending if gate conditions fail. |
+| O01–O02 | manifest validator unit tests | old manifest validation and experiment regression | regression_overlap | covered | Both stratified profiles and the original version-1 manifest remain accepted. |
+| O03–O05 | census classifier integration tests | census/mutant candidate-ID consistency test | layer_overlap | covered | Static capability remains a proxy, not proof. |
+| O06–O08 | Podman command and runner tests | repeated public census with digest comparison | intentional_overlap | covered | Hostile census failure injection remains partial. |
+| O09–O10 | pure aggregation tests | raw JSON consistency assertions | layer_overlap | covered_with_debt | Nine sites remain unresolved through two incomplete baseline entries. |
+| O11 | report writer hostile-input tests | generated artifact inspection | layer_overlap | covered | JSON and Markdown contain the same nine witnesses and all unresolved categories. |
+| O12 | sandbox containment test | post-run exact resource inspection | intentional_overlap | covered | No run-labeled container or volume remained after census or experiment. |
+| O13 | local TLC fixture | final public result consistency | regression_overlap | covered | Public candidates are not required for test success. |
+| O14–O15 | manifest/corpus run | assessment gate calculation | layer_overlap | automated_gate_covered | Six specifications, domains, and clusters meet the proxy gate; human usefulness remains pending. |
 
 ## Test Scenarios
 

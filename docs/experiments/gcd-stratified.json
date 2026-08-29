@@ -1,0 +1,2137 @@
+{
+  "schemaVersion" : 1,
+  "profile" : "gcd-stratified-v2",
+  "repository" : "https://github.com/tlaplus/Examples",
+  "commit" : "ed3cc4c35f7001d7cec08a22dcd698dae7570dc3",
+  "censusSha256" : "9780bc2eea85fcf5376fe391d6e5e521bf95adb314bcc65913a83bf7747f08e6",
+  "censusSizeBytes" : 24056,
+  "automatedGateStatus" : "human-review-eligible",
+  "humanReviewStatus" : "pending",
+  "specificationCount" : 15,
+  "censusSiteCount" : 51,
+  "brlGenerated" : 0,
+  "brlEvaluated" : 0,
+  "uoiGenerated" : 7,
+  "uoiEvaluated" : 7,
+  "summaries" : [ {
+    "grouping" : "overall",
+    "value" : "all",
+    "specifications" : 15,
+    "totalSites" : 51,
+    "killedUnattributed" : 7,
+    "stateEqual" : 22,
+    "stateExpanding" : 9,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 13,
+    "witnessBearingCandidates" : 9
+  }, {
+    "grouping" : "cohort",
+    "value" : "control",
+    "specifications" : 5,
+    "totalSites" : 14,
+    "killedUnattributed" : 1,
+    "stateEqual" : 9,
+    "stateExpanding" : 4,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 0,
+    "witnessBearingCandidates" : 4
+  }, {
+    "grouping" : "cohort",
+    "value" : "gcd-enriched",
+    "specifications" : 10,
+    "totalSites" : 37,
+    "killedUnattributed" : 6,
+    "stateEqual" : 13,
+    "stateExpanding" : 5,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 13,
+    "witnessBearingCandidates" : 5
+  }, {
+    "grouping" : "domain",
+    "value" : "biochemical-process",
+    "specifications" : 1,
+    "totalSites" : 3,
+    "killedUnattributed" : 0,
+    "stateEqual" : 2,
+    "stateExpanding" : 1,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 0,
+    "witnessBearingCandidates" : 1
+  }, {
+    "grouping" : "domain",
+    "value" : "concurrency",
+    "specifications" : 1,
+    "totalSites" : 9,
+    "killedUnattributed" : 4,
+    "stateEqual" : 2,
+    "stateExpanding" : 2,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 1,
+    "witnessBearingCandidates" : 2
+  }, {
+    "grouping" : "domain",
+    "value" : "consensus",
+    "specifications" : 1,
+    "totalSites" : 4,
+    "killedUnattributed" : 0,
+    "stateEqual" : 1,
+    "stateExpanding" : 3,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 0,
+    "witnessBearingCandidates" : 3
+  }, {
+    "grouping" : "domain",
+    "value" : "coordination-puzzle",
+    "specifications" : 1,
+    "totalSites" : 2,
+    "killedUnattributed" : 1,
+    "stateEqual" : 0,
+    "stateExpanding" : 0,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 1,
+    "witnessBearingCandidates" : 0
+  }, {
+    "grouping" : "domain",
+    "value" : "crash-fault-consensus",
+    "specifications" : 1,
+    "totalSites" : 4,
+    "killedUnattributed" : 0,
+    "stateEqual" : 0,
+    "stateExpanding" : 0,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 4,
+    "witnessBearingCandidates" : 0
+  }, {
+    "grouping" : "domain",
+    "value" : "interface-protocol",
+    "specifications" : 1,
+    "totalSites" : 2,
+    "killedUnattributed" : 0,
+    "stateEqual" : 2,
+    "stateExpanding" : 0,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 0,
+    "witnessBearingCandidates" : 0
+  }, {
+    "grouping" : "domain",
+    "value" : "lifecycle",
+    "specifications" : 1,
+    "totalSites" : 7,
+    "killedUnattributed" : 0,
+    "stateEqual" : 7,
+    "stateExpanding" : 0,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 0,
+    "witnessBearingCandidates" : 0
+  }, {
+    "grouping" : "domain",
+    "value" : "planning-puzzle",
+    "specifications" : 1,
+    "totalSites" : 1,
+    "killedUnattributed" : 0,
+    "stateEqual" : 0,
+    "stateExpanding" : 1,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 0,
+    "witnessBearingCandidates" : 1
+  }, {
+    "grouping" : "domain",
+    "value" : "reliable-broadcast",
+    "specifications" : 1,
+    "totalSites" : 5,
+    "killedUnattributed" : 0,
+    "stateEqual" : 0,
+    "stateExpanding" : 0,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 5,
+    "witnessBearingCandidates" : 0
+  }, {
+    "grouping" : "domain",
+    "value" : "resource-allocation",
+    "specifications" : 1,
+    "totalSites" : 3,
+    "killedUnattributed" : 1,
+    "stateEqual" : 1,
+    "stateExpanding" : 1,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 0,
+    "witnessBearingCandidates" : 1
+  }, {
+    "grouping" : "domain",
+    "value" : "resource-coordination",
+    "specifications" : 1,
+    "totalSites" : 2,
+    "killedUnattributed" : 0,
+    "stateEqual" : 0,
+    "stateExpanding" : 0,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 2,
+    "witnessBearingCandidates" : 0
+  }, {
+    "grouping" : "domain",
+    "value" : "self-stabilization",
+    "specifications" : 1,
+    "totalSites" : 3,
+    "killedUnattributed" : 0,
+    "stateEqual" : 3,
+    "stateExpanding" : 0,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 0,
+    "witnessBearingCandidates" : 0
+  }, {
+    "grouping" : "domain",
+    "value" : "synchronization",
+    "specifications" : 1,
+    "totalSites" : 2,
+    "killedUnattributed" : 0,
+    "stateEqual" : 2,
+    "stateExpanding" : 0,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 0,
+    "witnessBearingCandidates" : 0
+  }, {
+    "grouping" : "domain",
+    "value" : "termination-detection",
+    "specifications" : 1,
+    "totalSites" : 3,
+    "killedUnattributed" : 1,
+    "stateEqual" : 1,
+    "stateExpanding" : 1,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 0,
+    "witnessBearingCandidates" : 1
+  }, {
+    "grouping" : "domain",
+    "value" : "transaction-protocol",
+    "specifications" : 1,
+    "totalSites" : 1,
+    "killedUnattributed" : 0,
+    "stateEqual" : 1,
+    "stateExpanding" : 0,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 0,
+    "witnessBearingCandidates" : 0
+  }, {
+    "grouping" : "family-cluster",
+    "value" : "allocator",
+    "specifications" : 1,
+    "totalSites" : 3,
+    "killedUnattributed" : 1,
+    "stateEqual" : 1,
+    "stateExpanding" : 1,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 0,
+    "witnessBearingCandidates" : 1
+  }, {
+    "grouping" : "family-cluster",
+    "value" : "asynchronous-interface",
+    "specifications" : 1,
+    "totalSites" : 2,
+    "killedUnattributed" : 0,
+    "stateEqual" : 2,
+    "stateExpanding" : 0,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 0,
+    "witnessBearingCandidates" : 0
+  }, {
+    "grouping" : "family-cluster",
+    "value" : "barrier",
+    "specifications" : 1,
+    "totalSites" : 2,
+    "killedUnattributed" : 0,
+    "stateEqual" : 2,
+    "stateExpanding" : 0,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 0,
+    "witnessBearingCandidates" : 0
+  }, {
+    "grouping" : "family-cluster",
+    "value" : "cigarette-smokers",
+    "specifications" : 1,
+    "totalSites" : 2,
+    "killedUnattributed" : 0,
+    "stateEqual" : 0,
+    "stateExpanding" : 0,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 2,
+    "witnessBearingCandidates" : 0
+  }, {
+    "grouping" : "family-cluster",
+    "value" : "crash-fault-consensus",
+    "specifications" : 1,
+    "totalSites" : 4,
+    "killedUnattributed" : 0,
+    "stateEqual" : 0,
+    "stateExpanding" : 0,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 4,
+    "witnessBearingCandidates" : 0
+  }, {
+    "grouping" : "family-cluster",
+    "value" : "dining-philosophers",
+    "specifications" : 1,
+    "totalSites" : 9,
+    "killedUnattributed" : 4,
+    "stateEqual" : 2,
+    "stateExpanding" : 2,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 1,
+    "witnessBearingCandidates" : 2
+  }, {
+    "grouping" : "family-cluster",
+    "value" : "nonblocking-atomic-commit",
+    "specifications" : 1,
+    "totalSites" : 4,
+    "killedUnattributed" : 0,
+    "stateEqual" : 1,
+    "stateExpanding" : 3,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 0,
+    "witnessBearingCandidates" : 3
+  }, {
+    "grouping" : "family-cluster",
+    "value" : "polymerase-chain-reaction",
+    "specifications" : 1,
+    "totalSites" : 3,
+    "killedUnattributed" : 0,
+    "stateEqual" : 2,
+    "stateExpanding" : 1,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 0,
+    "witnessBearingCandidates" : 1
+  }, {
+    "grouping" : "family-cluster",
+    "value" : "prisoner-single-switch",
+    "specifications" : 1,
+    "totalSites" : 2,
+    "killedUnattributed" : 1,
+    "stateEqual" : 0,
+    "stateExpanding" : 0,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 1,
+    "witnessBearingCandidates" : 0
+  }, {
+    "grouping" : "family-cluster",
+    "value" : "reliable-broadcast",
+    "specifications" : 1,
+    "totalSites" : 5,
+    "killedUnattributed" : 0,
+    "stateEqual" : 0,
+    "stateExpanding" : 0,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 5,
+    "witnessBearingCandidates" : 0
+  }, {
+    "grouping" : "family-cluster",
+    "value" : "river-crossing",
+    "specifications" : 1,
+    "totalSites" : 1,
+    "killedUnattributed" : 0,
+    "stateEqual" : 0,
+    "stateExpanding" : 1,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 0,
+    "witnessBearingCandidates" : 1
+  }, {
+    "grouping" : "family-cluster",
+    "value" : "termination-detection",
+    "specifications" : 1,
+    "totalSites" : 3,
+    "killedUnattributed" : 1,
+    "stateEqual" : 1,
+    "stateExpanding" : 1,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 0,
+    "witnessBearingCandidates" : 1
+  }, {
+    "grouping" : "family-cluster",
+    "value" : "token-ring",
+    "specifications" : 1,
+    "totalSites" : 3,
+    "killedUnattributed" : 0,
+    "stateEqual" : 3,
+    "stateExpanding" : 0,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 0,
+    "witnessBearingCandidates" : 0
+  }, {
+    "grouping" : "family-cluster",
+    "value" : "transaction-commit",
+    "specifications" : 1,
+    "totalSites" : 1,
+    "killedUnattributed" : 0,
+    "stateEqual" : 1,
+    "stateExpanding" : 0,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 0,
+    "witnessBearingCandidates" : 0
+  }, {
+    "grouping" : "family-cluster",
+    "value" : "voucher-lifecycle",
+    "specifications" : 1,
+    "totalSites" : 7,
+    "killedUnattributed" : 0,
+    "stateEqual" : 7,
+    "stateExpanding" : 0,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 0,
+    "witnessBearingCandidates" : 0
+  }, {
+    "grouping" : "stratum",
+    "value" : "collision-or-capacity",
+    "specifications" : 1,
+    "totalSites" : 4,
+    "killedUnattributed" : 0,
+    "stateEqual" : 0,
+    "stateExpanding" : 0,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 4,
+    "witnessBearingCandidates" : 0
+  }, {
+    "grouping" : "stratum",
+    "value" : "control-baseline",
+    "specifications" : 5,
+    "totalSites" : 14,
+    "killedUnattributed" : 1,
+    "stateEqual" : 9,
+    "stateExpanding" : 4,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 0,
+    "witnessBearingCandidates" : 4
+  }, {
+    "grouping" : "stratum",
+    "value" : "guarded-admission-positive-control",
+    "specifications" : 2,
+    "totalSites" : 5,
+    "killedUnattributed" : 1,
+    "stateEqual" : 1,
+    "stateExpanding" : 1,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 2,
+    "witnessBearingCandidates" : 1
+  }, {
+    "grouping" : "stratum",
+    "value" : "lifecycle-or-pc-ordering",
+    "specifications" : 4,
+    "totalSites" : 19,
+    "killedUnattributed" : 5,
+    "stateEqual" : 10,
+    "stateExpanding" : 2,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 2,
+    "witnessBearingCandidates" : 2
+  }, {
+    "grouping" : "stratum",
+    "value" : "type-only-gap-prospect",
+    "specifications" : 3,
+    "totalSites" : 9,
+    "killedUnattributed" : 0,
+    "stateEqual" : 2,
+    "stateExpanding" : 2,
+    "stateIncomparable" : 0,
+    "stateRestricting" : 0,
+    "invalid" : 0,
+    "unresolved" : 5,
+    "witnessBearingCandidates" : 2
+  } ],
+  "census" : {
+    "schemaVersion" : 1,
+    "profile" : "gcd-stratified-v2",
+    "repository" : "https://github.com/tlaplus/Examples",
+    "commit" : "ed3cc4c35f7001d7cec08a22dcd698dae7570dc3",
+    "entries" : [ {
+      "id" : "channel",
+      "domain" : "interface-protocol",
+      "selection" : {
+        "cohort" : "control",
+        "gcdStratum" : "control-baseline",
+        "familyCluster" : "asynchronous-interface",
+        "selectionRationale" : "Small state-equal GCD control retained from the original vertical slice."
+      },
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "Channel.tla",
+        "config" : "Channel.cfg",
+        "sites" : [ {
+          "candidateId" : "gcd-ad3a167ec27d7e447328",
+          "module" : "Channel",
+          "definition" : "Send",
+          "guard" : "chan.rdy = chan.ack",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-992c746f182c7828fbfb",
+          "module" : "Channel",
+          "definition" : "Rcv",
+          "guard" : "chan.rdy # chan.ack",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        } ]
+      }
+    }, {
+      "id" : "nbacc-ray97",
+      "domain" : "consensus",
+      "selection" : {
+        "cohort" : "control",
+        "gcdStratum" : "control-baseline",
+        "familyCluster" : "nonblocking-atomic-commit",
+        "selectionRationale" : "State-equal distributed-protocol control retained from the original vertical slice."
+      },
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "nbacc_ray97.tla",
+        "config" : "nbacc_ray97.cfg",
+        "sites" : [ {
+          "candidateId" : "gcd-7ba79a8c477be0e0f693",
+          "module" : "nbacc_ray97",
+          "definition" : "UponCrash",
+          "guard" : "pc[self] # \"CRASH\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-3ff8590e76731e939573",
+          "module" : "nbacc_ray97",
+          "definition" : "UponYes",
+          "guard" : "pc[self] = \"YES\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-baaf967960f4e748b991",
+          "module" : "nbacc_ray97",
+          "definition" : "UponNo",
+          "guard" : "pc[self] = \"NO\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-b20ae40fe1bba36618a3",
+          "module" : "nbacc_ray97",
+          "definition" : "UponSent",
+          "guard" : "pc[self] = \"SENT\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        } ]
+      }
+    }, {
+      "id" : "barrier",
+      "domain" : "synchronization",
+      "selection" : {
+        "cohort" : "control",
+        "gcdStratum" : "control-baseline",
+        "familyCluster" : "barrier",
+        "selectionRationale" : "State-equal synchronization control retained from the original vertical slice."
+      },
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "Barrier.tla",
+        "config" : "Barrier.cfg",
+        "sites" : [ {
+          "candidateId" : "gcd-69a16acce8db10c62f3f",
+          "module" : "Barrier",
+          "definition" : "b0",
+          "guard" : "pc[self] = \"b0\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-8644418639e88ad9c41b",
+          "module" : "Barrier",
+          "definition" : "b1",
+          "guard" : "\\A p \\in ProcSet : pc[p] = \"b1\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        } ]
+      }
+    }, {
+      "id" : "token-ring",
+      "domain" : "self-stabilization",
+      "selection" : {
+        "cohort" : "control",
+        "gcdStratum" : "control-baseline",
+        "familyCluster" : "token-ring",
+        "selectionRationale" : "Larger state-equal control retained from the original vertical slice."
+      },
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "TokenRing.tla",
+        "config" : "TokenRing.cfg",
+        "sites" : [ {
+          "candidateId" : "gcd-41d7c62563e02ae943f4",
+          "module" : "TokenRing",
+          "definition" : "CreateToken",
+          "guard" : "c [0] = c [N-1]",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-69e0cc8881604c584961",
+          "module" : "TokenRing",
+          "definition" : "PassToken",
+          "guard" : "i # 0",
+          "guardLevel" : 0,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-77a147eb6e61ea4da98a",
+          "module" : "TokenRing",
+          "definition" : "PassToken",
+          "guard" : "c [i] # c [i-1]",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        } ]
+      }
+    }, {
+      "id" : "asynchronous-termination-detection",
+      "domain" : "termination-detection",
+      "selection" : {
+        "cohort" : "control",
+        "gcdStratum" : "control-baseline",
+        "familyCluster" : "termination-detection",
+        "selectionRationale" : "Configured-invariant kills and a state-equal GCD result make this a retained mixed control."
+      },
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "AsyncTerminationDetection.tla",
+        "config" : "AsyncTerminationDetection.cfg",
+        "sites" : [ {
+          "candidateId" : "gcd-f39cbd0295addc2a1625",
+          "module" : "AsyncTerminationDetection",
+          "definition" : "Terminate",
+          "guard" : "active[i]",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 3,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-bf55e7a934baadb56122",
+          "module" : "AsyncTerminationDetection",
+          "definition" : "SendMsg",
+          "guard" : "active[i]",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-8f4e9a3d5aefb340ff6a",
+          "module" : "AsyncTerminationDetection",
+          "definition" : "RcvMsg",
+          "guard" : "pending[i] > 0",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 3,
+          "conforms" : true
+        } ]
+      }
+    }, {
+      "id" : "prisoner-single-switch",
+      "domain" : "coordination-puzzle",
+      "selection" : {
+        "cohort" : "gcd-enriched",
+        "gcdStratum" : "lifecycle-or-pc-ordering",
+        "familyCluster" : "prisoner-single-switch",
+        "selectionRationale" : "Counter and standard actions separate prisoner-role and switch guards from count and switch updates."
+      },
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "Prisoner.tla",
+        "config" : "Prisoner.cfg",
+        "sites" : [ {
+          "candidateId" : "gcd-46b77d17d3c11ac1d7d2",
+          "module" : "Prisoner",
+          "definition" : "CounterAction",
+          "guard" : "p = DesignatedCounter",
+          "guardLevel" : 0,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 3,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-bb0376fa9d6ef6c7ba51",
+          "module" : "Prisoner",
+          "definition" : "StandardAction",
+          "guard" : "p \\in NormalPrisoner",
+          "guardLevel" : 0,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        } ]
+      }
+    }, {
+      "id" : "dining-philosophers",
+      "domain" : "concurrency",
+      "selection" : {
+        "cohort" : "gcd-enriched",
+        "gcdStratum" : "lifecycle-or-pc-ordering",
+        "familyCluster" : "dining-philosophers",
+        "selectionRationale" : "Think and Eat separate program-counter guards from fork, hunger, and program-counter updates."
+      },
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "DiningPhilosophers.tla",
+        "config" : "DiningPhilosophers.cfg",
+        "sites" : [ {
+          "candidateId" : "gcd-c6475c81bf6125a1c449",
+          "module" : "DiningPhilosophers",
+          "definition" : "IsHoldingBothForks",
+          "guard" : "forks[LeftFork(p)].holder = p",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 0,
+          "conforms" : false
+        }, {
+          "candidateId" : "gcd-1f97b12a678df1ef5bcb",
+          "module" : "DiningPhilosophers",
+          "definition" : "IsHoldingBothForks",
+          "guard" : "forks[RightFork(p)].holder = p",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 0,
+          "conforms" : false
+        }, {
+          "candidateId" : "gcd-cb3eaba888b100a646bf",
+          "module" : "DiningPhilosophers",
+          "definition" : "BothForksAreClean",
+          "guard" : "forks[LeftFork(p)].clean",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 0,
+          "conforms" : false
+        }, {
+          "candidateId" : "gcd-04190b04ad25be48a1e0",
+          "module" : "DiningPhilosophers",
+          "definition" : "BothForksAreClean",
+          "guard" : "forks[RightFork(p)].clean",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 0,
+          "conforms" : false
+        }, {
+          "candidateId" : "gcd-be37a635e803409be622",
+          "module" : "DiningPhilosophers",
+          "definition" : "CanEat",
+          "guard" : "IsHoldingBothForks(p)",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 0,
+          "conforms" : false
+        }, {
+          "candidateId" : "gcd-dc0fb4bb8a5796ce2717",
+          "module" : "DiningPhilosophers",
+          "definition" : "CanEat",
+          "guard" : "BothForksAreClean(p)",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 0,
+          "conforms" : false
+        }, {
+          "candidateId" : "gcd-763fdbb1e4c226511e73",
+          "module" : "DiningPhilosophers",
+          "definition" : "Loop",
+          "guard" : "pc[self] = \"Loop\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 3,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-34d0118c16c3e9a7efee",
+          "module" : "DiningPhilosophers",
+          "definition" : "Think",
+          "guard" : "pc[self] = \"Think\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 3,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-d4123db13be2d1fa49ea",
+          "module" : "DiningPhilosophers",
+          "definition" : "Eat",
+          "guard" : "pc[self] = \"Eat\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 3,
+          "conforms" : true
+        } ]
+      }
+    }, {
+      "id" : "simple-allocator",
+      "domain" : "resource-allocation",
+      "selection" : {
+        "cohort" : "gcd-enriched",
+        "gcdStratum" : "guarded-admission-positive-control",
+        "familyCluster" : "allocator",
+        "selectionRationale" : "Allocate separates resource availability from allocation updates."
+      },
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "SimpleAllocator.tla",
+        "config" : "SimpleAllocator.cfg",
+        "sites" : [ {
+          "candidateId" : "gcd-94424c8f20df1b20ffb7",
+          "module" : "SimpleAllocator",
+          "definition" : "Request",
+          "guard" : "unsat[c] = {} /\\ alloc[c] = {}",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-802804f2cb0816da2fa1",
+          "module" : "SimpleAllocator",
+          "definition" : "Allocate",
+          "guard" : "S # {} /\\ S \\subseteq available \\cap unsat[c]",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-82ee15acd48a3a94db2e",
+          "module" : "SimpleAllocator",
+          "definition" : "Return",
+          "guard" : "S # {} /\\ S \\subseteq alloc[c]",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        } ]
+      }
+    }, {
+      "id" : "voucher-life-cycle",
+      "domain" : "lifecycle",
+      "selection" : {
+        "cohort" : "gcd-enriched",
+        "gcdStratum" : "lifecycle-or-pc-ordering",
+        "familyCluster" : "voucher-lifecycle",
+        "selectionRationale" : "Lifecycle guards are separated from voucher-state updates."
+      },
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "VoucherLifeCycle.tla",
+        "config" : "VoucherLifeCycle.cfg",
+        "sites" : [ {
+          "candidateId" : "gcd-200e2929d99b680d04e3",
+          "module" : "VoucherLifeCycle",
+          "definition" : "Issue",
+          "guard" : "vState[v] = \"phantom\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-c5bd1e953988a4a5b0c8",
+          "module" : "VoucherLifeCycle",
+          "definition" : "Issue",
+          "guard" : "vlcState[v] = \"init\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-3b5d9bea27cc74042545",
+          "module" : "VoucherLifeCycle",
+          "definition" : "Transfer",
+          "guard" : "vState[v] = \"valid\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-9bcce18b934c2609aede",
+          "module" : "VoucherLifeCycle",
+          "definition" : "Redeem",
+          "guard" : "vState[v] = \"valid\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-6ff05cb84c9bd95e5c66",
+          "module" : "VoucherLifeCycle",
+          "definition" : "Redeem",
+          "guard" : "vlcState[v] = \"working\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-de8fc30e19b1682f0e0a",
+          "module" : "VoucherLifeCycle",
+          "definition" : "Cancel",
+          "guard" : "vState[v] = \"valid\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-45175e6774d806e0a70e",
+          "module" : "VoucherLifeCycle",
+          "definition" : "Cancel",
+          "guard" : "vlcState[v] = \"working\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        } ]
+      }
+    }, {
+      "id" : "tcommit",
+      "domain" : "transaction-protocol",
+      "selection" : {
+        "cohort" : "gcd-enriched",
+        "gcdStratum" : "lifecycle-or-pc-ordering",
+        "familyCluster" : "transaction-commit",
+        "selectionRationale" : "Prepare separates the working-state guard from the RM-state update."
+      },
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "TCommit.tla",
+        "config" : "TCommit.cfg",
+        "sites" : [ {
+          "candidateId" : "gcd-6111e766369618506789",
+          "module" : "TCommit",
+          "definition" : "Prepare",
+          "guard" : "rmState[rm] = \"working\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        } ]
+      }
+    }, {
+      "id" : "missionaries-and-cannibals",
+      "domain" : "planning-puzzle",
+      "selection" : {
+        "cohort" : "gcd-enriched",
+        "gcdStratum" : "type-only-gap-prospect",
+        "familyCluster" : "river-crossing",
+        "selectionRationale" : "Boat-load enablement is separated from shore and boat updates; Solution is a goal predicate and is excluded from the State Invariant oracle."
+      },
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "MissionariesAndCannibals.tla",
+        "config" : "MissionariesAndCannibals.cfg",
+        "sites" : [ {
+          "candidateId" : "gcd-47306e2921313df50e85",
+          "module" : "MissionariesAndCannibals",
+          "definition" : "Move",
+          "guard" : "Cardinality(S) \\in {1,2}",
+          "guardLevel" : 0,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        } ]
+      }
+    }, {
+      "id" : "cigarette-smokers",
+      "domain" : "resource-coordination",
+      "selection" : {
+        "cohort" : "gcd-enriched",
+        "gcdStratum" : "guarded-admission-positive-control",
+        "familyCluster" : "cigarette-smokers",
+        "selectionRationale" : "Smoking actions separate dealer and ingredient guards from smoker and dealer updates."
+      },
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "CigaretteSmokers.tla",
+        "config" : "CigaretteSmokers.cfg",
+        "sites" : [ {
+          "candidateId" : "gcd-42cdb5e9b8b4e9c1fc9b",
+          "module" : "CigaretteSmokers",
+          "definition" : "startSmoking",
+          "guard" : "dealer /= {}",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-e7ee5834d00c605449d9",
+          "module" : "CigaretteSmokers",
+          "definition" : "stopSmoking",
+          "guard" : "dealer = {}",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        } ]
+      }
+    }, {
+      "id" : "glowing-raccoon-clean",
+      "domain" : "biochemical-process",
+      "selection" : {
+        "cohort" : "gcd-enriched",
+        "gcdStratum" : "type-only-gap-prospect",
+        "familyCluster" : "polymerase-chain-reaction",
+        "selectionRationale" : "Heat, cool, anneal, and extend separate temperature guards from biochemical-state updates."
+      },
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "clean.tla",
+        "config" : "clean.cfg",
+        "sites" : [ {
+          "candidateId" : "gcd-ad266890102c633d0825",
+          "module" : "clean",
+          "definition" : "heat",
+          "guard" : "tee = \"Hot\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 5,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-142cda9b21cd52608d0b",
+          "module" : "clean",
+          "definition" : "cool",
+          "guard" : "tee = \"TooHot\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-0e313df587445cbed5ce",
+          "module" : "clean",
+          "definition" : "anneal",
+          "guard" : "tee = \"Hot\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 3,
+          "conforms" : true
+        } ]
+      }
+    }, {
+      "id" : "cf1s-folklore",
+      "domain" : "crash-fault-consensus",
+      "selection" : {
+        "cohort" : "gcd-enriched",
+        "gcdStratum" : "collision-or-capacity",
+        "familyCluster" : "crash-fault-consensus",
+        "selectionRationale" : "Fault and decide actions separate failure, status, and quorum guards from counter and process-state updates."
+      },
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "cf1s_folklore.tla",
+        "config" : "cf1s_folklore.cfg",
+        "sites" : [ {
+          "candidateId" : "gcd-8b74807c5e7e2c185d8a",
+          "module" : "cf1s_folklore",
+          "definition" : "Faulty",
+          "guard" : "nFaulty < F",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 5,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-03f655f383fb1bfcb734",
+          "module" : "cf1s_folklore",
+          "definition" : "Faulty",
+          "guard" : "pc[i] # \"BYZ\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 5,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-9d479da2e0eabeba38b4",
+          "module" : "cf1s_folklore",
+          "definition" : "Decide",
+          "guard" : "\\/ pc[i] = \"S0\"      \\/ pc[i] = \"S1\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-61b9e8d7e392593ba2d5",
+          "module" : "cf1s_folklore",
+          "definition" : "Decide",
+          "guard" : "nRcvd0[i] + nRcvd1[i] >= N - T",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        } ]
+      }
+    }, {
+      "id" : "bcast-folklore",
+      "domain" : "reliable-broadcast",
+      "selection" : {
+        "cohort" : "gcd-enriched",
+        "gcdStratum" : "type-only-gap-prospect",
+        "familyCluster" : "reliable-broadcast",
+        "selectionRationale" : "The crash-bound guard is separated from crash-state updates while the existing configuration declares only TypeOK."
+      },
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "bcastFolklore.tla",
+        "config" : "bcastFolklore.cfg",
+        "sites" : [ {
+          "candidateId" : "gcd-df0a92e97244dac0531e",
+          "module" : "bcastFolklore",
+          "definition" : "Receive",
+          "guard" : "pc[self] # \"CR\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-2f395db9bb7bb9cb5fc7",
+          "module" : "bcastFolklore",
+          "definition" : "UponV1",
+          "guard" : "pc[self] = \"V1\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 4,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-a72368a17ddc147a24d8",
+          "module" : "bcastFolklore",
+          "definition" : "UponAccept",
+          "guard" : "pc[self] = \"V0\" \\/ pc[self] = \"V1\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 5,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-8ea936872134c3218324",
+          "module" : "bcastFolklore",
+          "definition" : "UponCrash",
+          "guard" : "nCrashed < F",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 4,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-1104201ed322c5dc1d63",
+          "module" : "bcastFolklore",
+          "definition" : "UponCrash",
+          "guard" : "pc[self] # \"CR\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 4,
+          "conforms" : true
+        } ]
+      }
+    } ]
+  },
+  "experiment" : {
+    "schemaVersion" : 1,
+    "repository" : "https://github.com/tlaplus/Examples",
+    "commit" : "ed3cc4c35f7001d7cec08a22dcd698dae7570dc3",
+    "reviewStatus" : "proxy-agent-review; human-review-pending",
+    "entryCount" : 15,
+    "completedEntries" : 13,
+    "generatedMutants" : 49,
+    "evaluatedMutants" : 45,
+    "gapCandidates" : 9,
+    "entries" : [ {
+      "id" : "channel",
+      "domain" : "interface-protocol",
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "Channel.tla",
+        "config" : "Channel.cfg",
+        "reviewStatus" : "proxy-agent-review",
+        "generatedMutants" : 2,
+        "evaluatedMutants" : 2,
+        "gapCandidates" : 0,
+        "results" : [ {
+          "id" : "gcd-992c746f182c7828fbfb",
+          "family" : "GCD",
+          "definition" : "Rcv",
+          "original" : "chan.rdy # chan.ack",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 12,
+          "mutantStateCount" : 12,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "gcd-ad3a167ec27d7e447328",
+          "family" : "GCD",
+          "definition" : "Send",
+          "original" : "chan.rdy = chan.ack",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 12,
+          "mutantStateCount" : 12,
+          "mutantOnlyWitness" : null
+        } ]
+      }
+    }, {
+      "id" : "nbacc-ray97",
+      "domain" : "consensus",
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "nbacc_ray97.tla",
+        "config" : "nbacc_ray97.cfg",
+        "reviewStatus" : "proxy-agent-review",
+        "generatedMutants" : 4,
+        "evaluatedMutants" : 4,
+        "gapCandidates" : 3,
+        "results" : [ {
+          "id" : "gcd-3ff8590e76731e939573",
+          "family" : "GCD",
+          "definition" : "UponYes",
+          "original" : "pc[self] = \"YES\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EXPANDING",
+          "verdict" : "state-invariant-gap-candidate",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 3016,
+          "mutantStateCount" : 25000,
+          "mutantOnlyWitness" : "2:fd:8:function:14:<<TRUE, TRUE>>;2:pc:8:function:16:<<\"NO\", \"SENT\">>;4:rcvd:8:function:10:<<{}, {}>>;4:sent:3:set:27:{<<2, \"YES\">>, <<2, \"NO\">>};"
+        }, {
+          "id" : "gcd-7ba79a8c477be0e0f693",
+          "family" : "GCD",
+          "definition" : "UponCrash",
+          "original" : "pc[self] # \"CRASH\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 3016,
+          "mutantStateCount" : 3016,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "gcd-b20ae40fe1bba36618a3",
+          "family" : "GCD",
+          "definition" : "UponSent",
+          "original" : "pc[self] = \"SENT\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EXPANDING",
+          "verdict" : "state-invariant-gap-candidate",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 3016,
+          "mutantStateCount" : 3236,
+          "mutantOnlyWitness" : "2:fd:8:function:14:<<TRUE, TRUE>>;2:pc:8:function:17:<<\"ABORT\", \"NO\">>;4:rcvd:8:function:10:<<{}, {}>>;4:sent:3:set:2:{};"
+        }, {
+          "id" : "gcd-baaf967960f4e748b991",
+          "family" : "GCD",
+          "definition" : "UponNo",
+          "original" : "pc[self] = \"NO\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EXPANDING",
+          "verdict" : "state-invariant-gap-candidate",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 3016,
+          "mutantStateCount" : 25000,
+          "mutantOnlyWitness" : "2:fd:8:function:14:<<TRUE, TRUE>>;2:pc:8:function:16:<<\"NO\", \"SENT\">>;4:rcvd:8:function:10:<<{}, {}>>;4:sent:3:set:27:{<<2, \"YES\">>, <<2, \"NO\">>};"
+        } ]
+      }
+    }, {
+      "id" : "barrier",
+      "domain" : "synchronization",
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "Barrier.tla",
+        "config" : "Barrier.cfg",
+        "reviewStatus" : "proxy-agent-review",
+        "generatedMutants" : 2,
+        "evaluatedMutants" : 2,
+        "gapCandidates" : 0,
+        "results" : [ {
+          "id" : "gcd-69a16acce8db10c62f3f",
+          "family" : "GCD",
+          "definition" : "b0",
+          "original" : "pc[self] = \"b0\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 64,
+          "mutantStateCount" : 64,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "gcd-8644418639e88ad9c41b",
+          "family" : "GCD",
+          "definition" : "b1",
+          "original" : "\\A p \\in ProcSet : pc[p] = \"b1\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 64,
+          "mutantStateCount" : 64,
+          "mutantOnlyWitness" : null
+        } ]
+      }
+    }, {
+      "id" : "token-ring",
+      "domain" : "self-stabilization",
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "TokenRing.tla",
+        "config" : "TokenRing.cfg",
+        "reviewStatus" : "proxy-agent-review",
+        "generatedMutants" : 3,
+        "evaluatedMutants" : 3,
+        "gapCandidates" : 0,
+        "results" : [ {
+          "id" : "gcd-41d7c62563e02ae943f4",
+          "family" : "GCD",
+          "definition" : "CreateToken",
+          "original" : "c [0] = c [N-1]",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 46656,
+          "mutantStateCount" : 46656,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "gcd-69e0cc8881604c584961",
+          "family" : "GCD",
+          "definition" : "PassToken",
+          "original" : "i # 0",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 46656,
+          "mutantStateCount" : 46656,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "gcd-77a147eb6e61ea4da98a",
+          "family" : "GCD",
+          "definition" : "PassToken",
+          "original" : "c [i] # c [i-1]",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 46656,
+          "mutantStateCount" : 46656,
+          "mutantOnlyWitness" : null
+        } ]
+      }
+    }, {
+      "id" : "asynchronous-termination-detection",
+      "domain" : "termination-detection",
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "AsyncTerminationDetection.tla",
+        "config" : "AsyncTerminationDetection.cfg",
+        "reviewStatus" : "proxy-agent-review",
+        "generatedMutants" : 3,
+        "evaluatedMutants" : 3,
+        "gapCandidates" : 1,
+        "results" : [ {
+          "id" : "gcd-8f4e9a3d5aefb340ff6a",
+          "family" : "GCD",
+          "definition" : "RcvMsg",
+          "original" : "pending[i] > 0",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "state-invariant-kill-unattributed",
+          "diagnosticReason" : "configured-state-invariant-violation; type attribution not run",
+          "baselineStateCount" : 4097,
+          "mutantStateCount" : 18,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "gcd-bf55e7a934baadb56122",
+          "family" : "GCD",
+          "definition" : "SendMsg",
+          "original" : "active[i]",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EXPANDING",
+          "verdict" : "state-invariant-gap-candidate",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 4097,
+          "mutantStateCount" : 8192,
+          "mutantOnlyWitness" : "6:active:8:function:50:(0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE @@ 3 :> TRUE);7:pending:8:function:38:(0 :> 0 @@ 1 :> 0 @@ 2 :> 0 @@ 3 :> 0);19:terminationDetected:7:boolean:4:TRUE;"
+        }, {
+          "id" : "gcd-f39cbd0295addc2a1625",
+          "family" : "GCD",
+          "definition" : "Terminate",
+          "original" : "active[i]",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 4097,
+          "mutantStateCount" : 4097,
+          "mutantOnlyWitness" : null
+        } ]
+      }
+    }, {
+      "id" : "prisoner-single-switch",
+      "domain" : "coordination-puzzle",
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "Prisoner.tla",
+        "config" : "Prisoner.cfg",
+        "reviewStatus" : "proxy-agent-review",
+        "generatedMutants" : 3,
+        "evaluatedMutants" : 2,
+        "gapCandidates" : 0,
+        "results" : [ {
+          "id" : "gcd-46b77d17d3c11ac1d7d2",
+          "family" : "GCD",
+          "definition" : "CounterAction",
+          "original" : "p = DesignatedCounter",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "state-invariant-kill-unattributed",
+          "diagnosticReason" : "configured-state-invariant-violation; type attribution not run",
+          "baselineStateCount" : 16,
+          "mutantStateCount" : 28,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "gcd-bb0376fa9d6ef6c7ba51",
+          "family" : "GCD",
+          "definition" : "StandardAction",
+          "original" : "p \\in NormalPrisoner",
+          "replacement" : "TRUE",
+          "executionStatus" : "TOOL_ERROR",
+          "oracleOutcome" : "NOT_EVALUATED",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "unresolved",
+          "diagnosticReason" : "tool-error; tool-event-codes=1000,2103,2121,2217",
+          "baselineStateCount" : 16,
+          "mutantStateCount" : 2,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "uoi-c03df11d9e813ff3c151",
+          "family" : "UOI",
+          "definition" : "CounterAction",
+          "original" : "1",
+          "replacement" : "2",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "state-invariant-kill-unattributed",
+          "diagnosticReason" : "configured-state-invariant-violation; type attribution not run",
+          "baselineStateCount" : 16,
+          "mutantStateCount" : 7,
+          "mutantOnlyWitness" : null
+        } ]
+      }
+    }, {
+      "id" : "dining-philosophers",
+      "domain" : "concurrency",
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "DiningPhilosophers.tla",
+        "config" : "DiningPhilosophers.cfg",
+        "reviewStatus" : "proxy-agent-review",
+        "generatedMutants" : 9,
+        "evaluatedMutants" : 8,
+        "gapCandidates" : 2,
+        "results" : [ {
+          "id" : "gcd-04190b04ad25be48a1e0",
+          "family" : "GCD",
+          "definition" : "BothForksAreClean",
+          "original" : "forks[RightFork(p)].clean",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 67,
+          "mutantStateCount" : 67,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "gcd-1f97b12a678df1ef5bcb",
+          "family" : "GCD",
+          "definition" : "IsHoldingBothForks",
+          "original" : "forks[RightFork(p)].holder = p",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 67,
+          "mutantStateCount" : 67,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "gcd-34d0118c16c3e9a7efee",
+          "family" : "GCD",
+          "definition" : "Think",
+          "original" : "pc[self] = \"Think\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EXPANDING",
+          "verdict" : "state-invariant-gap-candidate",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 67,
+          "mutantStateCount" : 75,
+          "mutantOnlyWitness" : "5:forks:8:function:164:<<[holder |-> 5, clean |-> FALSE], [holder |-> 1, clean |-> TRUE], [holder |-> 2, clean |-> TRUE], [holder |-> 3, clean |-> TRUE], [holder |-> 5, clean |-> FALSE]>>;6:hungry:8:function:32:<<TRUE, TRUE, TRUE, TRUE, TRUE>>;2:pc:8:function:42:<<\"Loop\", \"Loop\", \"Loop\", \"Loop\", \"Loop\">>;"
+        }, {
+          "id" : "gcd-763fdbb1e4c226511e73",
+          "family" : "GCD",
+          "definition" : "Loop",
+          "original" : "pc[self] = \"Loop\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EXPANDING",
+          "verdict" : "state-invariant-gap-candidate",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 67,
+          "mutantStateCount" : 532,
+          "mutantOnlyWitness" : "5:forks:8:function:162:<<[holder |-> 1, clean |-> TRUE], [holder |-> 1, clean |-> TRUE], [holder |-> 2, clean |-> TRUE], [holder |-> 3, clean |-> TRUE], [holder |-> 4, clean |-> TRUE]>>;6:hungry:8:function:33:<<FALSE, TRUE, TRUE, TRUE, TRUE>>;2:pc:8:function:43:<<\"Think\", \"Loop\", \"Loop\", \"Loop\", \"Loop\">>;"
+        }, {
+          "id" : "gcd-be37a635e803409be622",
+          "family" : "GCD",
+          "definition" : "CanEat",
+          "original" : "IsHoldingBothForks(p)",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "state-invariant-kill-unattributed",
+          "diagnosticReason" : "configured-state-invariant-violation; type attribution not run",
+          "baselineStateCount" : 67,
+          "mutantStateCount" : 48,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "gcd-c6475c81bf6125a1c449",
+          "family" : "GCD",
+          "definition" : "IsHoldingBothForks",
+          "original" : "forks[LeftFork(p)].holder = p",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "state-invariant-kill-unattributed",
+          "diagnosticReason" : "configured-state-invariant-violation; type attribution not run",
+          "baselineStateCount" : 67,
+          "mutantStateCount" : 53,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "gcd-cb3eaba888b100a646bf",
+          "family" : "GCD",
+          "definition" : "BothForksAreClean",
+          "original" : "forks[LeftFork(p)].clean",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "state-invariant-kill-unattributed",
+          "diagnosticReason" : "configured-state-invariant-violation; type attribution not run",
+          "baselineStateCount" : 67,
+          "mutantStateCount" : 23,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "gcd-d4123db13be2d1fa49ea",
+          "family" : "GCD",
+          "definition" : "Eat",
+          "original" : "pc[self] = \"Eat\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "TOOL_ERROR",
+          "oracleOutcome" : "NOT_EVALUATED",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "unresolved",
+          "diagnosticReason" : "tool-error; tool-event-codes=1000,2121,2217",
+          "baselineStateCount" : 67,
+          "mutantStateCount" : 100000,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "gcd-dc0fb4bb8a5796ce2717",
+          "family" : "GCD",
+          "definition" : "CanEat",
+          "original" : "BothForksAreClean(p)",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "state-invariant-kill-unattributed",
+          "diagnosticReason" : "configured-state-invariant-violation; type attribution not run",
+          "baselineStateCount" : 67,
+          "mutantStateCount" : 9,
+          "mutantOnlyWitness" : null
+        } ]
+      }
+    }, {
+      "id" : "simple-allocator",
+      "domain" : "resource-allocation",
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "SimpleAllocator.tla",
+        "config" : "SimpleAllocator.cfg",
+        "reviewStatus" : "proxy-agent-review",
+        "generatedMutants" : 3,
+        "evaluatedMutants" : 3,
+        "gapCandidates" : 1,
+        "results" : [ {
+          "id" : "gcd-802804f2cb0816da2fa1",
+          "family" : "GCD",
+          "definition" : "Allocate",
+          "original" : "S # {} /\\ S \\subseteq available \\cap unsat[c]",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "state-invariant-kill-unattributed",
+          "diagnosticReason" : "configured-state-invariant-violation; type attribution not run",
+          "baselineStateCount" : 400,
+          "mutantStateCount" : 34,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "gcd-82ee15acd48a3a94db2e",
+          "family" : "GCD",
+          "definition" : "Return",
+          "original" : "S # {} /\\ S \\subseteq alloc[c]",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 400,
+          "mutantStateCount" : 400,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "gcd-94424c8f20df1b20ffb7",
+          "family" : "GCD",
+          "definition" : "Request",
+          "original" : "unsat[c] = {} /\\ alloc[c] = {}",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EXPANDING",
+          "verdict" : "state-invariant-gap-candidate",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 400,
+          "mutantStateCount" : 1024,
+          "mutantOnlyWitness" : "5:alloc:8:function:36:(c1 :> {r1} @@ c2 :> {} @@ c3 :> {});5:unsat:8:function:36:(c1 :> {r1} @@ c2 :> {} @@ c3 :> {});"
+        } ]
+      }
+    }, {
+      "id" : "voucher-life-cycle",
+      "domain" : "lifecycle",
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "VoucherLifeCycle.tla",
+        "config" : "VoucherLifeCycle.cfg",
+        "reviewStatus" : "proxy-agent-review",
+        "generatedMutants" : 7,
+        "evaluatedMutants" : 7,
+        "gapCandidates" : 0,
+        "results" : [ {
+          "id" : "gcd-200e2929d99b680d04e3",
+          "family" : "GCD",
+          "definition" : "Issue",
+          "original" : "vState[v] = \"phantom\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 64,
+          "mutantStateCount" : 64,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "gcd-3b5d9bea27cc74042545",
+          "family" : "GCD",
+          "definition" : "Transfer",
+          "original" : "vState[v] = \"valid\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 64,
+          "mutantStateCount" : 64,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "gcd-45175e6774d806e0a70e",
+          "family" : "GCD",
+          "definition" : "Cancel",
+          "original" : "vlcState[v] = \"working\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 64,
+          "mutantStateCount" : 64,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "gcd-6ff05cb84c9bd95e5c66",
+          "family" : "GCD",
+          "definition" : "Redeem",
+          "original" : "vlcState[v] = \"working\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 64,
+          "mutantStateCount" : 64,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "gcd-9bcce18b934c2609aede",
+          "family" : "GCD",
+          "definition" : "Redeem",
+          "original" : "vState[v] = \"valid\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 64,
+          "mutantStateCount" : 64,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "gcd-c5bd1e953988a4a5b0c8",
+          "family" : "GCD",
+          "definition" : "Issue",
+          "original" : "vlcState[v] = \"init\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 64,
+          "mutantStateCount" : 64,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "gcd-de8fc30e19b1682f0e0a",
+          "family" : "GCD",
+          "definition" : "Cancel",
+          "original" : "vState[v] = \"valid\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 64,
+          "mutantStateCount" : 64,
+          "mutantOnlyWitness" : null
+        } ]
+      }
+    }, {
+      "id" : "tcommit",
+      "domain" : "transaction-protocol",
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "TCommit.tla",
+        "config" : "TCommit.cfg",
+        "reviewStatus" : "proxy-agent-review",
+        "generatedMutants" : 1,
+        "evaluatedMutants" : 1,
+        "gapCandidates" : 0,
+        "results" : [ {
+          "id" : "gcd-6111e766369618506789",
+          "family" : "GCD",
+          "definition" : "Prepare",
+          "original" : "rmState[rm] = \"working\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 34,
+          "mutantStateCount" : 34,
+          "mutantOnlyWitness" : null
+        } ]
+      }
+    }, {
+      "id" : "missionaries-and-cannibals",
+      "domain" : "planning-puzzle",
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "MissionariesAndCannibals.tla",
+        "config" : "MissionariesAndCannibals.cfg",
+        "reviewStatus" : "proxy-agent-review",
+        "generatedMutants" : 1,
+        "evaluatedMutants" : 1,
+        "gapCandidates" : 1,
+        "results" : [ {
+          "id" : "gcd-47306e2921313df50e85",
+          "family" : "GCD",
+          "definition" : "Move",
+          "original" : "Cardinality(S) \\in {1,2}",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EXPANDING",
+          "verdict" : "state-invariant-gap-candidate",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 64,
+          "mutantStateCount" : 68,
+          "mutantOnlyWitness" : "12:bank_of_boat:6:string:3:\"E\";14:who_is_on_bank:8:function:40:[E |-> {m1, m2, m3}, W |-> {c1, c2, c3}];"
+        } ]
+      }
+    }, {
+      "id" : "cigarette-smokers",
+      "domain" : "resource-coordination",
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "CigaretteSmokers.tla",
+        "config" : "CigaretteSmokers.cfg",
+        "reviewStatus" : "proxy-agent-review",
+        "generatedMutants" : 2,
+        "evaluatedMutants" : 0,
+        "gapCandidates" : 0,
+        "results" : [ {
+          "id" : "gcd-42cdb5e9b8b4e9c1fc9b",
+          "family" : "GCD",
+          "definition" : "startSmoking",
+          "original" : "dealer /= {}",
+          "replacement" : "TRUE",
+          "executionStatus" : "TOOL_ERROR",
+          "oracleOutcome" : "NOT_EVALUATED",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "unresolved",
+          "diagnosticReason" : "tool-error; tool-event-codes=1000,2103,2121,2217",
+          "baselineStateCount" : 6,
+          "mutantStateCount" : 7,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "gcd-e7ee5834d00c605449d9",
+          "family" : "GCD",
+          "definition" : "stopSmoking",
+          "original" : "dealer = {}",
+          "replacement" : "TRUE",
+          "executionStatus" : "TOOL_ERROR",
+          "oracleOutcome" : "NOT_EVALUATED",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "unresolved",
+          "diagnosticReason" : "tool-error; tool-event-codes=1000,2103,2121,2217",
+          "baselineStateCount" : 6,
+          "mutantStateCount" : 4,
+          "mutantOnlyWitness" : null
+        } ]
+      }
+    }, {
+      "id" : "glowing-raccoon-clean",
+      "domain" : "biochemical-process",
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "clean.tla",
+        "config" : "clean.cfg",
+        "reviewStatus" : "proxy-agent-review",
+        "generatedMutants" : 9,
+        "evaluatedMutants" : 9,
+        "gapCandidates" : 1,
+        "results" : [ {
+          "id" : "gcd-0e313df587445cbed5ce",
+          "family" : "GCD",
+          "definition" : "anneal",
+          "original" : "tee = \"Hot\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 63,
+          "mutantStateCount" : 63,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "gcd-142cda9b21cd52608d0b",
+          "family" : "GCD",
+          "definition" : "cool",
+          "original" : "tee = \"TooHot\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EXPANDING",
+          "verdict" : "state-invariant-gap-candidate",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 63,
+          "mutantStateCount" : 98,
+          "mutantOnlyWitness" : "3:dna:7:integer:1:0;6:hybrid:7:integer:1:1;6:primer:7:integer:1:0;3:tee:6:string:5:\"Hot\";8:template:7:integer:2:13;"
+        }, {
+          "id" : "gcd-ad266890102c633d0825",
+          "family" : "GCD",
+          "definition" : "heat",
+          "original" : "tee = \"Hot\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 63,
+          "mutantStateCount" : 63,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "uoi-2d85aa38b97bf2716779",
+          "family" : "UOI",
+          "definition" : "heat",
+          "original" : "0",
+          "replacement" : "0 - 1",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "state-invariant-kill-unattributed",
+          "diagnosticReason" : "configured-state-invariant-violation; type attribution not run",
+          "baselineStateCount" : 63,
+          "mutantStateCount" : 2,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "uoi-4adf393037bcbd8ab263",
+          "family" : "UOI",
+          "definition" : "heat",
+          "original" : "0",
+          "replacement" : "0 - 1",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "state-invariant-kill-unattributed",
+          "diagnosticReason" : "configured-state-invariant-violation; type attribution not run",
+          "baselineStateCount" : 63,
+          "mutantStateCount" : 2,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "uoi-55d398706de2ec8799c3",
+          "family" : "UOI",
+          "definition" : "extend",
+          "original" : "0",
+          "replacement" : "0 - 1",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "state-invariant-kill-unattributed",
+          "diagnosticReason" : "configured-state-invariant-violation; type attribution not run",
+          "baselineStateCount" : 63,
+          "mutantStateCount" : 9,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "uoi-5dc86d5e11406085be77",
+          "family" : "UOI",
+          "definition" : "heat",
+          "original" : "0",
+          "replacement" : "0 + 1",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "state-invariant-kill-unattributed",
+          "diagnosticReason" : "configured-state-invariant-violation; type attribution not run",
+          "baselineStateCount" : 63,
+          "mutantStateCount" : 2,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "uoi-8a6cae6b9887c059c421",
+          "family" : "UOI",
+          "definition" : "extend",
+          "original" : "0",
+          "replacement" : "0 + 1",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "state-invariant-kill-unattributed",
+          "diagnosticReason" : "configured-state-invariant-violation; type attribution not run",
+          "baselineStateCount" : 63,
+          "mutantStateCount" : 9,
+          "mutantOnlyWitness" : null
+        }, {
+          "id" : "uoi-ec63dcd47858dd38793a",
+          "family" : "UOI",
+          "definition" : "heat",
+          "original" : "0",
+          "replacement" : "0 + 1",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "state-invariant-kill-unattributed",
+          "diagnosticReason" : "configured-state-invariant-violation; type attribution not run",
+          "baselineStateCount" : 63,
+          "mutantStateCount" : 2,
+          "mutantOnlyWitness" : null
+        } ]
+      }
+    }, {
+      "id" : "cf1s-folklore",
+      "domain" : "crash-fault-consensus",
+      "status" : "SANDBOX_ERROR",
+      "diagnostic" : "java.lang.IllegalStateException: Baseline did not complete successfully: TOOL_ERROR/NOT_EVALUATED\nstdout:\n@!@!@STARTMSG 2262:0 @!@!@\nTLC2 Version 2026.08.21.155922 (rev: 9787e65)\n@!@!@ENDMSG 2262 @!@!@\n@!@!@STARTMSG 2187:0 @!@!@\nRunning breadth-first search Model-Checking with fp 81 and seed 1100040015644522567 with 1 worker on 1 cores with 228MB heap and 64MB offheap memory [pid: 15] (Linux 6.18.10-200.fc43.aarch64 aarch64, Eclipse Adoptium 21.0.12 64bit, MSBDiskFPSet, DiskStateQueue).\n@!@!@ENDMSG 2187 @!@!@\n@!@!@STARTMSG 2220:0 @!@!@\nStarting SANY...\n@!@!@ENDMSG 2220 @!@!@\nParsing file /input/cf1s_folklore.tla\nParsing file /scratch/work/.tlc-run-13767639922688073342/tmp/tlc-12524932617514297985/Naturals.tla (jar:file:/opt/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)\nParsing file /scratch/work/.tlc-run-13767639922688073342/tmp/tlc-12524932617514297985/FiniteSets.tla (jar:file:/opt/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)\nParsing file /scratch/work/.tlc-run-13767639922688073342/tmp/tlc-12524932617514297985/Sequences.tla (jar:file:/opt/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)\nSemantic processing of module Naturals\nSemantic processing of module Sequences\nSemantic processing of module FiniteSets\nSemantic processing of module cf1s_folklore\nLinting of module cf1s_folklore\n@!@!@STARTMSG 2219:0 @!@!@\nSANY finished.\n@!@!@ENDMSG 2219 @!@!@\n@!@!@STARTMSG 2185:0 @!@!@\nStarting... (2026-08-29 03:00:29)\n@!@!@ENDMSG 2185 @!@!@\n@!@!@STARTMSG 2189:0 @!@!@\nComputing initial states...\n@!@!@ENDMSG 2189 @!@!@\n@!@!@STARTMSG 2269:0 @!@!@\nComputed 2 initial states...\n@!@!@ENDMSG 2269 @!@!@\n@!@!@STARTMSG 2269:0 @!@!@\nComputed 4 initial states...\n@!@!@ENDMSG 2269 @!@!@\n@!@!@STARTMSG 2269:0 @!@!@\nComputed 8 initial states...\n@!@!@ENDMSG 2269 @!@!@\n@!@!@STARTMSG 2190:0 @!@!@\nFinished computing initial states: 16 distinct states generated at 2026-08-29 03:00:29.\n@!@!@ENDMSG 2190 @!@!@\n@!@!@STARTMSG 2200:0 @!@!@\nProgress(7) at 2026-08-29 03:00:32: 206,092 s",
+      "report" : null
+    }, {
+      "id" : "bcast-folklore",
+      "domain" : "reliable-broadcast",
+      "status" : "SANDBOX_ERROR",
+      "diagnostic" : "java.lang.IllegalStateException: Baseline did not complete successfully: TOOL_ERROR/NOT_EVALUATED\nstdout:\n@!@!@STARTMSG 2262:0 @!@!@\nTLC2 Version 2026.08.21.155922 (rev: 9787e65)\n@!@!@ENDMSG 2262 @!@!@\n@!@!@STARTMSG 2187:0 @!@!@\nRunning breadth-first search Model-Checking with fp 81 and seed 5154816041803801612 with 1 worker on 1 cores with 228MB heap and 64MB offheap memory [pid: 15] (Linux 6.18.10-200.fc43.aarch64 aarch64, Eclipse Adoptium 21.0.12 64bit, MSBDiskFPSet, DiskStateQueue).\n@!@!@ENDMSG 2187 @!@!@\n@!@!@STARTMSG 2220:0 @!@!@\nStarting SANY...\n@!@!@ENDMSG 2220 @!@!@\nParsing file /input/bcastFolklore.tla\nParsing file /scratch/work/.tlc-run-11830945831102630692/tmp/tlc-12472051981352378982/Naturals.tla (jar:file:/opt/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)\nSemantic processing of module Naturals\nSemantic processing of module bcastFolklore\nLinting of module bcastFolklore\n@!@!@STARTMSG 2219:0 @!@!@\nSANY finished.\n@!@!@ENDMSG 2219 @!@!@\n@!@!@STARTMSG 2185:0 @!@!@\nStarting... (2026-08-29 03:00:39)\n@!@!@ENDMSG 2185 @!@!@\n@!@!@STARTMSG 2189:0 @!@!@\nComputing initial states...\n@!@!@ENDMSG 2189 @!@!@\n@!@!@STARTMSG 2269:0 @!@!@\nComputed 2 initial states...\n@!@!@ENDMSG 2269 @!@!@\n@!@!@STARTMSG 2269:0 @!@!@\nComputed 4 initial states...\n@!@!@ENDMSG 2269 @!@!@\n@!@!@STARTMSG 2269:0 @!@!@\nComputed 8 initial states...\n@!@!@ENDMSG 2269 @!@!@\n@!@!@STARTMSG 2190:0 @!@!@\nFinished computing initial states: 16 distinct states generated at 2026-08-29 03:00:40.\n@!@!@ENDMSG 2190 @!@!@\n@!@!@STARTMSG 2200:0 @!@!@\nProgress(6) at 2026-08-29 03:00:43: 100,729 states generated (100,729 s/min), 29,449 distinct states found (29,449 ds/min), 25,360 states left on queue.\n@!@!@ENDMSG 2200 @!@!@\n@!@!@STARTMSG 1000:1 @!@!@\nTLC threw an unexpected exception.\nThis was probably caused by an error in the spec or model.\nSee the User Output or TLC Console for clues to what happened.\nThe exception was a java.lang.IllegalStateException\n: Canonical state count limit exceeded\n@!@!@ENDMSG 1000 ",
+      "report" : null
+    } ]
+  }
+}
