@@ -13,6 +13,7 @@ import dev.tlamutant.experiment.CorpusExperimentReport;
 import dev.tlamutant.experiment.ExperimentReport;
 import dev.tlamutant.experiment.GcdOutcomeSummary;
 import dev.tlamutant.experiment.GcdStratifiedReport;
+import dev.tlamutant.experiment.KillAttribution;
 import dev.tlamutant.experiment.MutationResult;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -70,6 +71,44 @@ final class ReportWriterTest {
         assertFalse(markdown.contains("\u0085"));
         assertTrue(markdown.contains("\\|"));
         assertFalse(markdown.contains("injected\nrow"));
+    }
+
+    @Test
+    void individualMarkdownRendersStructuredAttributionEvidence() {
+        KillAttribution attribution = new KillAttribution(
+                "adopted-target-invariant-kill",
+                "COMPLETED",
+                "PASSED",
+                4,
+                "COMPLETED",
+                "PASSED",
+                "STATE_EXPANDING",
+                8,
+                "1:x:2:integer:2",
+                null);
+        MutationResult result = new MutationResult(
+                "gcd-1",
+                "GCD",
+                "Request",
+                "guard",
+                "TRUE",
+                "COMPLETED",
+                "KILLED_STATE_SAFETY",
+                "STATE_UNRESOLVED",
+                attribution.category(),
+                null,
+                4,
+                5,
+                null,
+                attribution);
+
+        String markdown = new MarkdownReportWriter()
+                .render(new ExperimentReport(2, "Spec.tla", "Spec.cfg", "proxy", 1, 1, 0, List.of(result)));
+
+        assertTrue(markdown.contains("Attribution: adopted-target-invariant-kill"));
+        assertTrue(markdown.contains("Type-only oracle: COMPLETED/PASSED"));
+        assertTrue(markdown.contains("Legacy oracle: COMPLETED/PASSED"));
+        assertTrue(markdown.contains("Legacy state relation: STATE_EXPANDING"));
     }
 
     @Test

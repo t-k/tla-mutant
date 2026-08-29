@@ -34,7 +34,7 @@ public record GcdStratifiedReport(
         CorpusCensusReport census,
         CorpusExperimentReport experiment) {
     public GcdStratifiedReport {
-        if ((schemaVersion != 1 && schemaVersion != 2 && schemaVersion != 3)
+        if ((schemaVersion != 1 && schemaVersion != 2 && schemaVersion != 3 && schemaVersion != 4)
                 || censusSha256 == null
                 || !censusSha256.matches("[0-9a-f]{64}")
                 || censusSizeBytes <= 0
@@ -55,14 +55,14 @@ public record GcdStratifiedReport(
         Objects.requireNonNull(experiment, "experiment");
         summaries = List.copyOf(summaries);
         if (gcdOutcomes == null) {
-            if (schemaVersion == 3) {
-                throw new IllegalArgumentException("Schema 3 requires explicit GCD terminal outcomes");
+            if (schemaVersion >= 3) {
+                throw new IllegalArgumentException("Schema 3 and later require explicit GCD terminal outcomes");
             }
             gcdOutcomes = List.of();
         } else {
             gcdOutcomes = List.copyOf(gcdOutcomes);
         }
-        if (schemaVersion == 3 && gcdOutcomes.size() != censusSiteCount) {
+        if (schemaVersion >= 3 && gcdOutcomes.size() != censusSiteCount) {
             throw new IllegalArgumentException("Every census GCD site requires one terminal outcome");
         }
     }
@@ -156,8 +156,10 @@ public record GcdStratifiedReport(
                 candidateSpecifications.size() >= 2 && candidateDomains.size() >= 2 && candidateClusters.size() >= 2
                         ? "human-review-eligible"
                         : "insufficient-witness-bearing-gcd-candidates";
+        int schemaVersion =
+                gcdOutcomes.stream().anyMatch(outcome -> outcome.result().attribution() != null) ? 4 : 3;
         return new GcdStratifiedReport(
-                3,
+                schemaVersion,
                 manifest.profile(),
                 manifest.repository(),
                 manifest.commit(),
@@ -242,6 +244,18 @@ public record GcdStratifiedReport(
         if (result.verdict().equals("state-invariant-kill-unattributed")) {
             return Bucket.KILLED_UNATTRIBUTED;
         }
+        if (result.verdict().equals("adopted-target-invariant-kill")) {
+            return Bucket.KILLED_ADOPTED_TARGET;
+        }
+        if (result.verdict().equals("legacy-target-invariant-kill")) {
+            return Bucket.KILLED_LEGACY_TARGET;
+        }
+        if (result.verdict().equals("type-invariant-kill")) {
+            return Bucket.KILLED_TYPE_INVARIANT;
+        }
+        if (result.verdict().equals("kill-attribution-unresolved")) {
+            return Bucket.KILL_ATTRIBUTION_UNRESOLVED;
+        }
         if (result.verdict().equals("invalid") || result.executionStatus().startsWith("INVALID_")) {
             return Bucket.INVALID;
         }
@@ -264,6 +278,10 @@ public record GcdStratifiedReport(
 
     private enum Bucket {
         KILLED_UNATTRIBUTED,
+        KILLED_ADOPTED_TARGET,
+        KILLED_LEGACY_TARGET,
+        KILLED_TYPE_INVARIANT,
+        KILL_ATTRIBUTION_UNRESOLVED,
         STATE_EQUAL,
         STATE_EXPANDING,
         STATE_INCOMPARABLE,
@@ -290,6 +308,10 @@ public record GcdStratifiedReport(
     private static final class SummaryBuilder {
         private int specifications;
         private int killedUnattributed;
+        private int killedAdoptedTarget;
+        private int killedLegacyTarget;
+        private int killedTypeInvariant;
+        private int killAttributionUnresolved;
         private int stateEqual;
         private int stateExpanding;
         private int stateIncomparable;
@@ -298,6 +320,10 @@ public record GcdStratifiedReport(
         private int unresolved;
         private int witnessBearingCandidates;
         private int specificationsKilledUnattributed;
+        private int specificationsKilledAdoptedTarget;
+        private int specificationsKilledLegacyTarget;
+        private int specificationsKilledTypeInvariant;
+        private int specificationsKillAttributionUnresolved;
         private int specificationsStateEqual;
         private int specificationsStateExpanding;
         private int specificationsStateIncomparable;
@@ -309,6 +335,10 @@ public record GcdStratifiedReport(
         void addSpecification(Set<Bucket> buckets, boolean witnessBearing) {
             specifications++;
             specificationsKilledUnattributed += buckets.contains(Bucket.KILLED_UNATTRIBUTED) ? 1 : 0;
+            specificationsKilledAdoptedTarget += buckets.contains(Bucket.KILLED_ADOPTED_TARGET) ? 1 : 0;
+            specificationsKilledLegacyTarget += buckets.contains(Bucket.KILLED_LEGACY_TARGET) ? 1 : 0;
+            specificationsKilledTypeInvariant += buckets.contains(Bucket.KILLED_TYPE_INVARIANT) ? 1 : 0;
+            specificationsKillAttributionUnresolved += buckets.contains(Bucket.KILL_ATTRIBUTION_UNRESOLVED) ? 1 : 0;
             specificationsStateEqual += buckets.contains(Bucket.STATE_EQUAL) ? 1 : 0;
             specificationsStateExpanding += buckets.contains(Bucket.STATE_EXPANDING) ? 1 : 0;
             specificationsStateIncomparable += buckets.contains(Bucket.STATE_INCOMPARABLE) ? 1 : 0;
@@ -321,6 +351,10 @@ public record GcdStratifiedReport(
         void add(Bucket bucket, boolean witnessBearing) {
             switch (bucket) {
                 case KILLED_UNATTRIBUTED -> killedUnattributed++;
+                case KILLED_ADOPTED_TARGET -> killedAdoptedTarget++;
+                case KILLED_LEGACY_TARGET -> killedLegacyTarget++;
+                case KILLED_TYPE_INVARIANT -> killedTypeInvariant++;
+                case KILL_ATTRIBUTION_UNRESOLVED -> killAttributionUnresolved++;
                 case STATE_EQUAL -> stateEqual++;
                 case STATE_EXPANDING -> stateExpanding++;
                 case STATE_INCOMPARABLE -> stateIncomparable++;
@@ -333,6 +367,10 @@ public record GcdStratifiedReport(
 
         GcdOutcomeSummary build(GroupKey group) {
             int totalSites = killedUnattributed
+                    + killedAdoptedTarget
+                    + killedLegacyTarget
+                    + killedTypeInvariant
+                    + killAttributionUnresolved
                     + stateEqual
                     + stateExpanding
                     + stateIncomparable
@@ -345,6 +383,10 @@ public record GcdStratifiedReport(
                     specifications,
                     totalSites,
                     killedUnattributed,
+                    killedAdoptedTarget,
+                    killedLegacyTarget,
+                    killedTypeInvariant,
+                    killAttributionUnresolved,
                     stateEqual,
                     stateExpanding,
                     stateIncomparable,
@@ -353,6 +395,10 @@ public record GcdStratifiedReport(
                     unresolved,
                     witnessBearingCandidates,
                     specificationsKilledUnattributed,
+                    specificationsKilledAdoptedTarget,
+                    specificationsKilledLegacyTarget,
+                    specificationsKilledTypeInvariant,
+                    specificationsKillAttributionUnresolved,
                     specificationsStateEqual,
                     specificationsStateExpanding,
                     specificationsStateIncomparable,

@@ -50,6 +50,27 @@ public final class MarkdownReportWriter {
                         .append(MarkdownSanitizer.inline(result.diagnosticReason()))
                         .append('\n');
             }
+            if (result.attribution() != null) {
+                markdown.append("- Attribution: ")
+                        .append(MarkdownSanitizer.inline(result.attribution().category()))
+                        .append('\n');
+                appendOracle(
+                        markdown,
+                        "Type-only oracle",
+                        result.attribution().typeOnlyExecutionStatus(),
+                        result.attribution().typeOnlyOracleOutcome());
+                appendOracle(
+                        markdown,
+                        "Legacy oracle",
+                        result.attribution().legacyExecutionStatus(),
+                        result.attribution().legacyOracleOutcome());
+                if (result.attribution().legacyStateRelation() != null) {
+                    markdown.append("- Legacy state relation: ")
+                            .append(MarkdownSanitizer.inline(
+                                    result.attribution().legacyStateRelation()))
+                            .append('\n');
+                }
+            }
             if (result.mutantOnlyWitness() != null) {
                 markdown.append("- Mutant-only witness: ")
                         .append(MarkdownSanitizer.inline(result.mutantOnlyWitness()))
@@ -58,6 +79,18 @@ public final class MarkdownReportWriter {
             markdown.append('\n');
         }
         return markdown.toString();
+    }
+
+    private static void appendOracle(StringBuilder markdown, String label, String execution, String oracle) {
+        if (execution != null && oracle != null) {
+            markdown.append("- ")
+                    .append(label)
+                    .append(": ")
+                    .append(MarkdownSanitizer.inline(execution))
+                    .append('/')
+                    .append(MarkdownSanitizer.inline(oracle))
+                    .append('\n');
+        }
     }
 
     private static String displayVerdict(String verdict) {

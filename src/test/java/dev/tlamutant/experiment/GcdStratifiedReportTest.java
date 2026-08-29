@@ -3,12 +3,14 @@ package dev.tlamutant.experiment;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.tlamutant.census.CorpusCensusEntryResult;
 import dev.tlamutant.census.CorpusCensusReport;
 import dev.tlamutant.census.GcdCensusReport;
 import dev.tlamutant.census.GcdCensusSite;
 import dev.tlamutant.config.ExecutionPolicy;
 import dev.tlamutant.corpus.CorpusManifest;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -39,6 +41,10 @@ final class GcdStratifiedReportTest {
         assertEquals(
                 overall.totalSites(),
                 overall.killedUnattributed()
+                        + overall.killedAdoptedTarget()
+                        + overall.killedLegacyTarget()
+                        + overall.killedTypeInvariant()
+                        + overall.killAttributionUnresolved()
                         + overall.stateEqual()
                         + overall.stateExpanding()
                         + overall.stateIncomparable()
@@ -111,6 +117,52 @@ final class GcdStratifiedReportTest {
         assertEquals("BASELINE_UNRESOLVED", outcome.result().executionStatus());
         assertEquals("STATE_UNRESOLVED", outcome.result().stateRelation());
         assertEquals("unresolved", outcome.result().verdict());
+    }
+
+    @Test
+    void conservesEveryAttributedAndHistoricalKillBucket() {
+        List<MutationResult> results = List.of(
+                attributed(0, "adopted-target-invariant-kill"),
+                attributed(1, "legacy-target-invariant-kill"),
+                attributed(2, "type-invariant-kill"),
+                attributed(3, "kill-attribution-unresolved"),
+                result(4, "STATE_UNRESOLVED", "state-invariant-kill-unattributed", null));
+
+        GcdStratifiedReport report = fixture(List.of(entry("attributed", "domain-a", "cluster-a")), List.of(results))
+                .report();
+        GcdOutcomeSummary overall = report.summaries().getFirst();
+
+        assertEquals(4, report.schemaVersion());
+        assertEquals(1, overall.killedAdoptedTarget());
+        assertEquals(1, overall.killedLegacyTarget());
+        assertEquals(1, overall.killedTypeInvariant());
+        assertEquals(1, overall.killAttributionUnresolved());
+        assertEquals(1, overall.killedUnattributed());
+        assertEquals(5, overall.totalSites());
+        assertEquals(1, overall.specificationsKilledAdoptedTarget());
+        assertEquals(1, overall.specificationsKilledLegacyTarget());
+        assertEquals(1, overall.specificationsKilledTypeInvariant());
+        assertEquals(1, overall.specificationsKillAttributionUnresolved());
+        assertEquals(1, overall.specificationsKilledUnattributed());
+    }
+
+    @Test
+    void readsTheFrozenV8ReportWithoutInventingAttribution() throws Exception {
+        GcdStratifiedReport report = new ObjectMapper()
+                .readValue(Path.of("docs/experiments/gcd-stratified.json").toFile(), GcdStratifiedReport.class);
+
+        assertEquals(3, report.schemaVersion());
+        assertEquals(51, report.gcdOutcomes().size());
+        assertEquals(
+                7,
+                report.gcdOutcomes().stream()
+                        .filter(outcome -> outcome.result().verdict().equals("state-invariant-kill-unattributed"))
+                        .count());
+        assertEquals(
+                0,
+                report.gcdOutcomes().stream()
+                        .filter(outcome -> outcome.result().attribution() != null)
+                        .count());
     }
 
     @Test
@@ -207,8 +259,16 @@ final class GcdStratifiedReportTest {
         int gaps = (int) results.stream()
                 .filter(result -> result.verdict().equals("state-invariant-gap-candidate"))
                 .count();
+        int schemaVersion = results.stream().anyMatch(result -> result.attribution() != null) ? 2 : 1;
         return new ExperimentReport(
-                1, entry.rootModule(), entry.config(), "proxy-agent-review", results.size(), evaluated, gaps, results);
+                schemaVersion,
+                entry.rootModule(),
+                entry.config(),
+                "proxy-agent-review",
+                results.size(),
+                evaluated,
+                gaps,
+                results);
     }
 
     private static CorpusManifest.Entry entry(String id, String domain, String cluster) {
@@ -264,6 +324,35 @@ final class GcdStratifiedReportTest {
                 1,
                 0,
                 null);
+    }
+
+    private static MutationResult attributed(int index, String category) {
+        KillAttribution attribution = new KillAttribution(
+                category,
+                "COMPLETED",
+                category.equals("type-invariant-kill") ? "KILLED_STATE_SAFETY" : "PASSED",
+                2,
+                category.equals("type-invariant-kill") ? null : "COMPLETED",
+                category.equals("legacy-target-invariant-kill") ? "KILLED_STATE_SAFETY" : "PASSED",
+                category.equals("adopted-target-invariant-kill") ? "STATE_EXPANDING" : null,
+                category.equals("type-invariant-kill") ? null : 2,
+                category.equals("adopted-target-invariant-kill") ? "witness" : null,
+                category.equals("kill-attribution-unresolved") ? "legacy attribution failed" : null);
+        return new MutationResult(
+                "gcd-" + "%020x".formatted(index),
+                "GCD",
+                "Next",
+                "x > 0",
+                "TRUE",
+                "COMPLETED",
+                "KILLED_STATE_SAFETY",
+                "STATE_UNRESOLVED",
+                category,
+                attribution.diagnosticReason(),
+                1,
+                2,
+                null,
+                attribution);
     }
 
     private static MutationResult unresolved(int index) {

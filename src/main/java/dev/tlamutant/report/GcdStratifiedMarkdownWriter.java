@@ -29,11 +29,16 @@ public final class GcdStratifiedMarkdownWriter {
                 .append('\n')
                 .append("- Human usefulness review: ")
                 .append(MarkdownSanitizer.inline(report.humanReviewStatus()))
-                .append("\n\n")
-                .append("## Site-weighted summaries\n\n")
+                .append("\n\n");
+        if (report.schemaVersion() >= 4) {
+            markdown.append(
+                    "This v9 intervention was selected from a prior witness. It validates the closed loop but is not out-of-sample evidence of usefulness.\n\n");
+        }
+        markdown.append("## Site-weighted summaries\n\n")
                 .append(
-                        "| Grouping | Value | Specifications | GCD sites | Killed, unattributed | Equal | Expanding | Incomparable | Restricting | Invalid | Unresolved | Witness-bearing |\n")
-                .append("| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |\n");
+                        "| Grouping | Value | Specifications | GCD sites | Adopted target kill | Legacy target kill | Type kill | Attribution unresolved | Historical unattributed | Equal | Expanding | Incomparable | Restricting | Invalid | Unresolved | Witness-bearing |\n")
+                .append(
+                        "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |\n");
         for (GcdOutcomeSummary summary : report.summaries()) {
             markdown.append("| ")
                     .append(MarkdownSanitizer.tableCell(summary.grouping()))
@@ -43,6 +48,14 @@ public final class GcdStratifiedMarkdownWriter {
                     .append(summary.specifications())
                     .append(" | ")
                     .append(summary.totalSites())
+                    .append(" | ")
+                    .append(summary.killedAdoptedTarget())
+                    .append(" | ")
+                    .append(summary.killedLegacyTarget())
+                    .append(" | ")
+                    .append(summary.killedTypeInvariant())
+                    .append(" | ")
+                    .append(summary.killAttributionUnresolved())
                     .append(" | ")
                     .append(summary.killedUnattributed())
                     .append(" | ")
@@ -66,8 +79,9 @@ public final class GcdStratifiedMarkdownWriter {
                 .append(
                         "Each outcome column counts specifications with at least one site in that outcome, so the columns may overlap.\n\n")
                 .append(
-                        "| Grouping | Value | Specifications | Killed, unattributed | Equal | Expanding | Incomparable | Restricting | Invalid | Unresolved | Witness-bearing |\n")
-                .append("| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |\n");
+                        "| Grouping | Value | Specifications | Adopted target kill | Legacy target kill | Type kill | Attribution unresolved | Historical unattributed | Equal | Expanding | Incomparable | Restricting | Invalid | Unresolved | Witness-bearing |\n")
+                .append(
+                        "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |\n");
         for (GcdOutcomeSummary summary : report.summaries()) {
             markdown.append("| ")
                     .append(MarkdownSanitizer.tableCell(summary.grouping()))
@@ -75,6 +89,14 @@ public final class GcdStratifiedMarkdownWriter {
                     .append(MarkdownSanitizer.tableCell(summary.value()))
                     .append(" | ")
                     .append(summary.specifications())
+                    .append(" | ")
+                    .append(summary.specificationsKilledAdoptedTarget())
+                    .append(" | ")
+                    .append(summary.specificationsKilledLegacyTarget())
+                    .append(" | ")
+                    .append(summary.specificationsKilledTypeInvariant())
+                    .append(" | ")
+                    .append(summary.specificationsKillAttributionUnresolved())
                     .append(" | ")
                     .append(summary.specificationsKilledUnattributed())
                     .append(" | ")
@@ -96,8 +118,9 @@ public final class GcdStratifiedMarkdownWriter {
 
         markdown.append("\n## GCD terminal outcomes\n\n")
                 .append("Every frozen census site has exactly one terminal record.\n\n")
-                .append("| Entry | Candidate | Status | Oracle | State relation | Verdict | Diagnostic |\n")
-                .append("| --- | --- | --- | --- | --- | --- | --- |\n");
+                .append(
+                        "| Entry | Candidate | Status | Oracle | State relation | Verdict | Attribution | Diagnostic |\n")
+                .append("| --- | --- | --- | --- | --- | --- | --- | --- |\n");
         for (dev.tlamutant.experiment.GcdTerminalOutcome outcome : report.gcdOutcomes()) {
             MutationResult result = outcome.result();
             markdown.append("| ")
@@ -112,6 +135,11 @@ public final class GcdStratifiedMarkdownWriter {
                     .append(MarkdownSanitizer.tableCell(result.stateRelation()))
                     .append(" | ")
                     .append(MarkdownSanitizer.tableCell(result.verdict()))
+                    .append(" | ")
+                    .append(MarkdownSanitizer.tableCell(
+                            result.attribution() == null
+                                    ? "-"
+                                    : result.attribution().category()))
                     .append(" | ")
                     .append(MarkdownSanitizer.tableCell(
                             result.diagnosticReason() == null ? "-" : result.diagnosticReason()))
