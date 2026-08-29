@@ -8,7 +8,12 @@ import java.util.regex.Pattern;
 
 public final class StratifiedManifestValidator {
     private static final Set<String> PROFILES = Set.of(
-            "gcd-stratified-v1", "gcd-stratified-v2", "gcd-stratified-v3", "gcd-stratified-v4", "gcd-stratified-v5");
+            "gcd-stratified-v1",
+            "gcd-stratified-v2",
+            "gcd-stratified-v3",
+            "gcd-stratified-v4",
+            "gcd-stratified-v5",
+            "gcd-stratified-v6");
     private static final String CONTROL = "control";
     private static final String ENRICHED = "gcd-enriched";
     private static final String CONTROL_STRATUM = "control-baseline";

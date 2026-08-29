@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "profile": "gcd-stratified-v5",
+  "profile": "gcd-stratified-v6",
   "repository": "https://github.com/tlaplus/Examples",
   "commit": "ed3cc4c35f7001d7cec08a22dcd698dae7570dc3",
   "license": "MIT",

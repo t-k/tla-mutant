@@ -87,4 +87,4 @@ The candidate interpretation is unchanged from the historical v2 proxy review be
 
 Keep the implementation at vertical-slice scale. The next decision should be a short human review of the four strongest proposals. If at least one is accepted as a useful specification improvement, proceed to Type-only attribution and focused resolution of the four tool-error mutants. Do not implement the remaining long-form product sections yet.
 
-Raw v5 evidence is available in [the frozen census](gcd-stratified-census.json), [the JSON report](gcd-stratified.json), and [the readable report](gcd-stratified.md). The historical result remains available in [the v2 assessment](gcd-stratified-assessment-v2.md).
+Raw v5 evidence is available in [the frozen census](gcd-stratified-census-v5.json), [the JSON report](gcd-stratified-v5.json), and [the readable report](gcd-stratified-v5.md). The historical result remains available in [the v2 assessment](gcd-stratified-assessment-v2.md).

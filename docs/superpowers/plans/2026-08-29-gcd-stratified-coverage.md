@@ -38,7 +38,7 @@ The public-source investigation at commit `ed3cc4c35f7001d7cec08a22dcd698dae7570
 ## Specification Delta
 
 - S01: Schema-version-1 manifests and original reports remain reproducible.
-- S02: Schema-version-2 profiles `gcd-stratified-v1` through `gcd-stratified-v5` contain exactly five controls and ten enriched entries; v2 is the outcome-free cohort reselection, v3 is the first review-driven instrumentation amendment, v4 corrects positive compound classification, and v5 separates nested shared-value syntax from direct shared-definition mutation. Every instrumentation profile retains the cohort and stops before mutation when its structural gate fails.
+- S02: Schema-version-2 profiles `gcd-stratified-v1` through `gcd-stratified-v6` contain exactly five controls and ten enriched entries; v2 is the outcome-free cohort reselection, v3 is the first review-driven instrumentation amendment, v4 corrects positive compound classification, v5 separates nested shared-value syntax from direct shared-definition mutation, and v6 binds every mounted input and reports every site terminal. Every instrumentation profile retains the cohort and stops before mutation when its structural gate fails.
 - S03: Selection metadata is finite, bounded, allowlisted, and immutable for the run.
 - S04: Public census parsing occurs only inside rootless Podman.
 - S05: Census output contains structural attributes only and cannot contain mutation outcomes.
@@ -99,7 +99,7 @@ Constraints:
 | O06 | security | Public census parses only inside the approved Podman boundary. | Critical | 2 | covered |
 | O07 | failure mode | Census failure aborts mutation without entry substitution. | Critical | 2 | covered |
 | O08 | reproducibility | Manifest, census, sources, toolchain, policy, and report identities are linked. | Critical | 2 | covered |
-| O09 | denominator | Every eligible GCD site has exactly one terminal record. | Critical | 2 | covered_with_incomplete_entries |
+| O09 | denominator | Every eligible GCD site has exactly one terminal record. | Critical | 2 | covered |
 | O10 | aggregation | Site- and specification-weighted results agree with raw records. | High | 2 | covered |
 | O11 | reporting | JSON and Markdown expose strata, candidates, witnesses, and unresolved reasons safely. | High | 2 | covered |
 | O12 | lifecycle | Census and experiment leave no container, volume, process, or writable host output. | Critical | 2 | covered |
@@ -114,7 +114,7 @@ Constraints:
 | O01–O02 | manifest validator unit tests | old manifest validation and experiment regression | regression_overlap | covered | Both stratified profiles and the original version-1 manifest remain accepted. |
 | O03–O05 | census classifier integration tests | census/mutant candidate-ID consistency test | layer_overlap | covered | Static capability remains a proxy, not proof. |
 | O06–O08 | Podman command and runner tests | repeated public census with digest comparison | intentional_overlap | covered | Hostile census failure injection remains partial. |
-| O09–O10 | pure aggregation tests | raw JSON consistency assertions | layer_overlap | covered_with_debt | Nine sites remain unresolved through two incomplete baseline entries. |
+| O09–O10 | pure aggregation tests | raw JSON consistency assertions | layer_overlap | covered | Nine sites from two incomplete baseline entries remain explicitly represented as unresolved terminal records. |
 | O11 | report writer hostile-input tests | generated artifact inspection | layer_overlap | covered | JSON and Markdown contain the same nine witnesses and all unresolved categories. |
 | O12 | sandbox containment test | post-run exact resource inspection | intentional_overlap | covered | No run-labeled container or volume remained after census or experiment. |
 | O13 | local TLC fixture | final public result consistency | regression_overlap | covered | Public candidates are not required for test success. |
