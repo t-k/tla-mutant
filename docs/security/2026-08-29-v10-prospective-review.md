@@ -32,3 +32,26 @@ None remain. The initial review findings were resolved before the public census:
 - The configured Security Specialist instruction file was absent from the environment, so the required Must Fix / Should Fix / Notes perspective was applied directly.
 
 Verdict: GO after committing the complete outcome-free input set and rechecking a clean worktree and unchanged receipt/application identities.
+
+## Final v11 closure review
+
+### Must Fix
+
+None remain. The first v11 report was preserved as `UNRESOLVED` after review found that it discarded the type-only state relation and witness. The corrective implementation retains both values and requires exact continuity with v10. A later replacement-resistance review found that a reused candidate ID could carry substituted mutation content; the final validator now requires exact equality of the family, definition, original guard, and replacement across the dossier-bound v10 source and v11 intervention. Any mismatch yields `UNRESOLVED`.
+
+The closure command also requires `--execution-application`. This keeps the intervention receipt bound to the exact application JAR that produced the run while allowing the independently strengthened validator JAR to verify it.
+
+### Should Fix
+
+- `ProspectiveClosureAssessment` does not embed the digest and size of every input artifact. The frozen receipt chain and reproducible command provide traceability, but embedding those identities would make the assessment more self-contained.
+- Container inspection verifies the principal resource boundary but does not independently reverify every effective capability, security option, user namespace, read-only mount, and ulimit after creation.
+- Existing-ancestor canonicalization and separate write-once outputs leave limited local TOCTOU and partial-publication exposure. Revalidation immediately before publication and atomic bundle publication would further harden the workflow.
+
+### Notes
+
+- The corrective execution JAR is SHA-256 `0c84489df67046b7418cc7dea6f9b794ec17f9de42664049814fe48d02b378dd`, size `3148231` bytes. The final exact-identity validator JAR is SHA-256 `1309e94bf09e436e110c9c22c556a6b977d9c4581f008788f50487a8b05fa0b2`, size `3148611` bytes.
+- The corrected result is SHA-256 `c8a2b771496aa7ff07ec0fb6c4e7648bb5753698cf971bd8ad8188b34c08ead6`, size `107527` bytes. The machine assessment is SHA-256 `2c603ebb122f5dc3d9ec7883d0c63e0a7b65d197baec6167cd0c93662d1f52cd`, size `1288` bytes.
+- Final verification completed 149 unit, 22 integration, and four sandbox tests with no failures, errors, or skips. No owned labeled containers or volumes remained. The Gradle daemon was stopped, the Podman machine reported both `Running: false` and `Starting: false`, and the orphan-process audit was empty.
+- Independent correctness and security rereviews both returned `GO` with no blocking or high-severity findings. The configured Security Specialist instruction file was absent, so the required Must Fix / Should Fix / Notes perspective was applied directly.
+
+Final verdict: GO.
