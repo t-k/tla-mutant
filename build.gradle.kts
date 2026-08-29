@@ -80,7 +80,7 @@ val sandboxTest by tasks.registering(Test::class) {
 }
 
 tasks.check {
-    dependsOn(integrationTest)
+    dependsOn(integrationTest, "verifyFrozenApplication")
 }
 
 application {
