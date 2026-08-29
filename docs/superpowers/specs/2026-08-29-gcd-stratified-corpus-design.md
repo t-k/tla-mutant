@@ -75,7 +75,7 @@ No family cluster may contribute more than 25% of all GCD sites. If the preregis
 
 ## Manifest Metadata
 
-The selected manifest uses schema version 2. Profile `gcd-stratified-v2` records the outcome-free cohort reselection. Profile `gcd-stratified-v3` keeps the same 15 entries and incorporates only review-driven instrumentation corrections: transition extraction from the actual `[][Next]_vars` operand, a conservative positive-current-state guard classifier, exact manifest/policy/TLA+ Tools identity binding, an external expected-census digest, write-once census publication, and separate site- and specification-weighted summaries. Its outcome-free census stopped before mutation because the first classifier rejected positive compound predicates used as whole top-level guards in two enriched entries. Profile `gcd-stratified-v4` retains the same cohort and changes only that structural rule: logical conjunction and disjunction remain positive when the entire expression is the action-level top-level conjunct, while inner sites without an action-successor sibling remain nonconforming. These corrections were specified after v2 outcomes existed, so v2 remains a separate historical result and v4 requires a newly frozen census before mutation. The validator retains all four profiles for audit reproduction. Existing schema-version-1 manifests remain valid and reproducible.
+The selected manifest uses schema version 2. Profile `gcd-stratified-v2` records the outcome-free cohort reselection. Profile `gcd-stratified-v3` keeps the same 15 entries and incorporates only review-driven instrumentation corrections: transition extraction from the actual `[][Next]_vars` operand, a conservative positive-current-state guard classifier, exact manifest/policy/TLA+ Tools identity binding, an external expected-census digest, write-once census publication, and separate site- and specification-weighted summaries. Its outcome-free census stopped before mutation because the first classifier rejected positive compound predicates used as whole top-level guards in two enriched entries. Profile `gcd-stratified-v4` retains the same cohort and changes only that structural rule: logical conjunction and disjunction remain positive when the entire expression is the action-level top-level conjunct, while inner sites without an action-successor sibling remain nonconforming. Its census also stopped before mutation because syntax classification incorrectly required nested value helpers to be mutation-eligible definitions. Profile `gcd-stratified-v5` retains the cohort and keeps direct shared definitions excluded from mutation while permitting a larger positive guard to syntax-expand nested shared value helpers. These corrections were specified after v2 outcomes existed, so v2 remains a separate historical result and v5 requires a newly frozen census before mutation. The validator retains all five profiles for audit reproduction. Existing schema-version-1 manifests remain valid and reproducible.
 
 Each version-2 entry adds one selection object:
 
@@ -134,7 +134,8 @@ The original artifacts remain at `docs/experiments/vertical-slice.*`. Preregistr
 - `docs/experiments/gcd-stratified-census-discovery.json`;
 - `docs/experiments/gcd-stratified-census-discovery-2.json`;
 - `docs/experiments/gcd-stratified-census-v2.json` and the `-v2` result and assessment files;
-- `docs/experiments/gcd-stratified-census-v3-failed.json`.
+- `docs/experiments/gcd-stratified-census-v3-failed.json`;
+- `docs/experiments/gcd-stratified-census-v4-failed.json`.
 
 Final experiment artifacts are:
 
