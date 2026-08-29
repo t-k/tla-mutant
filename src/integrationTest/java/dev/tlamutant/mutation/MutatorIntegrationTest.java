@@ -2,7 +2,11 @@ package dev.tlamutant.mutation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.tlamutant.census.GcdCensusAnalyzer;
+import dev.tlamutant.census.GcdCensusReport;
 import dev.tlamutant.semantic.SanyAnalyzer;
 import dev.tlamutant.semantic.SemanticProject;
 import java.io.IOException;
@@ -86,5 +90,40 @@ final class MutatorIntegrationTest {
                         .generate(project, source).stream()
                                 .map(MutationCandidate::original)
                                 .toList());
+    }
+
+    @Test
+    void sharesExactGcdEligibilityWhileSeparatingSuccessorCapableSites() throws IOException {
+        Path root = Path.of("src/testFixtures/resources/tla/census");
+        SemanticProject project = new SanyAnalyzer().analyze(root, "CensusFixture.tla", "CensusFixture.cfg");
+        SourceDocument source = SourceDocument.read(root.resolve("CensusFixture.tla"));
+
+        List<GcdSite> sites = new GcdSiteAnalyzer().analyze(project, source);
+        List<MutationCandidate> candidates = new GcdMutator().generate(project, source);
+
+        assertEquals(
+                candidates.stream().map(MutationCandidate::id).toList(),
+                sites.stream().map(site -> site.candidate().id()).toList());
+        assertTrue(sites.stream().allMatch(site -> site.guardLevel() <= 1));
+        assertTrue(sites.stream()
+                .anyMatch(site -> site.candidate().definition().equals("Action") && site.hasActionSuccessor()));
+        assertTrue(sites.stream()
+                .anyMatch(site -> site.candidate().definition().equals("StateOnly") && !site.hasActionSuccessor()));
+    }
+
+    @Test
+    void serializesOnlyBoundedOutcomeFreeGcdStructure() throws IOException {
+        Path root = Path.of("src/testFixtures/resources/tla/census");
+
+        GcdCensusReport report = new GcdCensusAnalyzer().analyze(root, "CensusFixture.tla", "CensusFixture.cfg");
+        String json = new ObjectMapper().writeValueAsString(report);
+
+        assertEquals(1, report.schemaVersion());
+        assertEquals("CensusFixture.tla", report.module());
+        assertTrue(report.sites().stream().anyMatch(site -> site.conforms() && site.actionSuccessorConjuncts() > 0));
+        assertTrue(report.sites().stream().allMatch(site -> site.guard().length() <= 500));
+        assertFalse(json.contains("verdict"));
+        assertFalse(json.contains("stateRelation"));
+        assertFalse(json.contains("mutantOnlyWitness"));
     }
 }
