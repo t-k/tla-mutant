@@ -26,6 +26,8 @@ import dev.tlamutant.tlc.TlcRunner;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import picocli.CommandLine;
 
@@ -241,6 +243,9 @@ public final class Main implements Runnable {
         @CommandLine.Option(names = "--work-dir", required = true)
         Path workDirectory;
 
+        @CommandLine.Option(names = "--state-invariant")
+        List<String> stateInvariants = new ArrayList<>();
+
         @CommandLine.Option(names = "--json-report")
         Path jsonReport;
 
@@ -266,7 +271,7 @@ public final class Main implements Runnable {
             ExperimentRunner experiment = new ExperimentRunner(
                     TlcRunner.forCurrentJava(applicationJar, toolsJar, maximumStates, maximumStateBytes),
                     Duration.ofSeconds(timeoutSeconds));
-            ExperimentReport report = experiment.run(modelDirectory, module, config, workDirectory);
+            ExperimentReport report = experiment.run(modelDirectory, module, config, workDirectory, stateInvariants);
             if (jsonReport != null) {
                 new JsonReportWriter().write(jsonReport, report);
             }

@@ -59,11 +59,14 @@ public final class CorpusExperimentRunner {
         try {
             Path input = fetcher.fetch(manifest, entry, policy.limits(), cacheRoot);
             PodmanRunner sandbox = new PodmanRunner(policy.containerImage(), applicationJar, toolsJar, entry.limits());
+            List<String> stateInvariants = new ArrayList<>(entry.typeInvariants());
+            stateInvariants.addAll(entry.targetInvariants());
             PodmanExecution execution = sandbox.run(
                     input,
                     entry.rootModule(),
                     entry.config(),
-                    Duration.ofSeconds(entry.limits().wallClockSeconds()));
+                    Duration.ofSeconds(entry.limits().wallClockSeconds()),
+                    stateInvariants);
             if (execution.timedOut()) {
                 return incomplete(entry, "TIMEOUT", "The bounded sandbox wall clock expired");
             }

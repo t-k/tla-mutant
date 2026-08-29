@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public final class PodmanCommand {
     private PodmanCommand() {}
@@ -35,7 +36,8 @@ public final class PodmanCommand {
                 uid,
                 gid,
                 limits,
-                SandboxTask.EXPERIMENT);
+                SandboxTask.EXPERIMENT,
+                List.of());
     }
 
     public static List<String> create(
@@ -52,7 +54,40 @@ public final class PodmanCommand {
             int gid,
             ExecutionPolicy.Limits limits,
             SandboxTask task) {
+        return create(
+                containerName,
+                runToken,
+                scratchVolume,
+                image,
+                inputDirectory,
+                applicationJar,
+                toolsJar,
+                module,
+                config,
+                uid,
+                gid,
+                limits,
+                task,
+                List.of());
+    }
+
+    public static List<String> create(
+            String containerName,
+            String runToken,
+            String scratchVolume,
+            String image,
+            Path inputDirectory,
+            Path applicationJar,
+            Path toolsJar,
+            String module,
+            String config,
+            int uid,
+            int gid,
+            ExecutionPolicy.Limits limits,
+            SandboxTask task,
+            List<String> stateInvariants) {
         Objects.requireNonNull(task, "task");
+        List<String> invariants = validateStateInvariants(task, stateInvariants);
         List<String> command = new ArrayList<>(List.of(
                 "podman",
                 "create",
@@ -114,12 +149,16 @@ public final class PodmanCommand {
                 "-cp",
                 "/opt/app.jar:/opt/tla2tools.jar",
                 "dev.tlamutant.cli.Main"));
-        command.addAll(applicationArguments(task, module, config, limits));
+        command.addAll(applicationArguments(task, module, config, limits, invariants));
         return List.copyOf(command);
     }
 
     private static List<String> applicationArguments(
-            SandboxTask task, String module, String config, ExecutionPolicy.Limits limits) {
+            SandboxTask task,
+            String module,
+            String config,
+            ExecutionPolicy.Limits limits,
+            List<String> stateInvariants) {
         List<String> common = List.of("--model-dir", "/input", "--module", module, "--config", config);
         List<String> arguments = new ArrayList<>();
         if (task == SandboxTask.CENSUS) {
@@ -129,6 +168,10 @@ public final class PodmanCommand {
         }
         arguments.add("experiment");
         arguments.addAll(common);
+        for (String invariant : stateInvariants) {
+            arguments.add("--state-invariant");
+            arguments.add(invariant);
+        }
         arguments.addAll(List.of(
                 "--tools-jar",
                 "/opt/tla2tools.jar",
@@ -141,5 +184,18 @@ public final class PodmanCommand {
                 "--max-state-bytes",
                 Long.toString(limits.fileBytes())));
         return List.copyOf(arguments);
+    }
+
+    private static List<String> validateStateInvariants(SandboxTask task, List<String> stateInvariants) {
+        List<String> invariants = List.copyOf(Objects.requireNonNull(stateInvariants, "stateInvariants"));
+        if (task == SandboxTask.CENSUS && !invariants.isEmpty()) {
+            throw new IllegalArgumentException("Census does not accept state-invariant arguments");
+        }
+        if (invariants.size() > 64
+                || invariants.stream().anyMatch(name -> !name.matches("[A-Za-z_][A-Za-z0-9_]{0,127}"))
+                || Set.copyOf(invariants).size() != invariants.size()) {
+            throw new IllegalArgumentException("State-invariant arguments must be safe, bounded, and unique");
+        }
+        return invariants;
     }
 }

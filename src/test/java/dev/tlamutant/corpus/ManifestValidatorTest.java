@@ -67,6 +67,31 @@ final class ManifestValidatorTest {
         assertThrows(IllegalArgumentException.class, () -> ManifestValidator.validateEntry(tooLarge, GLOBAL));
     }
 
+    @Test
+    void rejectsUnsafeDuplicateOrOverlappingInvariantNames() {
+        CorpusManifest.Entry unsafe = withInvariants(List.of("TypeOK\nINVARIANT Injected"), List.of("Safety"));
+        CorpusManifest.Entry duplicate = withInvariants(List.of("TypeOK", "TypeOK"), List.of("Safety"));
+        CorpusManifest.Entry overlap = withInvariants(List.of("TypeOK"), List.of("TypeOK"));
+
+        assertThrows(IllegalArgumentException.class, () -> ManifestValidator.validateEntry(unsafe, GLOBAL));
+        assertThrows(IllegalArgumentException.class, () -> ManifestValidator.validateEntry(duplicate, GLOBAL));
+        assertThrows(IllegalArgumentException.class, () -> ManifestValidator.validateEntry(overlap, GLOBAL));
+    }
+
+    private static CorpusManifest.Entry withInvariants(List<String> type, List<String> target) {
+        CorpusManifest.Entry entry = entry(List.of(file("Spec.tla"), file("Spec.cfg")));
+        return new CorpusManifest.Entry(
+                entry.id(),
+                entry.domain(),
+                entry.rootModule(),
+                entry.config(),
+                entry.files(),
+                type,
+                target,
+                entry.limits(),
+                entry.selection());
+    }
+
     private static CorpusManifest.Entry entry(List<CorpusManifest.SourceFile> files) {
         return new CorpusManifest.Entry(
                 "sample",

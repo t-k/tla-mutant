@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import tlc2.tool.impl.ModelConfig;
@@ -16,21 +17,42 @@ final class StateInvariantConfig {
     private StateInvariantConfig() {}
 
     static void write(Path source, Path target) throws IOException {
+        write(source, target, null);
+    }
+
+    static void write(Path source, Path target, List<String> stateInvariants) throws IOException {
+        if (stateInvariants != null
+                && (stateInvariants.isEmpty()
+                        || stateInvariants.size() > 64
+                        || stateInvariants.stream()
+                                .anyMatch(name -> name == null || !name.matches("[A-Za-z_][A-Za-z0-9_]{0,127}"))
+                        || stateInvariants.stream().distinct().count() != stateInvariants.size())) {
+            throw new IllegalArgumentException("State invariant allowlist must be safe, bounded, and unique");
+        }
         String input = Files.readString(source);
         StringBuilder output = new StringBuilder(input.length());
-        boolean skippingProperty = false;
+        boolean skippingRemovedSection = false;
         for (String line : input.split("(?<=\\n)", -1)) {
             String keyword = keyword(line);
-            if ("PROPERTY".equals(keyword) || "PROPERTIES".equals(keyword)) {
-                skippingProperty = true;
+            boolean removeInvariantSection =
+                    stateInvariants != null && ("INVARIANT".equals(keyword) || "INVARIANTS".equals(keyword));
+            if ("PROPERTY".equals(keyword) || "PROPERTIES".equals(keyword) || removeInvariantSection) {
+                skippingRemovedSection = true;
                 continue;
             }
-            if (skippingProperty && keyword != null) {
-                skippingProperty = false;
+            if (skippingRemovedSection && keyword != null) {
+                skippingRemovedSection = false;
             }
-            if (!skippingProperty) {
+            if (!skippingRemovedSection) {
                 output.append(line);
             }
+        }
+        if (stateInvariants != null) {
+            if (!output.isEmpty() && output.charAt(output.length() - 1) != '\n') {
+                output.append('\n');
+            }
+            output.append("INVARIANTS\n");
+            stateInvariants.forEach(name -> output.append("  ").append(name).append('\n'));
         }
         Files.writeString(target, output, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
     }

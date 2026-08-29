@@ -43,14 +43,25 @@ public final class PodmanRunner {
     }
 
     public PodmanExecution run(Path inputDirectory, String module, String config, Duration timeout) {
-        return run(inputDirectory, module, config, timeout, SandboxTask.EXPERIMENT);
+        return run(inputDirectory, module, config, timeout, SandboxTask.EXPERIMENT, List.of());
+    }
+
+    public PodmanExecution run(
+            Path inputDirectory, String module, String config, Duration timeout, List<String> stateInvariants) {
+        return run(inputDirectory, module, config, timeout, SandboxTask.EXPERIMENT, stateInvariants);
     }
 
     public PodmanExecution runCensus(Path inputDirectory, String module, String config, Duration timeout) {
-        return run(inputDirectory, module, config, timeout, SandboxTask.CENSUS);
+        return run(inputDirectory, module, config, timeout, SandboxTask.CENSUS, List.of());
     }
 
-    private PodmanExecution run(Path inputDirectory, String module, String config, Duration timeout, SandboxTask task) {
+    private PodmanExecution run(
+            Path inputDirectory,
+            String module,
+            String config,
+            Duration timeout,
+            SandboxTask task,
+            List<String> stateInvariants) {
         Path input = inputDirectory.toAbsolutePath().normalize();
         if (!Files.isDirectory(input) || Files.isSymbolicLink(input)) {
             throw new IllegalArgumentException("Input must be a real directory");
@@ -87,7 +98,8 @@ public final class PodmanRunner {
                     identity.uid(),
                     identity.gid(),
                     limits,
-                    task);
+                    task,
+                    stateInvariants);
             containerCreateAttempted = true;
             String createOutput = runChecked(create).trim();
             if (!createOutput.matches("[0-9a-f]{64}")) {

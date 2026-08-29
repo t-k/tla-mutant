@@ -35,6 +35,15 @@ public final class ExperimentRunner {
     }
 
     public ExperimentReport run(Path modelDirectory, String moduleFile, String configFile, Path resultDirectory) {
+        return run(modelDirectory, moduleFile, configFile, resultDirectory, List.of());
+    }
+
+    public ExperimentReport run(
+            Path modelDirectory,
+            String moduleFile,
+            String configFile,
+            Path resultDirectory,
+            List<String> stateInvariants) {
         Path modelRoot = modelDirectory.toAbsolutePath().normalize();
         Path results = resultDirectory.toAbsolutePath().normalize();
         try {
@@ -51,7 +60,11 @@ public final class ExperimentRunner {
         }
         Path stateInvariantConfig = results.resolve("state-invariants.cfg");
         try {
-            StateInvariantConfig.write(modelRoot.resolve(configFile), stateInvariantConfig);
+            if (stateInvariants.isEmpty()) {
+                StateInvariantConfig.write(modelRoot.resolve(configFile), stateInvariantConfig);
+            } else {
+                StateInvariantConfig.write(modelRoot.resolve(configFile), stateInvariantConfig, stateInvariants);
+            }
         } catch (IOException exception) {
             throw new IllegalStateException("Cannot create the State Invariant-only configuration", exception);
         }

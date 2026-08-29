@@ -3,13 +3,17 @@ package dev.tlamutant.corpus;
 import dev.tlamutant.config.ExecutionPolicy;
 import dev.tlamutant.security.SafeRelativePath;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public final class ManifestValidator {
     private static final int MAX_FILES_PER_ENTRY = 64;
     private static final long MAX_TOTAL_SOURCE_BYTES = 32L * 1024 * 1024;
+    private static final int MAX_INVARIANTS_PER_ENTRY = 64;
+    private static final Pattern OPERATOR_NAME = Pattern.compile("[A-Za-z_][A-Za-z0-9_]{0,127}");
 
     private ManifestValidator() {}
 
@@ -67,8 +71,26 @@ public final class ManifestValidator {
         if (!exact.contains(rootModule.value()) || !exact.contains(config.value())) {
             throw new IllegalArgumentException("Root module and config must be listed source files");
         }
+        validateInvariants(entry.typeInvariants(), entry.targetInvariants());
         ExecutionPolicy.enforceMaximums(globalLimits, entry.limits());
         return entry;
+    }
+
+    private static void validateInvariants(List<String> typeInvariants, List<String> targetInvariants) {
+        if (typeInvariants == null || targetInvariants == null) {
+            throw new IllegalArgumentException("Invariant lists are required");
+        }
+        int count = Math.addExact(typeInvariants.size(), targetInvariants.size());
+        if (count == 0 || count > MAX_INVARIANTS_PER_ENTRY) {
+            throw new IllegalArgumentException("Each entry must declare 1 to 64 state invariants");
+        }
+        Set<String> names = new HashSet<>();
+        for (String name : java.util.stream.Stream.concat(typeInvariants.stream(), targetInvariants.stream())
+                .toList()) {
+            if (name == null || !OPERATOR_NAME.matcher(name).matches() || !names.add(name)) {
+                throw new IllegalArgumentException("State invariant names must be safe and unique");
+            }
+        }
     }
 
     private static void requireText(String value, String name) {

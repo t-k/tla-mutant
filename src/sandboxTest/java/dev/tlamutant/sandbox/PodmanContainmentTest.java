@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.tlamutant.config.ExecutionPolicy;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 final class PodmanContainmentTest {
@@ -26,7 +27,8 @@ final class PodmanContainmentTest {
                 Path.of("src/testFixtures/resources/tla/mutations"),
                 "MutationFixture.tla",
                 "MutationFixture.cfg",
-                Duration.ofSeconds(180));
+                Duration.ofSeconds(180),
+                List.of("Safety"));
 
         assertEquals(0, execution.exitCode(), execution.stderr());
         assertFalse(execution.timedOut());

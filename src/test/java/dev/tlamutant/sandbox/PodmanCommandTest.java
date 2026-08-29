@@ -86,4 +86,30 @@ final class PodmanCommandTest {
         assertFalse(joined.contains("--max-state-bytes"));
         assertFalse(joined.contains("--work-dir"));
     }
+
+    @Test
+    void experimentPassesOnlyExplicitStateInvariantNamesWithoutAShell() {
+        ExecutionPolicy.Limits limits =
+                new ExecutionPolicy.Limits(60, 536_870_912, 64, 128, 33_554_432, 2048, 1024, 1024, 10_000, 90);
+        List<String> command = PodmanCommand.create(
+                "tla-mutant-0123456789abcdef",
+                "0123456789abcdef",
+                "tla-mutant-scratch-0123456789abcdef",
+                "docker.io/library/eclipse-temurin@sha256:" + "a".repeat(64),
+                Path.of("/input"),
+                Path.of("/app.jar"),
+                Path.of("/tools.jar"),
+                "Spec.tla",
+                "Spec.cfg",
+                501,
+                20,
+                limits,
+                SandboxTask.EXPERIMENT,
+                List.of("TypeOK", "Safety"));
+
+        assertTrue(command.containsAll(List.of("--state-invariant", "TypeOK", "Safety")));
+        assertTrue(String.join(" ", command).contains("--state-invariant TypeOK --state-invariant Safety"));
+        assertFalse(command.contains("sh"));
+        assertFalse(command.contains("bash"));
+    }
 }
