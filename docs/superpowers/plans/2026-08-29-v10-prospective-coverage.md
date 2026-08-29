@@ -88,20 +88,20 @@ Constraints:
 |---|---|---|---|---:|---|
 | P01 | validity | Exact holdout sources are absent from all historical execution inputs. | Critical | 2 | implementation_verified |
 | P02 | validity | Cohort, rubric, limits, censoring, and endpoints are receipt-bound before outcomes. | Critical | 2 | implementation_verified |
-| P03 | integrity | Outcome-free census is write-once and retains all eight entries. | Critical | 2 | planned |
+| P03 | integrity | Outcome-free census is write-once and retains all eight entries. | Critical | 2 | experiment_verified |
 | P04 | security | Any receipt or census mismatch fails before fetch, SANY, or Podman. | Critical | 3 | implementation_verified |
 | P05 | review | Dossier eligibility and review ledger form an exact bijection. | Critical | 2 | implementation_verified |
 | P06 | review | `ACCEPT` requires exact predicate, seven criteria, and bounded safe evidence. | Critical | 2 | implementation_verified |
 | P07 | traceability | Accepted decisions bind exactly to v11 entry, candidate, operator, predicate bytes, and edit. | Critical | 2 | implementation_verified |
-| P08 | behavior | Derived baseline accepts original behavior under the frozen finite model. | Critical | 2 | planned |
-| P09 | attribution | Source survivor passes type/legacy and is killed by adopted oracle. | Critical | 2 | planned |
+| P08 | behavior | Derived baseline accepts original behavior under the frozen finite model. | Critical | 2 | experiment_verified |
+| P09 | attribution | Source survivor passes type/legacy and is killed by adopted oracle. | Critical | 2 | experiment_verified |
 | P10 | reporting | Discovery, review, and intervention denominators conserve all terminal outcomes. | Critical | 2 | implementation_verified |
 | P11 | failure mode | Tool/resource/baseline errors remain censored and never become success evidence. | Critical | 2 | implementation_verified |
-| P12 | reproducibility | JAR and censuses are byte reproducible; experiments are semantically reproducible. | Critical | 2 | jar_verified |
+| P12 | reproducibility | JAR and censuses are byte reproducible; experiments are semantically reproducible. | Critical | 2 | experiment_verified |
 | P13 | compatibility | All frozen v8/v9 artifacts and legacy behavior remain unchanged. | Critical | 2 | implementation_verified |
-| P14 | security | Source parsing, edit application, and TLC execution stay in the sandbox trust boundary. | Critical | 2 | planned |
-| P15 | lifecycle | Owned containers, volumes, Podman machine, and Gradle daemons are stopped. | Critical | 2 | planned |
-| P16 | interpretation | Agent review and finite-model limitations are explicit in every assessment. | High | 2 | planned |
+| P14 | security | Source parsing, edit application, and TLC execution stay in the sandbox trust boundary. | Critical | 2 | experiment_verified |
+| P15 | lifecycle | Owned containers, volumes, Podman machine, and Gradle daemons are stopped. | Critical | 2 | cleanup_verified |
+| P16 | interpretation | Agent review and finite-model limitations are explicit in every assessment. | High | 2 | experiment_verified |
 
 ## Coverage Ledger
 
@@ -110,12 +110,12 @@ Constraints:
 | P01 | `ProspectiveHoldoutValidatorTest` | committed registry reconstruction audit | intentional_overlap | implementation_verified | Canonical registry contains 80 source records and 19 historical root paths. |
 | P02-P04 | receipt/preflight unit tests | CLI preflight integration and sandbox non-start evidence | layer_overlap | implementation_verified | Git commit order remains an audited history property. |
 | P05-P06 | dossier/review pure tests | committed dossier-ledger key audit | layer_overlap | implementation_verified | Review quality is rubric-bound but still agent judgment. |
-| P07-P09 | intervention binding tests | real TLC fixture and v11 result | intentional_overlap | partial | Binding tests pass; real v11 evidence depends on accepted reviews. |
-| P10-P11 | assessment reducer matrix | final artifact assertions | layer_overlap | implementation_verified | Public denominators remain to be populated by the run. |
-| P12 | reproducibility tests and comparator | double public runs | layer_overlap | jar_verified | Two clean no-build-cache JAR builds were byte-identical; public runs remain pending. |
+| P07-P09 | intervention binding tests | corrected v11 result and machine closure assessment | intentional_overlap | experiment_verified | The selected ID and exact family/definition/original/replacement remained stable; type-only passed at 30,943 states with exact `STATE_EXPANDING` witness continuity, and the adopted oracle killed it. |
+| P10-P11 | closure validator matrix | final machine assessment | layer_overlap | experiment_verified | v10 and corrected v11 preserve 8 specifications, 60 sites, 20 completed outcomes, and 40 unresolved outcomes; closure conserves 1 selected as 1 closed. |
+| P12 | reproducibility tests and comparator | double public runs | layer_overlap | experiment_verified | JAR and v11 census bytes match; v11 mutation reports are semantically equal and Markdown is byte-identical. |
 | P13 | historical digest integration test | git diff against `b6c5483` | intentional_overlap | implementation_verified | Eleven exact historical artifacts are frozen by integration tests. |
-| P14-P15 | sandbox containment tests | exact final resource/process audit | layer_overlap | planned | No broad process kills. |
-| P16 | report writer tests | security/correctness review | layer_overlap | planned | External human acceptance remains unfulfilled. |
+| P14-P15 | sandbox containment tests | exact final resource/process audit | layer_overlap | cleanup_verified | Sandbox tests passed, owned labeled resources were absent, and the owned Podman machine and Gradle daemon were stopped. |
+| P16 | report writer tests | final public assessment | layer_overlap | experiment_verified | External human acceptance remains unfulfilled and is stated explicitly. |
 
 ## Test Scenarios
 
@@ -147,7 +147,7 @@ Constraints:
 
 ## Optional Verification Suggestions
 
-- TLA+/TLC with the existing pinned tool JAR: `blocked` until the prospective commands and fixtures exist. The state-transition shape directly fits model checking; execution is already authorized by the user's request. It will produce fixture evidence, v10/v11 censuses, mutation reports, and oracle attribution.
+- TLA+/TLC with the existing pinned tool JAR: `completed`. The frozen v10/v11 runs produced census, mutation, witness, and adopted-oracle attribution evidence.
 - Property-based testing: `not_applicable` for the first implementation. Receipt roles, review decisions, and terminal classifications are small closed matrices better served by explicit table tests that preserve readable failure attribution.
 - PICT/ACTS: `not_applicable`. Constraints make several combinations impossible, and the critical cases are security boundaries requiring intentional overlap rather than pairwise sampling.
 - Fuzzing: `deferred_heavy`. Strict JSON, bounded snapshots, and explicit hostile-input matrices cover the current experiment; a generic public ingestion fuzz campaign is outside this prospective slice.
@@ -169,3 +169,8 @@ All product decisions are resolved: the user approved eight fixed specifications
 - Inspected current manifest, census, experiment, attribution, sandbox, and report code paths with `rg` and bounded source reads.
 - Inspected the pinned upstream revision in a temporary read-only checkout without running SANY, TLC, census, or mutation on the eight candidates.
 - Used read-only agent fan-out for impact mapping, unseen candidate selection, and test-gap analysis.
+- Froze and executed the eight-entry v10 holdout twice, reviewed both eligible candidates, and committed the review before v11 inputs.
+- Froze one exact insertion-only v11 intervention, reproduced its 60-site census byte-for-byte, and reproduced the mutation result semantically.
+- Verified that the selected mutant passed type-only with 30,943 states and was killed only after adding the reviewed adopted invariant.
+- Preserved the initial v11 result as unresolved after review found missing type-only relation/witness evidence, then froze a corrective instrumentation run without changing selection or intervention inputs.
+- Machine-validated exact v10-to-v11 mutant identity, relation, and witness continuity before permitting `closureStatus: VERIFIED`.

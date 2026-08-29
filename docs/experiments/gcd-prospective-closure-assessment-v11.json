@@ -1,0 +1,26 @@
+{
+  "schemaVersion" : 1,
+  "profile" : "gcd-prospective-v11",
+  "reviewerMode" : "user-delegated-agent",
+  "closureStatus" : "VERIFIED",
+  "selected" : 1,
+  "closed" : 1,
+  "rejectedByBaseline" : 0,
+  "unresolved" : 0,
+  "outcomes" : [ {
+    "key" : {
+      "entryId" : "nbacg-guer01",
+      "candidateId" : "gcd-3c1ee8b4429ee7af9c2f"
+    },
+    "status" : "CLOSED",
+    "reason" : "All preregistered closure conditions passed",
+    "baselineStateCount" : 24922,
+    "sourceMutantStateCount" : 30943,
+    "typeOnlyStateCount" : 30943,
+    "sourceStateRelation" : "STATE_EXPANDING",
+    "typeOnlyStateRelation" : "STATE_EXPANDING",
+    "sourceMutantOnlyWitness" : "7:nRcvdNo:8:function:11:<<0, 0, 0>>;8:nRcvdYes:8:function:11:<<0, 0, 0>>;6:nSntNo:7:integer:1:0;7:nSntNoF:7:integer:1:0;7:nSntYes:7:integer:1:0;8:nSntYesF:7:integer:1:1;2:pc:8:function:23:<<\"ABORT\", \"NO\", \"NO\">>;8:someFail:8:function:20:<<TRUE, TRUE, TRUE>>;",
+    "typeOnlyMutantOnlyWitness" : "7:nRcvdNo:8:function:11:<<0, 0, 0>>;8:nRcvdYes:8:function:11:<<0, 0, 0>>;6:nSntNo:7:integer:1:0;7:nSntNoF:7:integer:1:0;7:nSntYes:7:integer:1:0;8:nSntYesF:7:integer:1:1;2:pc:8:function:23:<<\"ABORT\", \"NO\", \"NO\">>;8:someFail:8:function:20:<<TRUE, TRUE, TRUE>>;",
+    "verdict" : "adopted-target-invariant-kill"
+  } ]
+}

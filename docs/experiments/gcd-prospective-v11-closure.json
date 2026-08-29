@@ -1,0 +1,2791 @@
+{
+  "schemaVersion" : 1,
+  "profile" : "gcd-prospective-v11",
+  "repository" : "https://github.com/tlaplus/Examples",
+  "commit" : "ed3cc4c35f7001d7cec08a22dcd698dae7570dc3",
+  "discoveryReceipt" : {
+    "sha256" : "12c865261d3a92abf72214aea401f79e50d9778b2c24434babe9c79554e4086e",
+    "sizeBytes" : 2080
+  },
+  "experimentReceipt" : {
+    "sha256" : "09767a51ff6f562041cb48ba8ce5a51bf958a95e56d4b93fa0163a988142d783",
+    "sizeBytes" : 2387
+  },
+  "censusArtifact" : {
+    "sha256" : "6952c2aca811ca6a9975414df92b3612d21265177dbe2ba9325d9f0e653e4725",
+    "sizeBytes" : 25493
+  },
+  "specifications" : [ {
+    "entryId" : "readers-writers",
+    "riskClass" : "standard-risk",
+    "status" : "COMPLETED",
+    "censusStatus" : "COMPLETED",
+    "experimentStatus" : "COMPLETED",
+    "censusSites" : 5
+  }, {
+    "entryId" : "coffee-can",
+    "riskClass" : "standard-risk",
+    "status" : "COMPLETED",
+    "censusStatus" : "COMPLETED",
+    "experimentStatus" : "COMPLETED",
+    "censusSites" : 8
+  }, {
+    "entryId" : "ewd840",
+    "riskClass" : "standard-risk",
+    "status" : "COMPLETED",
+    "censusStatus" : "COMPLETED",
+    "experimentStatus" : "COMPLETED",
+    "censusSites" : 6
+  }, {
+    "entryId" : "nbacg-guer01",
+    "riskClass" : "standard-risk",
+    "status" : "COMPLETED",
+    "censusStatus" : "COMPLETED",
+    "experimentStatus" : "COMPLETED",
+    "censusSites" : 12
+  }, {
+    "entryId" : "c1cs",
+    "riskClass" : "standard-risk",
+    "status" : "EXPERIMENT_CENSORED",
+    "censusStatus" : "COMPLETED",
+    "experimentStatus" : "SANDBOX_ERROR",
+    "censusSites" : 8
+  }, {
+    "entryId" : "bosco",
+    "riskClass" : "standard-risk",
+    "status" : "EXPERIMENT_CENSORED",
+    "censusStatus" : "COMPLETED",
+    "experimentStatus" : "SANDBOX_ERROR",
+    "censusSites" : 7
+  }, {
+    "entryId" : "slush-small",
+    "riskClass" : "high-risk-no-replacement",
+    "status" : "EXPERIMENT_CENSORED",
+    "censusStatus" : "COMPLETED",
+    "experimentStatus" : "SANDBOX_ERROR",
+    "censusSites" : 14
+  }, {
+    "entryId" : "buffered-random-access-file",
+    "riskClass" : "high-risk-no-replacement",
+    "status" : "COMPLETED",
+    "censusStatus" : "COMPLETED",
+    "experimentStatus" : "COMPLETED",
+    "censusSites" : 0
+  } ],
+  "gcdOutcomes" : [ {
+    "entryId" : "readers-writers",
+    "result" : {
+      "id" : "gcd-d13b277c20b2480b7ad6",
+      "family" : "GCD",
+      "definition" : "TryRead",
+      "original" : "actor \\notin WaitingToRead",
+      "replacement" : "TRUE",
+      "executionStatus" : "TOOL_ERROR",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "tool-error; tool-event-codes=1000",
+      "baselineStateCount" : 21527,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "readers-writers",
+    "result" : {
+      "id" : "gcd-302e171d8f5783091a1e",
+      "family" : "GCD",
+      "definition" : "TryWrite",
+      "original" : "actor \\notin WaitingToWrite",
+      "replacement" : "TRUE",
+      "executionStatus" : "TOOL_ERROR",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "tool-error; tool-event-codes=1000,2103,2121,2217",
+      "baselineStateCount" : 21527,
+      "mutantStateCount" : 100000,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "readers-writers",
+    "result" : {
+      "id" : "gcd-b67d26c6007589be999d",
+      "family" : "GCD",
+      "definition" : "Write",
+      "original" : "readers = {}",
+      "replacement" : "TRUE",
+      "executionStatus" : "COMPLETED",
+      "oracleOutcome" : "KILLED_STATE_SAFETY",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "legacy-target-invariant-kill",
+      "diagnosticReason" : null,
+      "baselineStateCount" : 21527,
+      "mutantStateCount" : 253,
+      "mutantOnlyWitness" : null,
+      "attribution" : {
+        "category" : "legacy-target-invariant-kill",
+        "typeOnlyExecutionStatus" : null,
+        "typeOnlyOracleOutcome" : null,
+        "typeOnlyStateCount" : null,
+        "typeOnlyStateRelation" : null,
+        "typeOnlyMutantOnlyWitness" : null,
+        "legacyExecutionStatus" : null,
+        "legacyOracleOutcome" : null,
+        "legacyStateRelation" : null,
+        "legacyStateCount" : null,
+        "legacyMutantOnlyWitness" : null,
+        "diagnosticReason" : null
+      }
+    }
+  }, {
+    "entryId" : "readers-writers",
+    "result" : {
+      "id" : "gcd-00d53a1e68c3af6fde68",
+      "family" : "GCD",
+      "definition" : "ReadOrWrite",
+      "original" : "waiting /= <<>>",
+      "replacement" : "TRUE",
+      "executionStatus" : "TOOL_ERROR",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "tool-error; tool-event-codes=2103,2121,2184,2217",
+      "baselineStateCount" : 21527,
+      "mutantStateCount" : 7,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "readers-writers",
+    "result" : {
+      "id" : "gcd-a4d2a906ec742d556519",
+      "family" : "GCD",
+      "definition" : "ReadOrWrite",
+      "original" : "writers = {}",
+      "replacement" : "TRUE",
+      "executionStatus" : "COMPLETED",
+      "oracleOutcome" : "KILLED_STATE_SAFETY",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "legacy-target-invariant-kill",
+      "diagnosticReason" : null,
+      "baselineStateCount" : 21527,
+      "mutantStateCount" : 490,
+      "mutantOnlyWitness" : null,
+      "attribution" : {
+        "category" : "legacy-target-invariant-kill",
+        "typeOnlyExecutionStatus" : null,
+        "typeOnlyOracleOutcome" : null,
+        "typeOnlyStateCount" : null,
+        "typeOnlyStateRelation" : null,
+        "typeOnlyMutantOnlyWitness" : null,
+        "legacyExecutionStatus" : null,
+        "legacyOracleOutcome" : null,
+        "legacyStateRelation" : null,
+        "legacyStateCount" : null,
+        "legacyMutantOnlyWitness" : null,
+        "diagnosticReason" : null
+      }
+    }
+  }, {
+    "entryId" : "coffee-can",
+    "result" : {
+      "id" : "gcd-3935792ce5b374dacf59",
+      "family" : "GCD",
+      "definition" : "PickSameColorBlack",
+      "original" : "BeanCount > 1",
+      "replacement" : "TRUE",
+      "executionStatus" : "COMPLETED",
+      "oracleOutcome" : "PASSED",
+      "stateRelation" : "STATE_EQUAL",
+      "verdict" : "state-equal",
+      "diagnosticReason" : null,
+      "baselineStateCount" : 20,
+      "mutantStateCount" : 20,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "coffee-can",
+    "result" : {
+      "id" : "gcd-b1e6a8a8f0d45db93929",
+      "family" : "GCD",
+      "definition" : "PickSameColorBlack",
+      "original" : "can.black >= 2",
+      "replacement" : "TRUE",
+      "executionStatus" : "COMPLETED",
+      "oracleOutcome" : "KILLED_STATE_SAFETY",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "type-invariant-kill",
+      "diagnosticReason" : null,
+      "baselineStateCount" : 20,
+      "mutantStateCount" : 21,
+      "mutantOnlyWitness" : null,
+      "attribution" : {
+        "category" : "type-invariant-kill",
+        "typeOnlyExecutionStatus" : null,
+        "typeOnlyOracleOutcome" : null,
+        "typeOnlyStateCount" : null,
+        "typeOnlyStateRelation" : null,
+        "typeOnlyMutantOnlyWitness" : null,
+        "legacyExecutionStatus" : null,
+        "legacyOracleOutcome" : null,
+        "legacyStateRelation" : null,
+        "legacyStateCount" : null,
+        "legacyMutantOnlyWitness" : null,
+        "diagnosticReason" : null
+      }
+    }
+  }, {
+    "entryId" : "coffee-can",
+    "result" : {
+      "id" : "gcd-3741978fd944a50a1bb8",
+      "family" : "GCD",
+      "definition" : "PickSameColorWhite",
+      "original" : "BeanCount > 1",
+      "replacement" : "TRUE",
+      "executionStatus" : "COMPLETED",
+      "oracleOutcome" : "PASSED",
+      "stateRelation" : "STATE_EQUAL",
+      "verdict" : "state-equal",
+      "diagnosticReason" : null,
+      "baselineStateCount" : 20,
+      "mutantStateCount" : 20,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "coffee-can",
+    "result" : {
+      "id" : "gcd-c37b39cc624faeacbe6c",
+      "family" : "GCD",
+      "definition" : "PickSameColorWhite",
+      "original" : "can.white >= 2",
+      "replacement" : "TRUE",
+      "executionStatus" : "COMPLETED",
+      "oracleOutcome" : "KILLED_STATE_SAFETY",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "type-invariant-kill",
+      "diagnosticReason" : null,
+      "baselineStateCount" : 20,
+      "mutantStateCount" : 21,
+      "mutantOnlyWitness" : null,
+      "attribution" : {
+        "category" : "type-invariant-kill",
+        "typeOnlyExecutionStatus" : null,
+        "typeOnlyOracleOutcome" : null,
+        "typeOnlyStateCount" : null,
+        "typeOnlyStateRelation" : null,
+        "typeOnlyMutantOnlyWitness" : null,
+        "legacyExecutionStatus" : null,
+        "legacyOracleOutcome" : null,
+        "legacyStateRelation" : null,
+        "legacyStateCount" : null,
+        "legacyMutantOnlyWitness" : null,
+        "diagnosticReason" : null
+      }
+    }
+  }, {
+    "entryId" : "coffee-can",
+    "result" : {
+      "id" : "gcd-152bdb04c8d059dc356e",
+      "family" : "GCD",
+      "definition" : "PickDifferentColor",
+      "original" : "BeanCount > 1",
+      "replacement" : "TRUE",
+      "executionStatus" : "COMPLETED",
+      "oracleOutcome" : "PASSED",
+      "stateRelation" : "STATE_EQUAL",
+      "verdict" : "state-equal",
+      "diagnosticReason" : null,
+      "baselineStateCount" : 20,
+      "mutantStateCount" : 20,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "coffee-can",
+    "result" : {
+      "id" : "gcd-e92477c8fcc16d10701c",
+      "family" : "GCD",
+      "definition" : "PickDifferentColor",
+      "original" : "can.black >= 1",
+      "replacement" : "TRUE",
+      "executionStatus" : "COMPLETED",
+      "oracleOutcome" : "KILLED_STATE_SAFETY",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "type-invariant-kill",
+      "diagnosticReason" : null,
+      "baselineStateCount" : 20,
+      "mutantStateCount" : 21,
+      "mutantOnlyWitness" : null,
+      "attribution" : {
+        "category" : "type-invariant-kill",
+        "typeOnlyExecutionStatus" : null,
+        "typeOnlyOracleOutcome" : null,
+        "typeOnlyStateCount" : null,
+        "typeOnlyStateRelation" : null,
+        "typeOnlyMutantOnlyWitness" : null,
+        "legacyExecutionStatus" : null,
+        "legacyOracleOutcome" : null,
+        "legacyStateRelation" : null,
+        "legacyStateCount" : null,
+        "legacyMutantOnlyWitness" : null,
+        "diagnosticReason" : null
+      }
+    }
+  }, {
+    "entryId" : "coffee-can",
+    "result" : {
+      "id" : "gcd-132bbf47da73f7792c26",
+      "family" : "GCD",
+      "definition" : "PickDifferentColor",
+      "original" : "can.white >= 1",
+      "replacement" : "TRUE",
+      "executionStatus" : "COMPLETED",
+      "oracleOutcome" : "PASSED",
+      "stateRelation" : "STATE_EQUAL",
+      "verdict" : "state-equal",
+      "diagnosticReason" : null,
+      "baselineStateCount" : 20,
+      "mutantStateCount" : 20,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "coffee-can",
+    "result" : {
+      "id" : "gcd-cc1d7708f25c17515b92",
+      "family" : "GCD",
+      "definition" : "Termination",
+      "original" : "BeanCount = 1",
+      "replacement" : "TRUE",
+      "executionStatus" : "COMPLETED",
+      "oracleOutcome" : "PASSED",
+      "stateRelation" : "STATE_EQUAL",
+      "verdict" : "state-equal",
+      "diagnosticReason" : null,
+      "baselineStateCount" : 20,
+      "mutantStateCount" : 20,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "ewd840",
+    "result" : {
+      "id" : "gcd-531f61d42f099691b207",
+      "family" : "GCD",
+      "definition" : "InitiateProbe",
+      "original" : "tpos = 0",
+      "replacement" : "TRUE",
+      "executionStatus" : "COMPLETED",
+      "oracleOutcome" : "PASSED",
+      "stateRelation" : "STATE_EQUAL",
+      "verdict" : "state-equal",
+      "diagnosticReason" : null,
+      "baselineStateCount" : 302,
+      "mutantStateCount" : 302,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "ewd840",
+    "result" : {
+      "id" : "gcd-46ff7cf8d597a0d35a96",
+      "family" : "GCD",
+      "definition" : "InitiateProbe",
+      "original" : "tcolor = \"black\" \\/ color[0] = \"black\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "COMPLETED",
+      "oracleOutcome" : "PASSED",
+      "stateRelation" : "STATE_EQUAL",
+      "verdict" : "state-equal",
+      "diagnosticReason" : null,
+      "baselineStateCount" : 302,
+      "mutantStateCount" : 302,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "ewd840",
+    "result" : {
+      "id" : "gcd-217c8e583446128f0e6a",
+      "family" : "GCD",
+      "definition" : "PassToken",
+      "original" : "tpos = i",
+      "replacement" : "TRUE",
+      "executionStatus" : "COMPLETED",
+      "oracleOutcome" : "KILLED_STATE_SAFETY",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "legacy-target-invariant-kill",
+      "diagnosticReason" : null,
+      "baselineStateCount" : 302,
+      "mutantStateCount" : 229,
+      "mutantOnlyWitness" : null,
+      "attribution" : {
+        "category" : "legacy-target-invariant-kill",
+        "typeOnlyExecutionStatus" : "COMPLETED",
+        "typeOnlyOracleOutcome" : "PASSED",
+        "typeOnlyStateCount" : 348,
+        "typeOnlyStateRelation" : "STATE_EXPANDING",
+        "typeOnlyMutantOnlyWitness" : "6:active:8:function:37:(0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE);5:color:8:function:46:(0 :> \"black\" @@ 1 :> \"black\" @@ 2 :> \"black\");6:tcolor:6:string:7:\"white\";4:tpos:7:integer:1:0;",
+        "legacyExecutionStatus" : null,
+        "legacyOracleOutcome" : null,
+        "legacyStateRelation" : null,
+        "legacyStateCount" : null,
+        "legacyMutantOnlyWitness" : null,
+        "diagnosticReason" : null
+      }
+    }
+  }, {
+    "entryId" : "ewd840",
+    "result" : {
+      "id" : "gcd-afeb006c7fded5f62cc3",
+      "family" : "GCD",
+      "definition" : "PassToken",
+      "original" : "~ active[i] \\/ color[i] = \"black\" \\/ tcolor = \"black\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "COMPLETED",
+      "oracleOutcome" : "KILLED_STATE_SAFETY",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "legacy-target-invariant-kill",
+      "diagnosticReason" : null,
+      "baselineStateCount" : 302,
+      "mutantStateCount" : 227,
+      "mutantOnlyWitness" : null,
+      "attribution" : {
+        "category" : "legacy-target-invariant-kill",
+        "typeOnlyExecutionStatus" : "COMPLETED",
+        "typeOnlyOracleOutcome" : "PASSED",
+        "typeOnlyStateCount" : 320,
+        "typeOnlyStateRelation" : "STATE_EXPANDING",
+        "typeOnlyMutantOnlyWitness" : "6:active:8:function:37:(0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE);5:color:8:function:46:(0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"white\");6:tcolor:6:string:7:\"white\";4:tpos:7:integer:1:0;",
+        "legacyExecutionStatus" : null,
+        "legacyOracleOutcome" : null,
+        "legacyStateRelation" : null,
+        "legacyStateCount" : null,
+        "legacyMutantOnlyWitness" : null,
+        "diagnosticReason" : null
+      }
+    }
+  }, {
+    "entryId" : "ewd840",
+    "result" : {
+      "id" : "gcd-1638c5af433eb5f73205",
+      "family" : "GCD",
+      "definition" : "SendMsg",
+      "original" : "active[i]",
+      "replacement" : "TRUE",
+      "executionStatus" : "COMPLETED",
+      "oracleOutcome" : "KILLED_STATE_SAFETY",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "legacy-target-invariant-kill",
+      "diagnosticReason" : null,
+      "baselineStateCount" : 302,
+      "mutantStateCount" : 285,
+      "mutantOnlyWitness" : null,
+      "attribution" : {
+        "category" : "legacy-target-invariant-kill",
+        "typeOnlyExecutionStatus" : "COMPLETED",
+        "typeOnlyOracleOutcome" : "PASSED",
+        "typeOnlyStateCount" : 312,
+        "typeOnlyStateRelation" : "STATE_EXPANDING",
+        "typeOnlyMutantOnlyWitness" : "6:active:8:function:37:(0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE);5:color:8:function:46:(0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"white\");6:tcolor:6:string:7:\"white\";4:tpos:7:integer:1:0;",
+        "legacyExecutionStatus" : null,
+        "legacyOracleOutcome" : null,
+        "legacyStateRelation" : null,
+        "legacyStateCount" : null,
+        "legacyMutantOnlyWitness" : null,
+        "diagnosticReason" : null
+      }
+    }
+  }, {
+    "entryId" : "ewd840",
+    "result" : {
+      "id" : "gcd-ae8209df8004b9d0c538",
+      "family" : "GCD",
+      "definition" : "Deactivate",
+      "original" : "active[i]",
+      "replacement" : "TRUE",
+      "executionStatus" : "COMPLETED",
+      "oracleOutcome" : "PASSED",
+      "stateRelation" : "STATE_EQUAL",
+      "verdict" : "state-equal",
+      "diagnosticReason" : null,
+      "baselineStateCount" : 302,
+      "mutantStateCount" : 302,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "nbacg-guer01",
+    "result" : {
+      "id" : "gcd-eb126f1bfdab35c03b03",
+      "family" : "GCD",
+      "definition" : "Crash",
+      "original" : "pc[i] # \"BYZ\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "INVALID_SEMANTIC",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "invalid",
+      "diagnosticReason" : "post-mutation-sany-rejection",
+      "baselineStateCount" : 24922,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "nbacg-guer01",
+    "result" : {
+      "id" : "gcd-7bbac75930e7d788a27d",
+      "family" : "GCD",
+      "definition" : "SendYes",
+      "original" : "pc[i] = \"YES\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "COMPLETED",
+      "oracleOutcome" : "KILLED_STATE_SAFETY",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "type-invariant-kill",
+      "diagnosticReason" : null,
+      "baselineStateCount" : 24922,
+      "mutantStateCount" : 401,
+      "mutantOnlyWitness" : null,
+      "attribution" : {
+        "category" : "type-invariant-kill",
+        "typeOnlyExecutionStatus" : "COMPLETED",
+        "typeOnlyOracleOutcome" : "KILLED_STATE_SAFETY",
+        "typeOnlyStateCount" : 3870,
+        "typeOnlyStateRelation" : null,
+        "typeOnlyMutantOnlyWitness" : null,
+        "legacyExecutionStatus" : null,
+        "legacyOracleOutcome" : null,
+        "legacyStateRelation" : null,
+        "legacyStateCount" : null,
+        "legacyMutantOnlyWitness" : null,
+        "diagnosticReason" : null
+      }
+    }
+  }, {
+    "entryId" : "nbacg-guer01",
+    "result" : {
+      "id" : "gcd-d2fc590e1005453724f6",
+      "family" : "GCD",
+      "definition" : "SendYes",
+      "original" : "someFail[i] = FALSE",
+      "replacement" : "TRUE",
+      "executionStatus" : "INVALID_SEMANTIC",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "invalid",
+      "diagnosticReason" : "post-mutation-sany-rejection",
+      "baselineStateCount" : 24922,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "nbacg-guer01",
+    "result" : {
+      "id" : "gcd-0d16c21ef1a1559f97c5",
+      "family" : "GCD",
+      "definition" : "SendNo",
+      "original" : "pc[i] = \"NO\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "COMPLETED",
+      "oracleOutcome" : "KILLED_STATE_SAFETY",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "type-invariant-kill",
+      "diagnosticReason" : null,
+      "baselineStateCount" : 24922,
+      "mutantStateCount" : 401,
+      "mutantOnlyWitness" : null,
+      "attribution" : {
+        "category" : "type-invariant-kill",
+        "typeOnlyExecutionStatus" : "COMPLETED",
+        "typeOnlyOracleOutcome" : "KILLED_STATE_SAFETY",
+        "typeOnlyStateCount" : 4083,
+        "typeOnlyStateRelation" : null,
+        "typeOnlyMutantOnlyWitness" : null,
+        "legacyExecutionStatus" : null,
+        "legacyOracleOutcome" : null,
+        "legacyStateRelation" : null,
+        "legacyStateCount" : null,
+        "legacyMutantOnlyWitness" : null,
+        "diagnosticReason" : null
+      }
+    }
+  }, {
+    "entryId" : "nbacg-guer01",
+    "result" : {
+      "id" : "gcd-b448426c0674181f86df",
+      "family" : "GCD",
+      "definition" : "SendNo",
+      "original" : "someFail[i] = FALSE",
+      "replacement" : "TRUE",
+      "executionStatus" : "INVALID_SEMANTIC",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "invalid",
+      "diagnosticReason" : "post-mutation-sany-rejection",
+      "baselineStateCount" : 24922,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "nbacg-guer01",
+    "result" : {
+      "id" : "gcd-054a154049f5ff140110",
+      "family" : "GCD",
+      "definition" : "AbortNoYes",
+      "original" : "someFail[i] = TRUE",
+      "replacement" : "TRUE",
+      "executionStatus" : "COMPLETED",
+      "oracleOutcome" : "PASSED",
+      "stateRelation" : "STATE_EXPANDING",
+      "verdict" : "state-invariant-gap-candidate",
+      "diagnosticReason" : null,
+      "baselineStateCount" : 24922,
+      "mutantStateCount" : 27782,
+      "mutantOnlyWitness" : "7:nRcvdNo:8:function:11:<<0, 0, 0>>;8:nRcvdYes:8:function:11:<<0, 0, 0>>;6:nSntNo:7:integer:1:0;7:nSntNoF:7:integer:1:0;7:nSntYes:7:integer:1:0;8:nSntYesF:7:integer:1:0;2:pc:8:function:21:<<\"BYZ\", \"NO\", \"NO\">>;8:someFail:8:function:21:<<FALSE, TRUE, TRUE>>;",
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "nbacg-guer01",
+    "result" : {
+      "id" : "gcd-3c1ee8b4429ee7af9c2f",
+      "family" : "GCD",
+      "definition" : "AbortNoYes",
+      "original" : "\\/ pc[i] = \"YES\"\n     \\/ pc[i] = \"NO\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "COMPLETED",
+      "oracleOutcome" : "KILLED_STATE_SAFETY",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "adopted-target-invariant-kill",
+      "diagnosticReason" : null,
+      "baselineStateCount" : 24922,
+      "mutantStateCount" : 435,
+      "mutantOnlyWitness" : null,
+      "attribution" : {
+        "category" : "adopted-target-invariant-kill",
+        "typeOnlyExecutionStatus" : "COMPLETED",
+        "typeOnlyOracleOutcome" : "PASSED",
+        "typeOnlyStateCount" : 30943,
+        "typeOnlyStateRelation" : "STATE_EXPANDING",
+        "typeOnlyMutantOnlyWitness" : "7:nRcvdNo:8:function:11:<<0, 0, 0>>;8:nRcvdYes:8:function:11:<<0, 0, 0>>;6:nSntNo:7:integer:1:0;7:nSntNoF:7:integer:1:0;7:nSntYes:7:integer:1:0;8:nSntYesF:7:integer:1:1;2:pc:8:function:23:<<\"ABORT\", \"NO\", \"NO\">>;8:someFail:8:function:20:<<TRUE, TRUE, TRUE>>;",
+        "legacyExecutionStatus" : null,
+        "legacyOracleOutcome" : null,
+        "legacyStateRelation" : null,
+        "legacyStateCount" : null,
+        "legacyMutantOnlyWitness" : null,
+        "diagnosticReason" : null
+      }
+    }
+  }, {
+    "entryId" : "nbacg-guer01",
+    "result" : {
+      "id" : "gcd-9703aa35c554b205740b",
+      "family" : "GCD",
+      "definition" : "AbortSent",
+      "original" : "pc[i] = \"SENT\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "TOOL_ERROR",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "tool-error; tool-event-codes=1000,2103",
+      "baselineStateCount" : 24922,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "nbacg-guer01",
+    "result" : {
+      "id" : "gcd-7bf9bd4fe1ac0ab4e13d",
+      "family" : "GCD",
+      "definition" : "AbortSent",
+      "original" : "nRcvdNo[i] > 0",
+      "replacement" : "TRUE",
+      "executionStatus" : "TOOL_ERROR",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "tool-error; tool-event-codes=1000,2103",
+      "baselineStateCount" : 24922,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "nbacg-guer01",
+    "result" : {
+      "id" : "gcd-ba990b7421fd640e9fda",
+      "family" : "GCD",
+      "definition" : "Commit",
+      "original" : "pc[i] = \"SENT\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "INVALID_SEMANTIC",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "invalid",
+      "diagnosticReason" : "post-mutation-sany-rejection",
+      "baselineStateCount" : 24922,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "nbacg-guer01",
+    "result" : {
+      "id" : "gcd-e103a4cb783ef32a71a7",
+      "family" : "GCD",
+      "definition" : "Commit",
+      "original" : "nRcvdNo[i] = 0",
+      "replacement" : "TRUE",
+      "executionStatus" : "INVALID_SEMANTIC",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "invalid",
+      "diagnosticReason" : "post-mutation-sany-rejection",
+      "baselineStateCount" : 24922,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "nbacg-guer01",
+    "result" : {
+      "id" : "gcd-ab852cd18d39800964a7",
+      "family" : "GCD",
+      "definition" : "Commit",
+      "original" : "nRcvdYes[i] >= N",
+      "replacement" : "TRUE",
+      "executionStatus" : "TOOL_ERROR",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "tool-error; tool-event-codes=3002",
+      "baselineStateCount" : 24922,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "c1cs",
+    "result" : {
+      "id" : "gcd-d5fd9a5a566e8abb42d5",
+      "family" : "GCD",
+      "definition" : "Crash",
+      "original" : "Cardinality( { p \\in Proc : pc[p] # \"CRASH\" } ) <  F",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "c1cs",
+    "result" : {
+      "id" : "gcd-ab8fc3846de85544bf73",
+      "family" : "GCD",
+      "definition" : "Crash",
+      "original" : "pc[i] # \"CRASH\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "c1cs",
+    "result" : {
+      "id" : "gcd-98ef4f8e7f1499934f58",
+      "family" : "GCD",
+      "definition" : "Receive",
+      "original" : "pc[i] # \"CRASH\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "c1cs",
+    "result" : {
+      "id" : "gcd-3594850863c696bca079",
+      "family" : "GCD",
+      "definition" : "Propose",
+      "original" : "pc[i] = \"PROPOSE\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "c1cs",
+    "result" : {
+      "id" : "gcd-6869c61876afc943ede4",
+      "family" : "GCD",
+      "definition" : "Core_T1",
+      "original" : "pc[i] = \"DECIDE\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "c1cs",
+    "result" : {
+      "id" : "gcd-dd2987912406045f1585",
+      "family" : "GCD",
+      "definition" : "T2",
+      "original" : "pc[i] # \"DONE\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "c1cs",
+    "result" : {
+      "id" : "gcd-db7fa477b6d2fedb79be",
+      "family" : "GCD",
+      "definition" : "T2",
+      "original" : "pc[i] # \"CRASH\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "c1cs",
+    "result" : {
+      "id" : "gcd-b186f5eda8b9fbde8770",
+      "family" : "GCD",
+      "definition" : "DoNothing",
+      "original" : "\\/ pc[i] = \"CALL\"       \\/ pc[i] = \"DONE\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "bosco",
+    "result" : {
+      "id" : "gcd-ae1899ab0e34bb8f21ab",
+      "family" : "GCD",
+      "definition" : "UponV0",
+      "original" : "pc[self] = \"V0\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "bosco",
+    "result" : {
+      "id" : "gcd-9a0d9960b6c9eae4a3b7",
+      "family" : "GCD",
+      "definition" : "UponV1",
+      "original" : "pc[self] = \"V1\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "bosco",
+    "result" : {
+      "id" : "gcd-192cff8da209f760eb16",
+      "family" : "GCD",
+      "definition" : "UponOneStep0",
+      "original" : "pc[self] = \"S0\" \\/ pc[self] = \"S1\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "bosco",
+    "result" : {
+      "id" : "gcd-962d6b3798fc11703bb5",
+      "family" : "GCD",
+      "definition" : "UponOneStep1",
+      "original" : "pc[self] = \"S0\" \\/ pc[self] = \"S1\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "bosco",
+    "result" : {
+      "id" : "gcd-f25dc50237e7f702fe3b",
+      "family" : "GCD",
+      "definition" : "UponUnderlying0",
+      "original" : "pc[self] = \"S0\" \\/ pc[self] = \"S1\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "bosco",
+    "result" : {
+      "id" : "gcd-25db45aa0ecb45f1b156",
+      "family" : "GCD",
+      "definition" : "UponUnderlying1",
+      "original" : "pc[self] = \"S0\" \\/ pc[self] = \"S1\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "bosco",
+    "result" : {
+      "id" : "gcd-e13b0ea5dc631cc37cf6",
+      "family" : "GCD",
+      "definition" : "UponUnderlyingUndecided",
+      "original" : "pc[self] = \"S0\" \\/ pc[self] = \"S1\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "slush-small",
+    "result" : {
+      "id" : "gcd-afc00275b83db104641a",
+      "family" : "GCD",
+      "definition" : "QueryReplyLoop",
+      "original" : "pc[self] = \"QueryReplyLoop\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "slush-small",
+    "result" : {
+      "id" : "gcd-e708a31a200ae9ac63f6",
+      "family" : "GCD",
+      "definition" : "WaitForQueryMessageOrTermination",
+      "original" : "pc[self] = \"WaitForQueryMessageOrTermination\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "slush-small",
+    "result" : {
+      "id" : "gcd-29e4135c2403e17eb99b",
+      "family" : "GCD",
+      "definition" : "WaitForQueryMessageOrTermination",
+      "original" : "PendingQueryMessage(self) /= {} \\/ Terminate",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "slush-small",
+    "result" : {
+      "id" : "gcd-cccfe237a05a2847781b",
+      "family" : "GCD",
+      "definition" : "RespondToQueryMessage",
+      "original" : "pc[self] = \"RespondToQueryMessage\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "slush-small",
+    "result" : {
+      "id" : "gcd-de465500cf380dcb7f31",
+      "family" : "GCD",
+      "definition" : "RequireColorAssignment",
+      "original" : "pc[self] = \"RequireColorAssignment\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "slush-small",
+    "result" : {
+      "id" : "gcd-13079919e92e5403b9a1",
+      "family" : "GCD",
+      "definition" : "RequireColorAssignment",
+      "original" : "Pick(self) /= NoColor",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "slush-small",
+    "result" : {
+      "id" : "gcd-f31d45c9765c4172f885",
+      "family" : "GCD",
+      "definition" : "ExecuteSlushLoop",
+      "original" : "pc[self] = \"ExecuteSlushLoop\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "slush-small",
+    "result" : {
+      "id" : "gcd-6c613ac6e0c342636129",
+      "family" : "GCD",
+      "definition" : "QuerySampleSet",
+      "original" : "pc[self] = \"QuerySampleSet\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "slush-small",
+    "result" : {
+      "id" : "gcd-11d626501fb100ab2ced",
+      "family" : "GCD",
+      "definition" : "TallyQueryReplies",
+      "original" : "pc[self] = \"TallyQueryReplies\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "slush-small",
+    "result" : {
+      "id" : "gcd-a36a9b558ecf39b6c7c8",
+      "family" : "GCD",
+      "definition" : "TallyQueryReplies",
+      "original" : "/\\ \\A pid \\in sampleSet[self] :                                 /\\ \\E msg \\in PendingQueryReplyMessage(self) :                                   /\\ msg.src = pid",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "slush-small",
+    "result" : {
+      "id" : "gcd-956f166b2e62fd4dca23",
+      "family" : "GCD",
+      "definition" : "SlushLoopTermination",
+      "original" : "pc[self] = \"SlushLoopTermination\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "slush-small",
+    "result" : {
+      "id" : "gcd-88a71696008f80b79005",
+      "family" : "GCD",
+      "definition" : "ClientRequestLoop",
+      "original" : "pc[\"ClientRequest\"] = \"ClientRequestLoop\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "slush-small",
+    "result" : {
+      "id" : "gcd-7f0796e9491643ae300c",
+      "family" : "GCD",
+      "definition" : "AssignColorToNode",
+      "original" : "pc[\"ClientRequest\"] = \"AssignColorToNode\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  }, {
+    "entryId" : "slush-small",
+    "result" : {
+      "id" : "gcd-e2286628a01b1afa68ef",
+      "family" : "GCD",
+      "definition" : "Terminating",
+      "original" : "\\A self \\in ProcSet: pc[self] = \"Done\"",
+      "replacement" : "TRUE",
+      "executionStatus" : "BASELINE_UNRESOLVED",
+      "oracleOutcome" : "NOT_EVALUATED",
+      "stateRelation" : "STATE_UNRESOLVED",
+      "verdict" : "unresolved",
+      "diagnosticReason" : "Experiment entry status: SANDBOX_ERROR",
+      "baselineStateCount" : 0,
+      "mutantStateCount" : 0,
+      "mutantOnlyWitness" : null,
+      "attribution" : null
+    }
+  } ],
+  "summary" : {
+    "specifications" : 8,
+    "censusCompletedSpecifications" : 8,
+    "censusCensoredSpecifications" : 0,
+    "experimentCompletedSpecifications" : 5,
+    "experimentCensoredSpecifications" : 3,
+    "censusSites" : 60,
+    "completedGcdOutcomes" : 20,
+    "unresolvedGcdOutcomes" : 40,
+    "eligibleCandidates" : 1
+  },
+  "census" : {
+    "schemaVersion" : 1,
+    "receipt" : {
+      "sha256" : "12c865261d3a92abf72214aea401f79e50d9778b2c24434babe9c79554e4086e",
+      "sizeBytes" : 2080
+    },
+    "census" : {
+      "schemaVersion" : 3,
+      "profile" : "gcd-prospective-v11",
+      "repository" : "https://github.com/tlaplus/Examples",
+      "commit" : "ed3cc4c35f7001d7cec08a22dcd698dae7570dc3",
+      "inputs" : {
+        "manifest" : {
+          "sha256" : "469a4e780784100a0ecf26e8a3a91c0a720fd184b945348e1beae3916a5c7c2f",
+          "sizeBytes" : 12271
+        },
+        "policy" : {
+          "sha256" : "bd518ab8792604352b1986b3e293c9daf2fbcc5e9f455aaeb162bec1d6cf5e76",
+          "sizeBytes" : 696
+        },
+        "tools" : {
+          "sha256" : "eabd140a70f49eb9305a3bd3f3df944eddf87e5a90d329789085f8953a80533a",
+          "sizeBytes" : 4487757
+        },
+        "application" : {
+          "sha256" : "0c84489df67046b7418cc7dea6f9b794ec17f9de42664049814fe48d02b378dd",
+          "sizeBytes" : 3148231
+        }
+      },
+      "entries" : [ {
+        "id" : "readers-writers",
+        "domain" : "concurrency",
+        "selection" : {
+          "cohort" : "prospective",
+          "gcdStratum" : "standard-risk",
+          "familyCluster" : "readers-writers",
+          "selectionRationale" : "A compact reader-writer synchronization model with a configured mutual-exclusion safety oracle and no historical source overlap."
+        },
+        "status" : "COMPLETED",
+        "diagnostic" : null,
+        "report" : {
+          "schemaVersion" : 1,
+          "module" : "ReadersWriters.tla",
+          "config" : "APReadersWriters.cfg",
+          "sites" : [ {
+            "candidateId" : "gcd-d13b277c20b2480b7ad6",
+            "module" : "ReadersWriters",
+            "definition" : "TryRead",
+            "guard" : "actor \\notin WaitingToRead",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 2,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-302e171d8f5783091a1e",
+            "module" : "ReadersWriters",
+            "definition" : "TryWrite",
+            "guard" : "actor \\notin WaitingToWrite",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 2,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-b67d26c6007589be999d",
+            "module" : "ReadersWriters",
+            "definition" : "Write",
+            "guard" : "readers = {}",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 3,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-00d53a1e68c3af6fde68",
+            "module" : "ReadersWriters",
+            "definition" : "ReadOrWrite",
+            "guard" : "waiting /= <<>>",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 1,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-a4d2a906ec742d556519",
+            "module" : "ReadersWriters",
+            "definition" : "ReadOrWrite",
+            "guard" : "writers = {}",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 1,
+            "conforms" : true
+          } ]
+        }
+      }, {
+        "id" : "coffee-can",
+        "domain" : "state-machine",
+        "selection" : {
+          "cohort" : "prospective",
+          "gcdStratum" : "standard-risk",
+          "familyCluster" : "coffee-can",
+          "selectionRationale" : "A small finite transition system selected as a type-only control for unseen GCD behavior."
+        },
+        "status" : "COMPLETED",
+        "diagnostic" : null,
+        "report" : {
+          "schemaVersion" : 1,
+          "module" : "CoffeeCan.tla",
+          "config" : "APCoffeeCan.cfg",
+          "sites" : [ {
+            "candidateId" : "gcd-3935792ce5b374dacf59",
+            "module" : "CoffeeCan",
+            "definition" : "PickSameColorBlack",
+            "guard" : "BeanCount > 1",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 1,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-b1e6a8a8f0d45db93929",
+            "module" : "CoffeeCan",
+            "definition" : "PickSameColorBlack",
+            "guard" : "can.black >= 2",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 1,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-3741978fd944a50a1bb8",
+            "module" : "CoffeeCan",
+            "definition" : "PickSameColorWhite",
+            "guard" : "BeanCount > 1",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 1,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-c37b39cc624faeacbe6c",
+            "module" : "CoffeeCan",
+            "definition" : "PickSameColorWhite",
+            "guard" : "can.white >= 2",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 1,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-152bdb04c8d059dc356e",
+            "module" : "CoffeeCan",
+            "definition" : "PickDifferentColor",
+            "guard" : "BeanCount > 1",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 2,
+            "actionSuccessorConjuncts" : 1,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-e92477c8fcc16d10701c",
+            "module" : "CoffeeCan",
+            "definition" : "PickDifferentColor",
+            "guard" : "can.black >= 1",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 2,
+            "actionSuccessorConjuncts" : 1,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-132bbf47da73f7792c26",
+            "module" : "CoffeeCan",
+            "definition" : "PickDifferentColor",
+            "guard" : "can.white >= 1",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 2,
+            "actionSuccessorConjuncts" : 1,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-cc1d7708f25c17515b92",
+            "module" : "CoffeeCan",
+            "definition" : "Termination",
+            "guard" : "BeanCount = 1",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 1,
+            "conforms" : true
+          } ]
+        }
+      }, {
+        "id" : "ewd840",
+        "domain" : "termination-detection",
+        "selection" : {
+          "cohort" : "prospective",
+          "gcdStratum" : "standard-risk",
+          "familyCluster" : "ewd840",
+          "selectionRationale" : "A token-based distributed protocol whose configured State Invariants provide type and domain-safety attribution."
+        },
+        "status" : "COMPLETED",
+        "diagnostic" : null,
+        "report" : {
+          "schemaVersion" : 1,
+          "module" : "EWD840.tla",
+          "config" : "EWD840.cfg",
+          "sites" : [ {
+            "candidateId" : "gcd-531f61d42f099691b207",
+            "module" : "EWD840",
+            "definition" : "InitiateProbe",
+            "guard" : "tpos = 0",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 4,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-46ff7cf8d597a0d35a96",
+            "module" : "EWD840",
+            "definition" : "InitiateProbe",
+            "guard" : "tcolor = \"black\" \\/ color[0] = \"black\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 4,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-217c8e583446128f0e6a",
+            "module" : "EWD840",
+            "definition" : "PassToken",
+            "guard" : "tpos = i",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 4,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-afeb006c7fded5f62cc3",
+            "module" : "EWD840",
+            "definition" : "PassToken",
+            "guard" : "~ active[i] \\/ color[i] = \"black\" \\/ tcolor = \"black\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 4,
+            "conforms" : false
+          }, {
+            "candidateId" : "gcd-1638c5af433eb5f73205",
+            "module" : "EWD840",
+            "definition" : "SendMsg",
+            "guard" : "active[i]",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 2,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-ae8209df8004b9d0c538",
+            "module" : "EWD840",
+            "definition" : "Deactivate",
+            "guard" : "active[i]",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 2,
+            "conforms" : true
+          } ]
+        }
+      }, {
+        "id" : "nbacg-guer01",
+        "domain" : "atomic-commit",
+        "selection" : {
+          "cohort" : "prospective",
+          "gcdStratum" : "standard-risk",
+          "familyCluster" : "nonblocking-atomic-commit",
+          "selectionRationale" : "An unseen atomic-commit model selected to test type-only survivor discovery in a guarded distributed protocol."
+        },
+        "status" : "COMPLETED",
+        "diagnostic" : null,
+        "report" : {
+          "schemaVersion" : 1,
+          "module" : "nbacg_guer01.tla",
+          "config" : "nbacg_guer01.cfg",
+          "sites" : [ {
+            "candidateId" : "gcd-eb126f1bfdab35c03b03",
+            "module" : "nbacg_guer01",
+            "definition" : "Crash",
+            "guard" : "pc[i] # \"BYZ\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 4,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-7bbac75930e7d788a27d",
+            "module" : "nbacg_guer01",
+            "definition" : "SendYes",
+            "guard" : "pc[i] = \"YES\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 3,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-d2fc590e1005453724f6",
+            "module" : "nbacg_guer01",
+            "definition" : "SendYes",
+            "guard" : "someFail[i] = FALSE",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 3,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-0d16c21ef1a1559f97c5",
+            "module" : "nbacg_guer01",
+            "definition" : "SendNo",
+            "guard" : "pc[i] = \"NO\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 3,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-b448426c0674181f86df",
+            "module" : "nbacg_guer01",
+            "definition" : "SendNo",
+            "guard" : "someFail[i] = FALSE",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 3,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-054a154049f5ff140110",
+            "module" : "nbacg_guer01",
+            "definition" : "AbortNoYes",
+            "guard" : "someFail[i] = TRUE",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 2,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-3c1ee8b4429ee7af9c2f",
+            "module" : "nbacg_guer01",
+            "definition" : "AbortNoYes",
+            "guard" : "\\/ pc[i] = \"YES\"      \\/ pc[i] = \"NO\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 2,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-9703aa35c554b205740b",
+            "module" : "nbacg_guer01",
+            "definition" : "AbortSent",
+            "guard" : "pc[i] = \"SENT\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 2,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-7bf9bd4fe1ac0ab4e13d",
+            "module" : "nbacg_guer01",
+            "definition" : "AbortSent",
+            "guard" : "nRcvdNo[i] > 0",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 2,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-ba990b7421fd640e9fda",
+            "module" : "nbacg_guer01",
+            "definition" : "Commit",
+            "guard" : "pc[i] = \"SENT\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 2,
+            "actionSuccessorConjuncts" : 2,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-e103a4cb783ef32a71a7",
+            "module" : "nbacg_guer01",
+            "definition" : "Commit",
+            "guard" : "nRcvdNo[i] = 0",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 2,
+            "actionSuccessorConjuncts" : 2,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-ab852cd18d39800964a7",
+            "module" : "nbacg_guer01",
+            "definition" : "Commit",
+            "guard" : "nRcvdYes[i] >= N",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 2,
+            "actionSuccessorConjuncts" : 2,
+            "conforms" : true
+          } ]
+        }
+      }, {
+        "id" : "c1cs",
+        "domain" : "crash-consensus",
+        "selection" : {
+          "cohort" : "prospective",
+          "gcdStratum" : "standard-risk",
+          "familyCluster" : "one-crash-consensus",
+          "selectionRationale" : "A crash-fault consensus model with four configured domain invariants for survivor kill attribution."
+        },
+        "status" : "COMPLETED",
+        "diagnostic" : null,
+        "report" : {
+          "schemaVersion" : 1,
+          "module" : "c1cs.tla",
+          "config" : "c1cs.cfg",
+          "sites" : [ {
+            "candidateId" : "gcd-d5fd9a5a566e8abb42d5",
+            "module" : "c1cs",
+            "definition" : "Crash",
+            "guard" : "Cardinality( { p \\in Proc : pc[p] # \"CRASH\" } ) <  F",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 2,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-ab8fc3846de85544bf73",
+            "module" : "c1cs",
+            "definition" : "Crash",
+            "guard" : "pc[i] # \"CRASH\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 2,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-98ef4f8e7f1499934f58",
+            "module" : "c1cs",
+            "definition" : "Receive",
+            "guard" : "pc[i] # \"CRASH\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 1,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-3594850863c696bca079",
+            "module" : "c1cs",
+            "definition" : "Propose",
+            "guard" : "pc[i] = \"PROPOSE\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 3,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-6869c61876afc943ede4",
+            "module" : "c1cs",
+            "definition" : "Core_T1",
+            "guard" : "pc[i] = \"DECIDE\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 2,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-dd2987912406045f1585",
+            "module" : "c1cs",
+            "definition" : "T2",
+            "guard" : "pc[i] # \"DONE\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 1,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-db7fa477b6d2fedb79be",
+            "module" : "c1cs",
+            "definition" : "T2",
+            "guard" : "pc[i] # \"CRASH\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 1,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-b186f5eda8b9fbde8770",
+            "module" : "c1cs",
+            "definition" : "DoNothing",
+            "guard" : "\\/ pc[i] = \"CALL\"       \\/ pc[i] = \"DONE\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 1,
+            "conforms" : true
+          } ]
+        }
+      }, {
+        "id" : "bosco",
+        "domain" : "byzantine-consensus",
+        "selection" : {
+          "cohort" : "prospective",
+          "gcdStratum" : "standard-risk",
+          "familyCluster" : "byzantine-one-step-consensus",
+          "selectionRationale" : "A Byzantine consensus model with four configured decision-consistency invariants and explicit guarded process steps."
+        },
+        "status" : "COMPLETED",
+        "diagnostic" : null,
+        "report" : {
+          "schemaVersion" : 1,
+          "module" : "bosco.tla",
+          "config" : "bosco.cfg",
+          "sites" : [ {
+            "candidateId" : "gcd-ae1899ab0e34bb8f21ab",
+            "module" : "bosco",
+            "definition" : "UponV0",
+            "guard" : "pc[self] = \"V0\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 2,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-9a0d9960b6c9eae4a3b7",
+            "module" : "bosco",
+            "definition" : "UponV1",
+            "guard" : "pc[self] = \"V1\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 2,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-192cff8da209f760eb16",
+            "module" : "bosco",
+            "definition" : "UponOneStep0",
+            "guard" : "pc[self] = \"S0\" \\/ pc[self] = \"S1\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 4,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-962d6b3798fc11703bb5",
+            "module" : "bosco",
+            "definition" : "UponOneStep1",
+            "guard" : "pc[self] = \"S0\" \\/ pc[self] = \"S1\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 4,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-f25dc50237e7f702fe3b",
+            "module" : "bosco",
+            "definition" : "UponUnderlying0",
+            "guard" : "pc[self] = \"S0\" \\/ pc[self] = \"S1\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 7,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-25db45aa0ecb45f1b156",
+            "module" : "bosco",
+            "definition" : "UponUnderlying1",
+            "guard" : "pc[self] = \"S0\" \\/ pc[self] = \"S1\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 7,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-e13b0ea5dc631cc37cf6",
+            "module" : "bosco",
+            "definition" : "UponUnderlyingUndecided",
+            "guard" : "pc[self] = \"S0\" \\/ pc[self] = \"S1\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 7,
+            "conforms" : true
+          } ]
+        }
+      }, {
+        "id" : "slush-small",
+        "domain" : "probabilistic-consensus",
+        "selection" : {
+          "cohort" : "prospective",
+          "gcdStratum" : "high-risk-no-replacement",
+          "familyCluster" : "slush-protocol",
+          "selectionRationale" : "A larger generated-style protocol retained as a preregistered high-risk observation with no replacement on failure."
+        },
+        "status" : "COMPLETED",
+        "diagnostic" : null,
+        "report" : {
+          "schemaVersion" : 1,
+          "module" : "Slush.tla",
+          "config" : "SlushSmall.cfg",
+          "sites" : [ {
+            "candidateId" : "gcd-afc00275b83db104641a",
+            "module" : "Slush",
+            "definition" : "QueryReplyLoop",
+            "guard" : "pc[self] = \"QueryReplyLoop\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 2,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-e708a31a200ae9ac63f6",
+            "module" : "Slush",
+            "definition" : "WaitForQueryMessageOrTermination",
+            "guard" : "pc[self] = \"WaitForQueryMessageOrTermination\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 2,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-29e4135c2403e17eb99b",
+            "module" : "Slush",
+            "definition" : "WaitForQueryMessageOrTermination",
+            "guard" : "PendingQueryMessage(self) /= {} \\/ Terminate",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 2,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-cccfe237a05a2847781b",
+            "module" : "Slush",
+            "definition" : "RespondToQueryMessage",
+            "guard" : "pc[self] = \"RespondToQueryMessage\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 3,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-de465500cf380dcb7f31",
+            "module" : "Slush",
+            "definition" : "RequireColorAssignment",
+            "guard" : "pc[self] = \"RequireColorAssignment\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 2,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-13079919e92e5403b9a1",
+            "module" : "Slush",
+            "definition" : "RequireColorAssignment",
+            "guard" : "Pick(self) /= NoColor",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 2,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-f31d45c9765c4172f885",
+            "module" : "Slush",
+            "definition" : "ExecuteSlushLoop",
+            "guard" : "pc[self] = \"ExecuteSlushLoop\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 2,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-6c613ac6e0c342636129",
+            "module" : "Slush",
+            "definition" : "QuerySampleSet",
+            "guard" : "pc[self] = \"QuerySampleSet\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 3,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-11d626501fb100ab2ced",
+            "module" : "Slush",
+            "definition" : "TallyQueryReplies",
+            "guard" : "pc[self] = \"TallyQueryReplies\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 5,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-a36a9b558ecf39b6c7c8",
+            "module" : "Slush",
+            "definition" : "TallyQueryReplies",
+            "guard" : "/\\ \\A pid \\in sampleSet[self] :                                 /\\ \\E msg \\in PendingQueryReplyMessage(self) :                                   /\\ msg.src = pid",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 1,
+            "actionSuccessorConjuncts" : 5,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-956f166b2e62fd4dca23",
+            "module" : "Slush",
+            "definition" : "SlushLoopTermination",
+            "guard" : "pc[self] = \"SlushLoopTermination\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 3,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-88a71696008f80b79005",
+            "module" : "Slush",
+            "definition" : "ClientRequestLoop",
+            "guard" : "pc[\"ClientRequest\"] = \"ClientRequestLoop\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 2,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-7f0796e9491643ae300c",
+            "module" : "Slush",
+            "definition" : "AssignColorToNode",
+            "guard" : "pc[\"ClientRequest\"] = \"AssignColorToNode\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 3,
+            "conforms" : true
+          }, {
+            "candidateId" : "gcd-e2286628a01b1afa68ef",
+            "module" : "Slush",
+            "definition" : "Terminating",
+            "guard" : "\\A self \\in ProcSet: pc[self] = \"Done\"",
+            "guardLevel" : 1,
+            "remainingStateConjuncts" : 0,
+            "actionSuccessorConjuncts" : 1,
+            "conforms" : true
+          } ]
+        }
+      }, {
+        "id" : "buffered-random-access-file",
+        "domain" : "storage",
+        "selection" : {
+          "cohort" : "prospective",
+          "gcdStratum" : "high-risk-no-replacement",
+          "familyCluster" : "buffered-file",
+          "selectionRationale" : "A multi-module buffered-storage model retained as a preregistered high-risk observation with no replacement on failure."
+        },
+        "status" : "COMPLETED",
+        "diagnostic" : null,
+        "report" : {
+          "schemaVersion" : 1,
+          "module" : "BufferedRandomAccessFile.tla",
+          "config" : "BufferedRandomAccessFile.cfg",
+          "sites" : [ ]
+        }
+      } ]
+    }
+  },
+  "experiment" : {
+    "schemaVersion" : 1,
+    "repository" : "https://github.com/tlaplus/Examples",
+    "commit" : "ed3cc4c35f7001d7cec08a22dcd698dae7570dc3",
+    "reviewStatus" : "proxy-agent-review; human-review-pending",
+    "entryCount" : 8,
+    "completedEntries" : 5,
+    "generatedMutants" : 35,
+    "evaluatedMutants" : 20,
+    "gapCandidates" : 1,
+    "entries" : [ {
+      "id" : "readers-writers",
+      "domain" : "concurrency",
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 2,
+        "module" : "ReadersWriters.tla",
+        "config" : "APReadersWriters.cfg",
+        "reviewStatus" : "proxy-agent-review",
+        "generatedMutants" : 5,
+        "evaluatedMutants" : 2,
+        "gapCandidates" : 0,
+        "results" : [ {
+          "id" : "gcd-00d53a1e68c3af6fde68",
+          "family" : "GCD",
+          "definition" : "ReadOrWrite",
+          "original" : "waiting /= <<>>",
+          "replacement" : "TRUE",
+          "executionStatus" : "TOOL_ERROR",
+          "oracleOutcome" : "NOT_EVALUATED",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "unresolved",
+          "diagnosticReason" : "tool-error; tool-event-codes=2103,2121,2184,2217",
+          "baselineStateCount" : 21527,
+          "mutantStateCount" : 7,
+          "mutantOnlyWitness" : null,
+          "attribution" : null
+        }, {
+          "id" : "gcd-302e171d8f5783091a1e",
+          "family" : "GCD",
+          "definition" : "TryWrite",
+          "original" : "actor \\notin WaitingToWrite",
+          "replacement" : "TRUE",
+          "executionStatus" : "TOOL_ERROR",
+          "oracleOutcome" : "NOT_EVALUATED",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "unresolved",
+          "diagnosticReason" : "tool-error; tool-event-codes=1000,2103,2121,2217",
+          "baselineStateCount" : 21527,
+          "mutantStateCount" : 100000,
+          "mutantOnlyWitness" : null,
+          "attribution" : null
+        }, {
+          "id" : "gcd-a4d2a906ec742d556519",
+          "family" : "GCD",
+          "definition" : "ReadOrWrite",
+          "original" : "writers = {}",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "legacy-target-invariant-kill",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 21527,
+          "mutantStateCount" : 490,
+          "mutantOnlyWitness" : null,
+          "attribution" : {
+            "category" : "legacy-target-invariant-kill",
+            "typeOnlyExecutionStatus" : null,
+            "typeOnlyOracleOutcome" : null,
+            "typeOnlyStateCount" : null,
+            "typeOnlyStateRelation" : null,
+            "typeOnlyMutantOnlyWitness" : null,
+            "legacyExecutionStatus" : null,
+            "legacyOracleOutcome" : null,
+            "legacyStateRelation" : null,
+            "legacyStateCount" : null,
+            "legacyMutantOnlyWitness" : null,
+            "diagnosticReason" : null
+          }
+        }, {
+          "id" : "gcd-b67d26c6007589be999d",
+          "family" : "GCD",
+          "definition" : "Write",
+          "original" : "readers = {}",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "legacy-target-invariant-kill",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 21527,
+          "mutantStateCount" : 253,
+          "mutantOnlyWitness" : null,
+          "attribution" : {
+            "category" : "legacy-target-invariant-kill",
+            "typeOnlyExecutionStatus" : null,
+            "typeOnlyOracleOutcome" : null,
+            "typeOnlyStateCount" : null,
+            "typeOnlyStateRelation" : null,
+            "typeOnlyMutantOnlyWitness" : null,
+            "legacyExecutionStatus" : null,
+            "legacyOracleOutcome" : null,
+            "legacyStateRelation" : null,
+            "legacyStateCount" : null,
+            "legacyMutantOnlyWitness" : null,
+            "diagnosticReason" : null
+          }
+        }, {
+          "id" : "gcd-d13b277c20b2480b7ad6",
+          "family" : "GCD",
+          "definition" : "TryRead",
+          "original" : "actor \\notin WaitingToRead",
+          "replacement" : "TRUE",
+          "executionStatus" : "TOOL_ERROR",
+          "oracleOutcome" : "NOT_EVALUATED",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "unresolved",
+          "diagnosticReason" : "tool-error; tool-event-codes=1000",
+          "baselineStateCount" : 21527,
+          "mutantStateCount" : 0,
+          "mutantOnlyWitness" : null,
+          "attribution" : null
+        } ]
+      }
+    }, {
+      "id" : "coffee-can",
+      "domain" : "state-machine",
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 2,
+        "module" : "CoffeeCan.tla",
+        "config" : "APCoffeeCan.cfg",
+        "reviewStatus" : "proxy-agent-review",
+        "generatedMutants" : 8,
+        "evaluatedMutants" : 8,
+        "gapCandidates" : 0,
+        "results" : [ {
+          "id" : "gcd-132bbf47da73f7792c26",
+          "family" : "GCD",
+          "definition" : "PickDifferentColor",
+          "original" : "can.white >= 1",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 20,
+          "mutantStateCount" : 20,
+          "mutantOnlyWitness" : null,
+          "attribution" : null
+        }, {
+          "id" : "gcd-152bdb04c8d059dc356e",
+          "family" : "GCD",
+          "definition" : "PickDifferentColor",
+          "original" : "BeanCount > 1",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 20,
+          "mutantStateCount" : 20,
+          "mutantOnlyWitness" : null,
+          "attribution" : null
+        }, {
+          "id" : "gcd-3741978fd944a50a1bb8",
+          "family" : "GCD",
+          "definition" : "PickSameColorWhite",
+          "original" : "BeanCount > 1",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 20,
+          "mutantStateCount" : 20,
+          "mutantOnlyWitness" : null,
+          "attribution" : null
+        }, {
+          "id" : "gcd-3935792ce5b374dacf59",
+          "family" : "GCD",
+          "definition" : "PickSameColorBlack",
+          "original" : "BeanCount > 1",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 20,
+          "mutantStateCount" : 20,
+          "mutantOnlyWitness" : null,
+          "attribution" : null
+        }, {
+          "id" : "gcd-b1e6a8a8f0d45db93929",
+          "family" : "GCD",
+          "definition" : "PickSameColorBlack",
+          "original" : "can.black >= 2",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "type-invariant-kill",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 20,
+          "mutantStateCount" : 21,
+          "mutantOnlyWitness" : null,
+          "attribution" : {
+            "category" : "type-invariant-kill",
+            "typeOnlyExecutionStatus" : null,
+            "typeOnlyOracleOutcome" : null,
+            "typeOnlyStateCount" : null,
+            "typeOnlyStateRelation" : null,
+            "typeOnlyMutantOnlyWitness" : null,
+            "legacyExecutionStatus" : null,
+            "legacyOracleOutcome" : null,
+            "legacyStateRelation" : null,
+            "legacyStateCount" : null,
+            "legacyMutantOnlyWitness" : null,
+            "diagnosticReason" : null
+          }
+        }, {
+          "id" : "gcd-c37b39cc624faeacbe6c",
+          "family" : "GCD",
+          "definition" : "PickSameColorWhite",
+          "original" : "can.white >= 2",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "type-invariant-kill",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 20,
+          "mutantStateCount" : 21,
+          "mutantOnlyWitness" : null,
+          "attribution" : {
+            "category" : "type-invariant-kill",
+            "typeOnlyExecutionStatus" : null,
+            "typeOnlyOracleOutcome" : null,
+            "typeOnlyStateCount" : null,
+            "typeOnlyStateRelation" : null,
+            "typeOnlyMutantOnlyWitness" : null,
+            "legacyExecutionStatus" : null,
+            "legacyOracleOutcome" : null,
+            "legacyStateRelation" : null,
+            "legacyStateCount" : null,
+            "legacyMutantOnlyWitness" : null,
+            "diagnosticReason" : null
+          }
+        }, {
+          "id" : "gcd-cc1d7708f25c17515b92",
+          "family" : "GCD",
+          "definition" : "Termination",
+          "original" : "BeanCount = 1",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 20,
+          "mutantStateCount" : 20,
+          "mutantOnlyWitness" : null,
+          "attribution" : null
+        }, {
+          "id" : "gcd-e92477c8fcc16d10701c",
+          "family" : "GCD",
+          "definition" : "PickDifferentColor",
+          "original" : "can.black >= 1",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "type-invariant-kill",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 20,
+          "mutantStateCount" : 21,
+          "mutantOnlyWitness" : null,
+          "attribution" : {
+            "category" : "type-invariant-kill",
+            "typeOnlyExecutionStatus" : null,
+            "typeOnlyOracleOutcome" : null,
+            "typeOnlyStateCount" : null,
+            "typeOnlyStateRelation" : null,
+            "typeOnlyMutantOnlyWitness" : null,
+            "legacyExecutionStatus" : null,
+            "legacyOracleOutcome" : null,
+            "legacyStateRelation" : null,
+            "legacyStateCount" : null,
+            "legacyMutantOnlyWitness" : null,
+            "diagnosticReason" : null
+          }
+        } ]
+      }
+    }, {
+      "id" : "ewd840",
+      "domain" : "termination-detection",
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 2,
+        "module" : "EWD840.tla",
+        "config" : "EWD840.cfg",
+        "reviewStatus" : "proxy-agent-review",
+        "generatedMutants" : 6,
+        "evaluatedMutants" : 6,
+        "gapCandidates" : 0,
+        "results" : [ {
+          "id" : "gcd-1638c5af433eb5f73205",
+          "family" : "GCD",
+          "definition" : "SendMsg",
+          "original" : "active[i]",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "legacy-target-invariant-kill",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 302,
+          "mutantStateCount" : 285,
+          "mutantOnlyWitness" : null,
+          "attribution" : {
+            "category" : "legacy-target-invariant-kill",
+            "typeOnlyExecutionStatus" : "COMPLETED",
+            "typeOnlyOracleOutcome" : "PASSED",
+            "typeOnlyStateCount" : 312,
+            "typeOnlyStateRelation" : "STATE_EXPANDING",
+            "typeOnlyMutantOnlyWitness" : "6:active:8:function:37:(0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE);5:color:8:function:46:(0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"white\");6:tcolor:6:string:7:\"white\";4:tpos:7:integer:1:0;",
+            "legacyExecutionStatus" : null,
+            "legacyOracleOutcome" : null,
+            "legacyStateRelation" : null,
+            "legacyStateCount" : null,
+            "legacyMutantOnlyWitness" : null,
+            "diagnosticReason" : null
+          }
+        }, {
+          "id" : "gcd-217c8e583446128f0e6a",
+          "family" : "GCD",
+          "definition" : "PassToken",
+          "original" : "tpos = i",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "legacy-target-invariant-kill",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 302,
+          "mutantStateCount" : 229,
+          "mutantOnlyWitness" : null,
+          "attribution" : {
+            "category" : "legacy-target-invariant-kill",
+            "typeOnlyExecutionStatus" : "COMPLETED",
+            "typeOnlyOracleOutcome" : "PASSED",
+            "typeOnlyStateCount" : 348,
+            "typeOnlyStateRelation" : "STATE_EXPANDING",
+            "typeOnlyMutantOnlyWitness" : "6:active:8:function:37:(0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE);5:color:8:function:46:(0 :> \"black\" @@ 1 :> \"black\" @@ 2 :> \"black\");6:tcolor:6:string:7:\"white\";4:tpos:7:integer:1:0;",
+            "legacyExecutionStatus" : null,
+            "legacyOracleOutcome" : null,
+            "legacyStateRelation" : null,
+            "legacyStateCount" : null,
+            "legacyMutantOnlyWitness" : null,
+            "diagnosticReason" : null
+          }
+        }, {
+          "id" : "gcd-46ff7cf8d597a0d35a96",
+          "family" : "GCD",
+          "definition" : "InitiateProbe",
+          "original" : "tcolor = \"black\" \\/ color[0] = \"black\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 302,
+          "mutantStateCount" : 302,
+          "mutantOnlyWitness" : null,
+          "attribution" : null
+        }, {
+          "id" : "gcd-531f61d42f099691b207",
+          "family" : "GCD",
+          "definition" : "InitiateProbe",
+          "original" : "tpos = 0",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 302,
+          "mutantStateCount" : 302,
+          "mutantOnlyWitness" : null,
+          "attribution" : null
+        }, {
+          "id" : "gcd-ae8209df8004b9d0c538",
+          "family" : "GCD",
+          "definition" : "Deactivate",
+          "original" : "active[i]",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EQUAL",
+          "verdict" : "state-equal",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 302,
+          "mutantStateCount" : 302,
+          "mutantOnlyWitness" : null,
+          "attribution" : null
+        }, {
+          "id" : "gcd-afeb006c7fded5f62cc3",
+          "family" : "GCD",
+          "definition" : "PassToken",
+          "original" : "~ active[i] \\/ color[i] = \"black\" \\/ tcolor = \"black\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "legacy-target-invariant-kill",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 302,
+          "mutantStateCount" : 227,
+          "mutantOnlyWitness" : null,
+          "attribution" : {
+            "category" : "legacy-target-invariant-kill",
+            "typeOnlyExecutionStatus" : "COMPLETED",
+            "typeOnlyOracleOutcome" : "PASSED",
+            "typeOnlyStateCount" : 320,
+            "typeOnlyStateRelation" : "STATE_EXPANDING",
+            "typeOnlyMutantOnlyWitness" : "6:active:8:function:37:(0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE);5:color:8:function:46:(0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"white\");6:tcolor:6:string:7:\"white\";4:tpos:7:integer:1:0;",
+            "legacyExecutionStatus" : null,
+            "legacyOracleOutcome" : null,
+            "legacyStateRelation" : null,
+            "legacyStateCount" : null,
+            "legacyMutantOnlyWitness" : null,
+            "diagnosticReason" : null
+          }
+        } ]
+      }
+    }, {
+      "id" : "nbacg-guer01",
+      "domain" : "atomic-commit",
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 2,
+        "module" : "nbacg_guer01.tla",
+        "config" : "nbacg_guer01.cfg",
+        "reviewStatus" : "proxy-agent-review",
+        "generatedMutants" : 16,
+        "evaluatedMutants" : 4,
+        "gapCandidates" : 1,
+        "results" : [ {
+          "id" : "gcd-054a154049f5ff140110",
+          "family" : "GCD",
+          "definition" : "AbortNoYes",
+          "original" : "someFail[i] = TRUE",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "PASSED",
+          "stateRelation" : "STATE_EXPANDING",
+          "verdict" : "state-invariant-gap-candidate",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 24922,
+          "mutantStateCount" : 27782,
+          "mutantOnlyWitness" : "7:nRcvdNo:8:function:11:<<0, 0, 0>>;8:nRcvdYes:8:function:11:<<0, 0, 0>>;6:nSntNo:7:integer:1:0;7:nSntNoF:7:integer:1:0;7:nSntYes:7:integer:1:0;8:nSntYesF:7:integer:1:0;2:pc:8:function:21:<<\"BYZ\", \"NO\", \"NO\">>;8:someFail:8:function:21:<<FALSE, TRUE, TRUE>>;",
+          "attribution" : null
+        }, {
+          "id" : "gcd-0d16c21ef1a1559f97c5",
+          "family" : "GCD",
+          "definition" : "SendNo",
+          "original" : "pc[i] = \"NO\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "type-invariant-kill",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 24922,
+          "mutantStateCount" : 401,
+          "mutantOnlyWitness" : null,
+          "attribution" : {
+            "category" : "type-invariant-kill",
+            "typeOnlyExecutionStatus" : "COMPLETED",
+            "typeOnlyOracleOutcome" : "KILLED_STATE_SAFETY",
+            "typeOnlyStateCount" : 4083,
+            "typeOnlyStateRelation" : null,
+            "typeOnlyMutantOnlyWitness" : null,
+            "legacyExecutionStatus" : null,
+            "legacyOracleOutcome" : null,
+            "legacyStateRelation" : null,
+            "legacyStateCount" : null,
+            "legacyMutantOnlyWitness" : null,
+            "diagnosticReason" : null
+          }
+        }, {
+          "id" : "gcd-3c1ee8b4429ee7af9c2f",
+          "family" : "GCD",
+          "definition" : "AbortNoYes",
+          "original" : "\\/ pc[i] = \"YES\"\n     \\/ pc[i] = \"NO\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "adopted-target-invariant-kill",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 24922,
+          "mutantStateCount" : 435,
+          "mutantOnlyWitness" : null,
+          "attribution" : {
+            "category" : "adopted-target-invariant-kill",
+            "typeOnlyExecutionStatus" : "COMPLETED",
+            "typeOnlyOracleOutcome" : "PASSED",
+            "typeOnlyStateCount" : 30943,
+            "typeOnlyStateRelation" : "STATE_EXPANDING",
+            "typeOnlyMutantOnlyWitness" : "7:nRcvdNo:8:function:11:<<0, 0, 0>>;8:nRcvdYes:8:function:11:<<0, 0, 0>>;6:nSntNo:7:integer:1:0;7:nSntNoF:7:integer:1:0;7:nSntYes:7:integer:1:0;8:nSntYesF:7:integer:1:1;2:pc:8:function:23:<<\"ABORT\", \"NO\", \"NO\">>;8:someFail:8:function:20:<<TRUE, TRUE, TRUE>>;",
+            "legacyExecutionStatus" : null,
+            "legacyOracleOutcome" : null,
+            "legacyStateRelation" : null,
+            "legacyStateCount" : null,
+            "legacyMutantOnlyWitness" : null,
+            "diagnosticReason" : null
+          }
+        }, {
+          "id" : "gcd-7bbac75930e7d788a27d",
+          "family" : "GCD",
+          "definition" : "SendYes",
+          "original" : "pc[i] = \"YES\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "COMPLETED",
+          "oracleOutcome" : "KILLED_STATE_SAFETY",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "type-invariant-kill",
+          "diagnosticReason" : null,
+          "baselineStateCount" : 24922,
+          "mutantStateCount" : 401,
+          "mutantOnlyWitness" : null,
+          "attribution" : {
+            "category" : "type-invariant-kill",
+            "typeOnlyExecutionStatus" : "COMPLETED",
+            "typeOnlyOracleOutcome" : "KILLED_STATE_SAFETY",
+            "typeOnlyStateCount" : 3870,
+            "typeOnlyStateRelation" : null,
+            "typeOnlyMutantOnlyWitness" : null,
+            "legacyExecutionStatus" : null,
+            "legacyOracleOutcome" : null,
+            "legacyStateRelation" : null,
+            "legacyStateCount" : null,
+            "legacyMutantOnlyWitness" : null,
+            "diagnosticReason" : null
+          }
+        }, {
+          "id" : "gcd-7bf9bd4fe1ac0ab4e13d",
+          "family" : "GCD",
+          "definition" : "AbortSent",
+          "original" : "nRcvdNo[i] > 0",
+          "replacement" : "TRUE",
+          "executionStatus" : "TOOL_ERROR",
+          "oracleOutcome" : "NOT_EVALUATED",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "unresolved",
+          "diagnosticReason" : "tool-error; tool-event-codes=1000,2103",
+          "baselineStateCount" : 24922,
+          "mutantStateCount" : 0,
+          "mutantOnlyWitness" : null,
+          "attribution" : null
+        }, {
+          "id" : "gcd-9703aa35c554b205740b",
+          "family" : "GCD",
+          "definition" : "AbortSent",
+          "original" : "pc[i] = \"SENT\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "TOOL_ERROR",
+          "oracleOutcome" : "NOT_EVALUATED",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "unresolved",
+          "diagnosticReason" : "tool-error; tool-event-codes=1000,2103",
+          "baselineStateCount" : 24922,
+          "mutantStateCount" : 0,
+          "mutantOnlyWitness" : null,
+          "attribution" : null
+        }, {
+          "id" : "gcd-ab852cd18d39800964a7",
+          "family" : "GCD",
+          "definition" : "Commit",
+          "original" : "nRcvdYes[i] >= N",
+          "replacement" : "TRUE",
+          "executionStatus" : "TOOL_ERROR",
+          "oracleOutcome" : "NOT_EVALUATED",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "unresolved",
+          "diagnosticReason" : "tool-error; tool-event-codes=3002",
+          "baselineStateCount" : 24922,
+          "mutantStateCount" : 0,
+          "mutantOnlyWitness" : null,
+          "attribution" : null
+        }, {
+          "id" : "gcd-b448426c0674181f86df",
+          "family" : "GCD",
+          "definition" : "SendNo",
+          "original" : "someFail[i] = FALSE",
+          "replacement" : "TRUE",
+          "executionStatus" : "INVALID_SEMANTIC",
+          "oracleOutcome" : "NOT_EVALUATED",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "invalid",
+          "diagnosticReason" : "post-mutation-sany-rejection",
+          "baselineStateCount" : 24922,
+          "mutantStateCount" : 0,
+          "mutantOnlyWitness" : null,
+          "attribution" : null
+        }, {
+          "id" : "gcd-ba990b7421fd640e9fda",
+          "family" : "GCD",
+          "definition" : "Commit",
+          "original" : "pc[i] = \"SENT\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "INVALID_SEMANTIC",
+          "oracleOutcome" : "NOT_EVALUATED",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "invalid",
+          "diagnosticReason" : "post-mutation-sany-rejection",
+          "baselineStateCount" : 24922,
+          "mutantStateCount" : 0,
+          "mutantOnlyWitness" : null,
+          "attribution" : null
+        }, {
+          "id" : "gcd-d2fc590e1005453724f6",
+          "family" : "GCD",
+          "definition" : "SendYes",
+          "original" : "someFail[i] = FALSE",
+          "replacement" : "TRUE",
+          "executionStatus" : "INVALID_SEMANTIC",
+          "oracleOutcome" : "NOT_EVALUATED",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "invalid",
+          "diagnosticReason" : "post-mutation-sany-rejection",
+          "baselineStateCount" : 24922,
+          "mutantStateCount" : 0,
+          "mutantOnlyWitness" : null,
+          "attribution" : null
+        }, {
+          "id" : "gcd-e103a4cb783ef32a71a7",
+          "family" : "GCD",
+          "definition" : "Commit",
+          "original" : "nRcvdNo[i] = 0",
+          "replacement" : "TRUE",
+          "executionStatus" : "INVALID_SEMANTIC",
+          "oracleOutcome" : "NOT_EVALUATED",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "invalid",
+          "diagnosticReason" : "post-mutation-sany-rejection",
+          "baselineStateCount" : 24922,
+          "mutantStateCount" : 0,
+          "mutantOnlyWitness" : null,
+          "attribution" : null
+        }, {
+          "id" : "gcd-eb126f1bfdab35c03b03",
+          "family" : "GCD",
+          "definition" : "Crash",
+          "original" : "pc[i] # \"BYZ\"",
+          "replacement" : "TRUE",
+          "executionStatus" : "INVALID_SEMANTIC",
+          "oracleOutcome" : "NOT_EVALUATED",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "invalid",
+          "diagnosticReason" : "post-mutation-sany-rejection",
+          "baselineStateCount" : 24922,
+          "mutantStateCount" : 0,
+          "mutantOnlyWitness" : null,
+          "attribution" : null
+        }, {
+          "id" : "uoi-1b95274e92605ee0c315",
+          "family" : "UOI",
+          "definition" : "SendYes",
+          "original" : "1",
+          "replacement" : "2",
+          "executionStatus" : "INVALID_SEMANTIC",
+          "oracleOutcome" : "NOT_EVALUATED",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "invalid",
+          "diagnosticReason" : "post-mutation-sany-rejection",
+          "baselineStateCount" : 24922,
+          "mutantStateCount" : 0,
+          "mutantOnlyWitness" : null,
+          "attribution" : null
+        }, {
+          "id" : "uoi-6e17b71c52baced5f893",
+          "family" : "UOI",
+          "definition" : "Crash",
+          "original" : "1",
+          "replacement" : "2",
+          "executionStatus" : "INVALID_SEMANTIC",
+          "oracleOutcome" : "NOT_EVALUATED",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "invalid",
+          "diagnosticReason" : "post-mutation-sany-rejection",
+          "baselineStateCount" : 24922,
+          "mutantStateCount" : 0,
+          "mutantOnlyWitness" : null,
+          "attribution" : null
+        }, {
+          "id" : "uoi-e154691a0033ba85e1c6",
+          "family" : "UOI",
+          "definition" : "Crash",
+          "original" : "1",
+          "replacement" : "2",
+          "executionStatus" : "INVALID_SEMANTIC",
+          "oracleOutcome" : "NOT_EVALUATED",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "invalid",
+          "diagnosticReason" : "post-mutation-sany-rejection",
+          "baselineStateCount" : 24922,
+          "mutantStateCount" : 0,
+          "mutantOnlyWitness" : null,
+          "attribution" : null
+        }, {
+          "id" : "uoi-e7f7382703a01fda198a",
+          "family" : "UOI",
+          "definition" : "SendNo",
+          "original" : "1",
+          "replacement" : "2",
+          "executionStatus" : "INVALID_SEMANTIC",
+          "oracleOutcome" : "NOT_EVALUATED",
+          "stateRelation" : "STATE_UNRESOLVED",
+          "verdict" : "invalid",
+          "diagnosticReason" : "post-mutation-sany-rejection",
+          "baselineStateCount" : 24922,
+          "mutantStateCount" : 0,
+          "mutantOnlyWitness" : null,
+          "attribution" : null
+        } ]
+      }
+    }, {
+      "id" : "c1cs",
+      "domain" : "crash-consensus",
+      "status" : "SANDBOX_ERROR",
+      "diagnostic" : "java.lang.IllegalStateException: Baseline did not complete successfully: TOOL_ERROR/NOT_EVALUATED\nstdout:\n@!@!@STARTMSG 2262:0 @!@!@\nTLC2 Version 2026.08.21.155922 (rev: 9787e65)\n@!@!@ENDMSG 2262 @!@!@\n@!@!@STARTMSG 2187:0 @!@!@\nRunning breadth-first search Model-Checking with fp 81 and seed -1099453167830410771 with 1 worker on 1 cores with 228MB heap and 64MB offheap memory [pid: 15] (Linux 6.18.10-200.fc43.aarch64 aarch64, Eclipse Adoptium 21.0.12 64bit, MSBDiskFPSet, DiskStateQueue).\n@!@!@ENDMSG 2187 @!@!@\n@!@!@STARTMSG 2220:0 @!@!@\nStarting SANY...\n@!@!@ENDMSG 2220 @!@!@\nParsing file /input/c1cs.tla\nParsing file /scratch/work/.tlc-run-1998056431765390906/tmp/tlc-13329154897863509921/Integers.tla (jar:file:/opt/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)\nParsing file /scratch/work/.tlc-run-1998056431765390906/tmp/tlc-13329154897863509921/FiniteSets.tla (jar:file:/opt/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)\nParsing file /scratch/work/.tlc-run-1998056431765390906/tmp/tlc-13329154897863509921/TLC.tla (jar:file:/opt/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)\nParsing file /scratch/work/.tlc-run-1998056431765390906/tmp/tlc-13329154897863509921/Naturals.tla (jar:file:/opt/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)\nParsing file /scratch/work/.tlc-run-1998056431765390906/tmp/tlc-13329154897863509921/Sequences.tla (jar:file:/opt/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)\nSemantic processing of module Naturals\nSemantic processing of module Integers\nSemantic processing of module Sequences\nSemantic processing of module FiniteSets\nSemantic processing of module TLC\nSemantic processing of module c1cs\nLinting of module c1cs\n@!@!@STARTMSG 2219:0 @!@!@\nSANY finished.\n@!@!@ENDMSG 2219 @!@!@\n@!@!@STARTMSG 2185:0 @!@!@\nStarting... (2026-08-29 12:43:16)\n@!@!@ENDMSG 2185 @!@!@\n@!@!@STARTMSG 2189:0 @!@!@\nComputing initial states...\n@!@!@ENDMSG 2189 @!@!@\n@!@!@STARTMSG 2269:0 @!@!@\nComputed 2 initial states...\n@!@!@ENDMSG 2269 @!@!@\n",
+      "report" : null
+    }, {
+      "id" : "bosco",
+      "domain" : "byzantine-consensus",
+      "status" : "SANDBOX_ERROR",
+      "diagnostic" : "java.lang.IllegalStateException: Baseline did not complete successfully: TOOL_ERROR/NOT_EVALUATED\nstdout:\n@!@!@STARTMSG 2262:0 @!@!@\nTLC2 Version 2026.08.21.155922 (rev: 9787e65)\n@!@!@ENDMSG 2262 @!@!@\n@!@!@STARTMSG 2187:0 @!@!@\nRunning breadth-first search Model-Checking with fp 81 and seed 3749321565984215599 with 1 worker on 1 cores with 228MB heap and 64MB offheap memory [pid: 15] (Linux 6.18.10-200.fc43.aarch64 aarch64, Eclipse Adoptium 21.0.12 64bit, MSBDiskFPSet, DiskStateQueue).\n@!@!@ENDMSG 2187 @!@!@\n@!@!@STARTMSG 2220:0 @!@!@\nStarting SANY...\n@!@!@ENDMSG 2220 @!@!@\nParsing file /input/bosco.tla\nParsing file /scratch/work/.tlc-run-7057607359751001365/tmp/tlc-12296955456403194982/Naturals.tla (jar:file:/opt/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)\nParsing file /scratch/work/.tlc-run-7057607359751001365/tmp/tlc-12296955456403194982/FiniteSets.tla (jar:file:/opt/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)\nParsing file /scratch/work/.tlc-run-7057607359751001365/tmp/tlc-12296955456403194982/Sequences.tla (jar:file:/opt/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)\nSemantic processing of module Naturals\nSemantic processing of module Sequences\nSemantic processing of module FiniteSets\nSemantic processing of module bosco\nLinting of module bosco\n@!@!@STARTMSG 2219:0 @!@!@\nSANY finished.\n@!@!@ENDMSG 2219 @!@!@\n@!@!@STARTMSG 2185:0 @!@!@\nStarting... (2026-08-29 12:43:28)\n@!@!@ENDMSG 2185 @!@!@\n@!@!@STARTMSG 2189:0 @!@!@\nComputing initial states...\n@!@!@ENDMSG 2189 @!@!@\n@!@!@STARTMSG 2269:0 @!@!@\nComputed 2 initial states...\n@!@!@ENDMSG 2269 @!@!@\n@!@!@STARTMSG 2269:0 @!@!@\nComputed 4 initial states...\n@!@!@ENDMSG 2269 @!@!@\n@!@!@STARTMSG 2190:0 @!@!@\nFinished computing initial states: 8 distinct states generated at 2026-08-29 12:43:29.\n@!@!@ENDMSG 2190 @!@!@\n@!@!@STARTMSG 2200:0 @!@!@\nProgress(5) at 2026-08-29 12:43:32: 119,245 states generated (119,245 s/min), 49,153 distinct states found (49,153 ds/min), 45,878 states left on queue.",
+      "report" : null
+    }, {
+      "id" : "slush-small",
+      "domain" : "probabilistic-consensus",
+      "status" : "SANDBOX_ERROR",
+      "diagnostic" : "java.lang.IllegalStateException: Baseline did not complete successfully: TOOL_ERROR/NOT_EVALUATED\nstdout:\n@!@!@STARTMSG 2262:0 @!@!@\nTLC2 Version 2026.08.21.155922 (rev: 9787e65)\n@!@!@ENDMSG 2262 @!@!@\n@!@!@STARTMSG 2187:0 @!@!@\nRunning breadth-first search Model-Checking with fp 81 and seed -7864312150946024522 with 1 worker on 1 cores with 228MB heap and 64MB offheap memory [pid: 15] (Linux 6.18.10-200.fc43.aarch64 aarch64, Eclipse Adoptium 21.0.12 64bit, MSBDiskFPSet, DiskStateQueue).\n@!@!@ENDMSG 2187 @!@!@\n@!@!@STARTMSG 2220:0 @!@!@\nStarting SANY...\n@!@!@ENDMSG 2220 @!@!@\nParsing file /input/Slush.tla\nParsing file /scratch/work/.tlc-run-7414296269663333676/tmp/tlc-10344615710667816435/Naturals.tla (jar:file:/opt/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)\nParsing file /scratch/work/.tlc-run-7414296269663333676/tmp/tlc-10344615710667816435/FiniteSets.tla (jar:file:/opt/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)\nParsing file /scratch/work/.tlc-run-7414296269663333676/tmp/tlc-10344615710667816435/Sequences.tla (jar:file:/opt/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)\nSemantic processing of module Naturals\nSemantic processing of module Sequences\nSemantic processing of module FiniteSets\nSemantic processing of module Slush\nLinting of module Slush\n@!@!@STARTMSG 2219:0 @!@!@\nSANY finished.\n@!@!@ENDMSG 2219 @!@!@\n@!@!@STARTMSG 2185:0 @!@!@\nStarting... (2026-08-29 12:43:38)\n@!@!@ENDMSG 2185 @!@!@\n@!@!@STARTMSG 2189:0 @!@!@\nComputing initial states...\n@!@!@ENDMSG 2189 @!@!@\n@!@!@STARTMSG 2190:0 @!@!@\nFinished computing initial states: 1 distinct state generated at 2026-08-29 12:43:39.\n@!@!@ENDMSG 2190 @!@!@\n@!@!@STARTMSG 2200:0 @!@!@\nProgress(18) at 2026-08-29 12:43:42: 200,690 states generated (200,690 s/min), 44,225 distinct states found (44,225 ds/min), 9,777 states left on queue.\n@!@!@ENDMSG 2200 @!@!@\n@!@!@STARTMSG 1000:1 @!@!@\nTLC threw an unexpected exception.\nThis was probably caused by an error in the spec or model.\nSee the User ",
+      "report" : null
+    }, {
+      "id" : "buffered-random-access-file",
+      "domain" : "storage",
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 2,
+        "module" : "BufferedRandomAccessFile.tla",
+        "config" : "BufferedRandomAccessFile.cfg",
+        "reviewStatus" : "proxy-agent-review",
+        "generatedMutants" : 0,
+        "evaluatedMutants" : 0,
+        "gapCandidates" : 0,
+        "results" : [ ]
+      }
+    } ]
+  }
+}
