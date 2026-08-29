@@ -37,7 +37,7 @@ final class StratifiedManifestValidatorTest {
     @Test
     void acceptsTheVersionedReselectionAndInstrumentationProfiles() {
         CorpusManifest original = manifest(5, 10);
-        for (String profile : List.of("gcd-stratified-v2", "gcd-stratified-v3")) {
+        for (String profile : List.of("gcd-stratified-v2", "gcd-stratified-v3", "gcd-stratified-v4")) {
             CorpusManifest manifest = new CorpusManifest(
                     original.version(),
                     profile,

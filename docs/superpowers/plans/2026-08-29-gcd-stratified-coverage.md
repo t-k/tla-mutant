@@ -38,7 +38,7 @@ The public-source investigation at commit `ed3cc4c35f7001d7cec08a22dcd698dae7570
 ## Specification Delta
 
 - S01: Schema-version-1 manifests and original reports remain reproducible.
-- S02: Schema-version-2 profiles `gcd-stratified-v1`, `gcd-stratified-v2`, and `gcd-stratified-v3` contain exactly five controls and ten enriched entries; v2 is the outcome-free cohort reselection and v3 is the review-driven instrumentation amendment with an unchanged cohort.
+- S02: Schema-version-2 profiles `gcd-stratified-v1` through `gcd-stratified-v4` contain exactly five controls and ten enriched entries; v2 is the outcome-free cohort reselection, v3 is the first review-driven instrumentation amendment, and v4 corrects the outcome-free v3 structural classifier while retaining the cohort.
 - S03: Selection metadata is finite, bounded, allowlisted, and immutable for the run.
 - S04: Public census parsing occurs only inside rootless Podman.
 - S05: Census output contains structural attributes only and cannot contain mutation outcomes.
