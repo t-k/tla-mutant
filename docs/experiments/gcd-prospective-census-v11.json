@@ -1,0 +1,708 @@
+{
+  "schemaVersion" : 1,
+  "receipt" : {
+    "sha256" : "1bfdf198494aab7ff91d2e7f3b4fb86e42bfb20a0422ddcab2f54160d228f66a",
+    "sizeBytes" : 2080
+  },
+  "census" : {
+    "schemaVersion" : 3,
+    "profile" : "gcd-prospective-v11",
+    "repository" : "https://github.com/tlaplus/Examples",
+    "commit" : "ed3cc4c35f7001d7cec08a22dcd698dae7570dc3",
+    "inputs" : {
+      "manifest" : {
+        "sha256" : "469a4e780784100a0ecf26e8a3a91c0a720fd184b945348e1beae3916a5c7c2f",
+        "sizeBytes" : 12271
+      },
+      "policy" : {
+        "sha256" : "bd518ab8792604352b1986b3e293c9daf2fbcc5e9f455aaeb162bec1d6cf5e76",
+        "sizeBytes" : 696
+      },
+      "tools" : {
+        "sha256" : "eabd140a70f49eb9305a3bd3f3df944eddf87e5a90d329789085f8953a80533a",
+        "sizeBytes" : 4487757
+      },
+      "application" : {
+        "sha256" : "5d6a7a39aabe1ae9a63a9f363b8c29d50c1e4582caea56a5dc098767cfcf5607",
+        "sizeBytes" : 3136225
+      }
+    },
+    "entries" : [ {
+      "id" : "readers-writers",
+      "domain" : "concurrency",
+      "selection" : {
+        "cohort" : "prospective",
+        "gcdStratum" : "standard-risk",
+        "familyCluster" : "readers-writers",
+        "selectionRationale" : "A compact reader-writer synchronization model with a configured mutual-exclusion safety oracle and no historical source overlap."
+      },
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "ReadersWriters.tla",
+        "config" : "APReadersWriters.cfg",
+        "sites" : [ {
+          "candidateId" : "gcd-d13b277c20b2480b7ad6",
+          "module" : "ReadersWriters",
+          "definition" : "TryRead",
+          "guard" : "actor \\notin WaitingToRead",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-302e171d8f5783091a1e",
+          "module" : "ReadersWriters",
+          "definition" : "TryWrite",
+          "guard" : "actor \\notin WaitingToWrite",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-b67d26c6007589be999d",
+          "module" : "ReadersWriters",
+          "definition" : "Write",
+          "guard" : "readers = {}",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 3,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-00d53a1e68c3af6fde68",
+          "module" : "ReadersWriters",
+          "definition" : "ReadOrWrite",
+          "guard" : "waiting /= <<>>",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-a4d2a906ec742d556519",
+          "module" : "ReadersWriters",
+          "definition" : "ReadOrWrite",
+          "guard" : "writers = {}",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        } ]
+      }
+    }, {
+      "id" : "coffee-can",
+      "domain" : "state-machine",
+      "selection" : {
+        "cohort" : "prospective",
+        "gcdStratum" : "standard-risk",
+        "familyCluster" : "coffee-can",
+        "selectionRationale" : "A small finite transition system selected as a type-only control for unseen GCD behavior."
+      },
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "CoffeeCan.tla",
+        "config" : "APCoffeeCan.cfg",
+        "sites" : [ {
+          "candidateId" : "gcd-3935792ce5b374dacf59",
+          "module" : "CoffeeCan",
+          "definition" : "PickSameColorBlack",
+          "guard" : "BeanCount > 1",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-b1e6a8a8f0d45db93929",
+          "module" : "CoffeeCan",
+          "definition" : "PickSameColorBlack",
+          "guard" : "can.black >= 2",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-3741978fd944a50a1bb8",
+          "module" : "CoffeeCan",
+          "definition" : "PickSameColorWhite",
+          "guard" : "BeanCount > 1",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-c37b39cc624faeacbe6c",
+          "module" : "CoffeeCan",
+          "definition" : "PickSameColorWhite",
+          "guard" : "can.white >= 2",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-152bdb04c8d059dc356e",
+          "module" : "CoffeeCan",
+          "definition" : "PickDifferentColor",
+          "guard" : "BeanCount > 1",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 2,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-e92477c8fcc16d10701c",
+          "module" : "CoffeeCan",
+          "definition" : "PickDifferentColor",
+          "guard" : "can.black >= 1",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 2,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-132bbf47da73f7792c26",
+          "module" : "CoffeeCan",
+          "definition" : "PickDifferentColor",
+          "guard" : "can.white >= 1",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 2,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-cc1d7708f25c17515b92",
+          "module" : "CoffeeCan",
+          "definition" : "Termination",
+          "guard" : "BeanCount = 1",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        } ]
+      }
+    }, {
+      "id" : "ewd840",
+      "domain" : "termination-detection",
+      "selection" : {
+        "cohort" : "prospective",
+        "gcdStratum" : "standard-risk",
+        "familyCluster" : "ewd840",
+        "selectionRationale" : "A token-based distributed protocol whose configured State Invariants provide type and domain-safety attribution."
+      },
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "EWD840.tla",
+        "config" : "EWD840.cfg",
+        "sites" : [ {
+          "candidateId" : "gcd-531f61d42f099691b207",
+          "module" : "EWD840",
+          "definition" : "InitiateProbe",
+          "guard" : "tpos = 0",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 4,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-46ff7cf8d597a0d35a96",
+          "module" : "EWD840",
+          "definition" : "InitiateProbe",
+          "guard" : "tcolor = \"black\" \\/ color[0] = \"black\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 4,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-217c8e583446128f0e6a",
+          "module" : "EWD840",
+          "definition" : "PassToken",
+          "guard" : "tpos = i",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 4,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-afeb006c7fded5f62cc3",
+          "module" : "EWD840",
+          "definition" : "PassToken",
+          "guard" : "~ active[i] \\/ color[i] = \"black\" \\/ tcolor = \"black\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 4,
+          "conforms" : false
+        }, {
+          "candidateId" : "gcd-1638c5af433eb5f73205",
+          "module" : "EWD840",
+          "definition" : "SendMsg",
+          "guard" : "active[i]",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-ae8209df8004b9d0c538",
+          "module" : "EWD840",
+          "definition" : "Deactivate",
+          "guard" : "active[i]",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        } ]
+      }
+    }, {
+      "id" : "nbacg-guer01",
+      "domain" : "atomic-commit",
+      "selection" : {
+        "cohort" : "prospective",
+        "gcdStratum" : "standard-risk",
+        "familyCluster" : "nonblocking-atomic-commit",
+        "selectionRationale" : "An unseen atomic-commit model selected to test type-only survivor discovery in a guarded distributed protocol."
+      },
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "nbacg_guer01.tla",
+        "config" : "nbacg_guer01.cfg",
+        "sites" : [ {
+          "candidateId" : "gcd-eb126f1bfdab35c03b03",
+          "module" : "nbacg_guer01",
+          "definition" : "Crash",
+          "guard" : "pc[i] # \"BYZ\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 4,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-7bbac75930e7d788a27d",
+          "module" : "nbacg_guer01",
+          "definition" : "SendYes",
+          "guard" : "pc[i] = \"YES\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 3,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-d2fc590e1005453724f6",
+          "module" : "nbacg_guer01",
+          "definition" : "SendYes",
+          "guard" : "someFail[i] = FALSE",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 3,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-0d16c21ef1a1559f97c5",
+          "module" : "nbacg_guer01",
+          "definition" : "SendNo",
+          "guard" : "pc[i] = \"NO\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 3,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-b448426c0674181f86df",
+          "module" : "nbacg_guer01",
+          "definition" : "SendNo",
+          "guard" : "someFail[i] = FALSE",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 3,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-054a154049f5ff140110",
+          "module" : "nbacg_guer01",
+          "definition" : "AbortNoYes",
+          "guard" : "someFail[i] = TRUE",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-3c1ee8b4429ee7af9c2f",
+          "module" : "nbacg_guer01",
+          "definition" : "AbortNoYes",
+          "guard" : "\\/ pc[i] = \"YES\"      \\/ pc[i] = \"NO\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-9703aa35c554b205740b",
+          "module" : "nbacg_guer01",
+          "definition" : "AbortSent",
+          "guard" : "pc[i] = \"SENT\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-7bf9bd4fe1ac0ab4e13d",
+          "module" : "nbacg_guer01",
+          "definition" : "AbortSent",
+          "guard" : "nRcvdNo[i] > 0",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-ba990b7421fd640e9fda",
+          "module" : "nbacg_guer01",
+          "definition" : "Commit",
+          "guard" : "pc[i] = \"SENT\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 2,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-e103a4cb783ef32a71a7",
+          "module" : "nbacg_guer01",
+          "definition" : "Commit",
+          "guard" : "nRcvdNo[i] = 0",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 2,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-ab852cd18d39800964a7",
+          "module" : "nbacg_guer01",
+          "definition" : "Commit",
+          "guard" : "nRcvdYes[i] >= N",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 2,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        } ]
+      }
+    }, {
+      "id" : "c1cs",
+      "domain" : "crash-consensus",
+      "selection" : {
+        "cohort" : "prospective",
+        "gcdStratum" : "standard-risk",
+        "familyCluster" : "one-crash-consensus",
+        "selectionRationale" : "A crash-fault consensus model with four configured domain invariants for survivor kill attribution."
+      },
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "c1cs.tla",
+        "config" : "c1cs.cfg",
+        "sites" : [ {
+          "candidateId" : "gcd-d5fd9a5a566e8abb42d5",
+          "module" : "c1cs",
+          "definition" : "Crash",
+          "guard" : "Cardinality( { p \\in Proc : pc[p] # \"CRASH\" } ) <  F",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-ab8fc3846de85544bf73",
+          "module" : "c1cs",
+          "definition" : "Crash",
+          "guard" : "pc[i] # \"CRASH\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-98ef4f8e7f1499934f58",
+          "module" : "c1cs",
+          "definition" : "Receive",
+          "guard" : "pc[i] # \"CRASH\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-3594850863c696bca079",
+          "module" : "c1cs",
+          "definition" : "Propose",
+          "guard" : "pc[i] = \"PROPOSE\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 3,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-6869c61876afc943ede4",
+          "module" : "c1cs",
+          "definition" : "Core_T1",
+          "guard" : "pc[i] = \"DECIDE\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-dd2987912406045f1585",
+          "module" : "c1cs",
+          "definition" : "T2",
+          "guard" : "pc[i] # \"DONE\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-db7fa477b6d2fedb79be",
+          "module" : "c1cs",
+          "definition" : "T2",
+          "guard" : "pc[i] # \"CRASH\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-b186f5eda8b9fbde8770",
+          "module" : "c1cs",
+          "definition" : "DoNothing",
+          "guard" : "\\/ pc[i] = \"CALL\"       \\/ pc[i] = \"DONE\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        } ]
+      }
+    }, {
+      "id" : "bosco",
+      "domain" : "byzantine-consensus",
+      "selection" : {
+        "cohort" : "prospective",
+        "gcdStratum" : "standard-risk",
+        "familyCluster" : "byzantine-one-step-consensus",
+        "selectionRationale" : "A Byzantine consensus model with four configured decision-consistency invariants and explicit guarded process steps."
+      },
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "bosco.tla",
+        "config" : "bosco.cfg",
+        "sites" : [ {
+          "candidateId" : "gcd-ae1899ab0e34bb8f21ab",
+          "module" : "bosco",
+          "definition" : "UponV0",
+          "guard" : "pc[self] = \"V0\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-9a0d9960b6c9eae4a3b7",
+          "module" : "bosco",
+          "definition" : "UponV1",
+          "guard" : "pc[self] = \"V1\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-192cff8da209f760eb16",
+          "module" : "bosco",
+          "definition" : "UponOneStep0",
+          "guard" : "pc[self] = \"S0\" \\/ pc[self] = \"S1\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 4,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-962d6b3798fc11703bb5",
+          "module" : "bosco",
+          "definition" : "UponOneStep1",
+          "guard" : "pc[self] = \"S0\" \\/ pc[self] = \"S1\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 4,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-f25dc50237e7f702fe3b",
+          "module" : "bosco",
+          "definition" : "UponUnderlying0",
+          "guard" : "pc[self] = \"S0\" \\/ pc[self] = \"S1\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 7,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-25db45aa0ecb45f1b156",
+          "module" : "bosco",
+          "definition" : "UponUnderlying1",
+          "guard" : "pc[self] = \"S0\" \\/ pc[self] = \"S1\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 7,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-e13b0ea5dc631cc37cf6",
+          "module" : "bosco",
+          "definition" : "UponUnderlyingUndecided",
+          "guard" : "pc[self] = \"S0\" \\/ pc[self] = \"S1\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 7,
+          "conforms" : true
+        } ]
+      }
+    }, {
+      "id" : "slush-small",
+      "domain" : "probabilistic-consensus",
+      "selection" : {
+        "cohort" : "prospective",
+        "gcdStratum" : "high-risk-no-replacement",
+        "familyCluster" : "slush-protocol",
+        "selectionRationale" : "A larger generated-style protocol retained as a preregistered high-risk observation with no replacement on failure."
+      },
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "Slush.tla",
+        "config" : "SlushSmall.cfg",
+        "sites" : [ {
+          "candidateId" : "gcd-afc00275b83db104641a",
+          "module" : "Slush",
+          "definition" : "QueryReplyLoop",
+          "guard" : "pc[self] = \"QueryReplyLoop\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-e708a31a200ae9ac63f6",
+          "module" : "Slush",
+          "definition" : "WaitForQueryMessageOrTermination",
+          "guard" : "pc[self] = \"WaitForQueryMessageOrTermination\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-29e4135c2403e17eb99b",
+          "module" : "Slush",
+          "definition" : "WaitForQueryMessageOrTermination",
+          "guard" : "PendingQueryMessage(self) /= {} \\/ Terminate",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-cccfe237a05a2847781b",
+          "module" : "Slush",
+          "definition" : "RespondToQueryMessage",
+          "guard" : "pc[self] = \"RespondToQueryMessage\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 3,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-de465500cf380dcb7f31",
+          "module" : "Slush",
+          "definition" : "RequireColorAssignment",
+          "guard" : "pc[self] = \"RequireColorAssignment\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-13079919e92e5403b9a1",
+          "module" : "Slush",
+          "definition" : "RequireColorAssignment",
+          "guard" : "Pick(self) /= NoColor",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-f31d45c9765c4172f885",
+          "module" : "Slush",
+          "definition" : "ExecuteSlushLoop",
+          "guard" : "pc[self] = \"ExecuteSlushLoop\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-6c613ac6e0c342636129",
+          "module" : "Slush",
+          "definition" : "QuerySampleSet",
+          "guard" : "pc[self] = \"QuerySampleSet\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 3,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-11d626501fb100ab2ced",
+          "module" : "Slush",
+          "definition" : "TallyQueryReplies",
+          "guard" : "pc[self] = \"TallyQueryReplies\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 5,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-a36a9b558ecf39b6c7c8",
+          "module" : "Slush",
+          "definition" : "TallyQueryReplies",
+          "guard" : "/\\ \\A pid \\in sampleSet[self] :                                 /\\ \\E msg \\in PendingQueryReplyMessage(self) :                                   /\\ msg.src = pid",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 1,
+          "actionSuccessorConjuncts" : 5,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-956f166b2e62fd4dca23",
+          "module" : "Slush",
+          "definition" : "SlushLoopTermination",
+          "guard" : "pc[self] = \"SlushLoopTermination\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 3,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-88a71696008f80b79005",
+          "module" : "Slush",
+          "definition" : "ClientRequestLoop",
+          "guard" : "pc[\"ClientRequest\"] = \"ClientRequestLoop\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 2,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-7f0796e9491643ae300c",
+          "module" : "Slush",
+          "definition" : "AssignColorToNode",
+          "guard" : "pc[\"ClientRequest\"] = \"AssignColorToNode\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 3,
+          "conforms" : true
+        }, {
+          "candidateId" : "gcd-e2286628a01b1afa68ef",
+          "module" : "Slush",
+          "definition" : "Terminating",
+          "guard" : "\\A self \\in ProcSet: pc[self] = \"Done\"",
+          "guardLevel" : 1,
+          "remainingStateConjuncts" : 0,
+          "actionSuccessorConjuncts" : 1,
+          "conforms" : true
+        } ]
+      }
+    }, {
+      "id" : "buffered-random-access-file",
+      "domain" : "storage",
+      "selection" : {
+        "cohort" : "prospective",
+        "gcdStratum" : "high-risk-no-replacement",
+        "familyCluster" : "buffered-file",
+        "selectionRationale" : "A multi-module buffered-storage model retained as a preregistered high-risk observation with no replacement on failure."
+      },
+      "status" : "COMPLETED",
+      "diagnostic" : null,
+      "report" : {
+        "schemaVersion" : 1,
+        "module" : "BufferedRandomAccessFile.tla",
+        "config" : "BufferedRandomAccessFile.cfg",
+        "sites" : [ ]
+      }
+    } ]
+  }
+}
