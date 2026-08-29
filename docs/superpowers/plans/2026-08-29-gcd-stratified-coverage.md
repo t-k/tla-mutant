@@ -132,6 +132,7 @@ Constraints:
 - T08: Hostile census text cannot inject raw HTML, links, tables, ANSI, controls, bidi text, or unbounded output.
 - T09: Census success and every bounded failure terminal state leave no labeled container or volume.
 - T10: Repeated census runs produce the same candidate IDs and attributes.
+- T10 evidence: v5 produced byte-identical schema-version-2 census files with 51 sites, 45 conforming sites, and SHA-256 `66e1b8ddcdd80e9e51383749c2eb1a117d72bdfe2b40fabf126bcba14fcc22c1`.
 - T11: Every raw GCD result maps to one cohort, stratum, cluster, domain, and terminal bucket.
 - T12: Specification weighting counts a specification once regardless of its GCD site count.
 - T13: A cluster over 25% aborts before mutation and requires a new preregistration version.
