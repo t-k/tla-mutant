@@ -30,7 +30,7 @@ public final class GcdStratifiedMarkdownWriter {
                 .append("- Human usefulness review: ")
                 .append(MarkdownSanitizer.inline(report.humanReviewStatus()))
                 .append("\n\n")
-                .append("## Specification- and site-weighted summaries\n\n")
+                .append("## Site-weighted summaries\n\n")
                 .append(
                         "| Grouping | Value | Specifications | GCD sites | Killed, unattributed | Equal | Expanding | Incomparable | Restricting | Invalid | Unresolved | Witness-bearing |\n")
                 .append("| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |\n");
@@ -59,6 +59,38 @@ public final class GcdStratifiedMarkdownWriter {
                     .append(summary.unresolved())
                     .append(" | ")
                     .append(summary.witnessBearingCandidates())
+                    .append(" |\n");
+        }
+
+        markdown.append("\n## Specification-weighted summaries\n\n")
+                .append(
+                        "Each outcome column counts specifications with at least one site in that outcome, so the columns may overlap.\n\n")
+                .append(
+                        "| Grouping | Value | Specifications | Killed, unattributed | Equal | Expanding | Incomparable | Restricting | Invalid | Unresolved | Witness-bearing |\n")
+                .append("| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |\n");
+        for (GcdOutcomeSummary summary : report.summaries()) {
+            markdown.append("| ")
+                    .append(MarkdownSanitizer.tableCell(summary.grouping()))
+                    .append(" | ")
+                    .append(MarkdownSanitizer.tableCell(summary.value()))
+                    .append(" | ")
+                    .append(summary.specifications())
+                    .append(" | ")
+                    .append(summary.specificationsKilledUnattributed())
+                    .append(" | ")
+                    .append(summary.specificationsStateEqual())
+                    .append(" | ")
+                    .append(summary.specificationsStateExpanding())
+                    .append(" | ")
+                    .append(summary.specificationsStateIncomparable())
+                    .append(" | ")
+                    .append(summary.specificationsStateRestricting())
+                    .append(" | ")
+                    .append(summary.specificationsInvalid())
+                    .append(" | ")
+                    .append(summary.specificationsUnresolved())
+                    .append(" | ")
+                    .append(summary.specificationsWithWitness())
                     .append(" |\n");
         }
 

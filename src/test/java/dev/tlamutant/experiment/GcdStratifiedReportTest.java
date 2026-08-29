@@ -34,6 +34,7 @@ final class GcdStratifiedReportTest {
 
         assertEquals(2, overall.specifications());
         assertEquals(3, overall.totalSites());
+        assertEquals(2, overall.specificationsStateEqual());
         assertEquals(
                 overall.totalSites(),
                 overall.killedUnattributed()
@@ -68,6 +69,14 @@ final class GcdStratifiedReportTest {
         assertEquals(1, overall.stateRestricting());
         assertEquals(1, overall.invalid());
         assertEquals(1, overall.unresolved());
+        assertEquals(1, overall.specificationsKilledUnattributed());
+        assertEquals(1, overall.specificationsStateEqual());
+        assertEquals(1, overall.specificationsStateExpanding());
+        assertEquals(1, overall.specificationsStateIncomparable());
+        assertEquals(1, overall.specificationsStateRestricting());
+        assertEquals(1, overall.specificationsInvalid());
+        assertEquals(1, overall.specificationsUnresolved());
+        assertEquals(1, overall.specificationsWithWitness());
         assertEquals(1, report.brlGenerated());
         assertEquals(1, report.brlEvaluated());
         assertEquals(1, report.uoiGenerated());

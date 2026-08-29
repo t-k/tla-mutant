@@ -14,7 +14,15 @@ public record GcdOutcomeSummary(
         int stateRestricting,
         int invalid,
         int unresolved,
-        int witnessBearingCandidates) {
+        int witnessBearingCandidates,
+        int specificationsKilledUnattributed,
+        int specificationsStateEqual,
+        int specificationsStateExpanding,
+        int specificationsStateIncomparable,
+        int specificationsStateRestricting,
+        int specificationsInvalid,
+        int specificationsUnresolved,
+        int specificationsWithWitness) {
     public GcdOutcomeSummary {
         Objects.requireNonNull(grouping, "grouping");
         Objects.requireNonNull(value, "value");
@@ -28,6 +36,22 @@ public record GcdOutcomeSummary(
                 || invalid < 0
                 || unresolved < 0
                 || witnessBearingCandidates < 0
+                || specificationsKilledUnattributed < 0
+                || specificationsStateEqual < 0
+                || specificationsStateExpanding < 0
+                || specificationsStateIncomparable < 0
+                || specificationsStateRestricting < 0
+                || specificationsInvalid < 0
+                || specificationsUnresolved < 0
+                || specificationsWithWitness < 0
+                || specificationsKilledUnattributed > specifications
+                || specificationsStateEqual > specifications
+                || specificationsStateExpanding > specifications
+                || specificationsStateIncomparable > specifications
+                || specificationsStateRestricting > specifications
+                || specificationsInvalid > specifications
+                || specificationsUnresolved > specifications
+                || specificationsWithWitness > specifications
                 || totalSites
                         != killedUnattributed
                                 + stateEqual

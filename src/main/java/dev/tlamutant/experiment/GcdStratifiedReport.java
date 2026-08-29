@@ -5,6 +5,7 @@ import dev.tlamutant.census.CorpusCensusReport;
 import dev.tlamutant.census.GcdCensusSite;
 import dev.tlamutant.corpus.CorpusManifest;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -77,8 +78,7 @@ public record GcdStratifiedReport(
             CorpusEntryResult experimentEntry = experiment.entries().get(index);
             requireEntryIdentity(expected, censusEntry, experimentEntry);
             List<GroupKey> groups = groups(expected);
-            groups.forEach(group -> builders.computeIfAbsent(group, ignored -> new SummaryBuilder())
-                    .addSpecification());
+            groups.forEach(group -> builders.computeIfAbsent(group, ignored -> new SummaryBuilder()));
 
             Map<String, MutationResult> gcdResults = new LinkedHashMap<>();
             if (experimentEntry.report() != null) {
@@ -106,10 +106,14 @@ public record GcdStratifiedReport(
                 throw new IllegalArgumentException("Completed experiment GCD IDs must equal the frozen census IDs");
             }
 
+            Set<Bucket> specificationBuckets = EnumSet.noneOf(Bucket.class);
+            boolean specificationHasWitness = false;
             for (GcdCensusSite site : censusEntry.report().sites()) {
                 MutationResult result = gcdResults.get(site.candidateId());
                 Bucket bucket = result == null ? Bucket.UNRESOLVED : bucket(result);
                 boolean witnessBearing = result != null && witnessBearing(result);
+                specificationBuckets.add(bucket);
+                specificationHasWitness |= witnessBearing;
                 for (GroupKey group : groups) {
                     builders.get(group).add(bucket, witnessBearing);
                 }
@@ -118,6 +122,9 @@ public record GcdStratifiedReport(
                     candidateDomains.add(expected.domain());
                     candidateClusters.add(expected.selection().familyCluster());
                 }
+            }
+            for (GroupKey group : groups) {
+                builders.get(group).addSpecification(specificationBuckets, specificationHasWitness);
             }
         }
 
@@ -257,9 +264,25 @@ public record GcdStratifiedReport(
         private int invalid;
         private int unresolved;
         private int witnessBearingCandidates;
+        private int specificationsKilledUnattributed;
+        private int specificationsStateEqual;
+        private int specificationsStateExpanding;
+        private int specificationsStateIncomparable;
+        private int specificationsStateRestricting;
+        private int specificationsInvalid;
+        private int specificationsUnresolved;
+        private int specificationsWithWitness;
 
-        void addSpecification() {
+        void addSpecification(Set<Bucket> buckets, boolean witnessBearing) {
             specifications++;
+            specificationsKilledUnattributed += buckets.contains(Bucket.KILLED_UNATTRIBUTED) ? 1 : 0;
+            specificationsStateEqual += buckets.contains(Bucket.STATE_EQUAL) ? 1 : 0;
+            specificationsStateExpanding += buckets.contains(Bucket.STATE_EXPANDING) ? 1 : 0;
+            specificationsStateIncomparable += buckets.contains(Bucket.STATE_INCOMPARABLE) ? 1 : 0;
+            specificationsStateRestricting += buckets.contains(Bucket.STATE_RESTRICTING) ? 1 : 0;
+            specificationsInvalid += buckets.contains(Bucket.INVALID) ? 1 : 0;
+            specificationsUnresolved += buckets.contains(Bucket.UNRESOLVED) ? 1 : 0;
+            specificationsWithWitness += witnessBearing ? 1 : 0;
         }
 
         void add(Bucket bucket, boolean witnessBearing) {
@@ -295,7 +318,15 @@ public record GcdStratifiedReport(
                     stateRestricting,
                     invalid,
                     unresolved,
-                    witnessBearingCandidates);
+                    witnessBearingCandidates,
+                    specificationsKilledUnattributed,
+                    specificationsStateEqual,
+                    specificationsStateExpanding,
+                    specificationsStateIncomparable,
+                    specificationsStateRestricting,
+                    specificationsInvalid,
+                    specificationsUnresolved,
+                    specificationsWithWitness);
         }
     }
 }

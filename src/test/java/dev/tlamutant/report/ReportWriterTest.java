@@ -113,7 +113,8 @@ final class ReportWriterTest {
                         "COMPLETED",
                         null,
                         new ExperimentReport(1, "Spec.tla", "Spec.cfg", "proxy", 1, 1, 1, List.of(mutation)))));
-        GcdOutcomeSummary summary = new GcdOutcomeSummary("overall", "all", 1, 1, 0, 0, 1, 0, 0, 0, 0, 1);
+        GcdOutcomeSummary summary =
+                new GcdOutcomeSummary("overall", "all", 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1);
         GcdStratifiedReport report = new GcdStratifiedReport(
                 1,
                 census.profile(),
