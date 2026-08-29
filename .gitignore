@@ -5,4 +5,5 @@ docs.local/
 /build/
 /.tools/
 /.corpus/
+/.corpus-v10/
 /.tla-mutant/
