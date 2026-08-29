@@ -9,6 +9,7 @@ import dev.tlamutant.census.GcdCensusAnalyzer;
 import dev.tlamutant.census.GcdCensusReport;
 import dev.tlamutant.config.ExecutionPolicy;
 import dev.tlamutant.corpus.CorpusManifest;
+import dev.tlamutant.corpus.DerivedModelWorkspace;
 import dev.tlamutant.corpus.ManifestValidator;
 import dev.tlamutant.corpus.StratifiedManifestValidator;
 import dev.tlamutant.experiment.CorpusExperimentReport;
@@ -16,6 +17,7 @@ import dev.tlamutant.experiment.CorpusExperimentRunner;
 import dev.tlamutant.experiment.ExperimentReport;
 import dev.tlamutant.experiment.ExperimentRunner;
 import dev.tlamutant.experiment.GcdStratifiedReport;
+import dev.tlamutant.experiment.InvariantOracleSets;
 import dev.tlamutant.report.AtomicJsonWriter;
 import dev.tlamutant.report.AtomicTextWriter;
 import dev.tlamutant.report.CorpusMarkdownReportWriter;
@@ -23,8 +25,10 @@ import dev.tlamutant.report.FrozenJsonWriter;
 import dev.tlamutant.report.GcdStratifiedMarkdownWriter;
 import dev.tlamutant.report.JsonReportWriter;
 import dev.tlamutant.report.MarkdownReportWriter;
+import dev.tlamutant.sandbox.SandboxInput;
 import dev.tlamutant.security.BoundedFileSnapshot;
 import dev.tlamutant.security.ExperimentOutputValidator;
+import dev.tlamutant.security.StrictJson;
 import dev.tlamutant.security.TemporaryFileSnapshot;
 import dev.tlamutant.tlc.TlcRunner;
 import java.nio.file.Files;
@@ -131,9 +135,28 @@ public final class Main implements Runnable {
         @CommandLine.Option(names = "--config", required = true)
         String config;
 
+        @CommandLine.Option(names = "--work-dir")
+        Path workDirectory;
+
+        @CommandLine.Option(names = "--derived-source-edit-json")
+        List<String> derivedSourceEditJson = new ArrayList<>();
+
         @Override
         public Integer call() throws Exception {
-            GcdCensusReport report = new GcdCensusAnalyzer().analyze(modelDirectory, module, config);
+            List<CorpusManifest.DerivedSourceEdit> edits = parseDerivedSourceEdits(derivedSourceEditJson);
+            GcdCensusReport report;
+            if (edits.isEmpty()) {
+                report = new GcdCensusAnalyzer().analyze(modelDirectory, module, config);
+            } else {
+                if (workDirectory == null) {
+                    throw new IllegalArgumentException("Derived census input requires --work-dir");
+                }
+                Files.createDirectories(workDirectory);
+                try (DerivedModelWorkspace workspace =
+                        DerivedModelWorkspace.create(modelDirectory, workDirectory.resolve("derived-model"), edits)) {
+                    report = new GcdCensusAnalyzer().analyze(workspace.root(), module, config);
+                }
+            }
             System.out.println(new ObjectMapper().writeValueAsString(report));
             return 0;
         }
@@ -317,6 +340,18 @@ public final class Main implements Runnable {
         @CommandLine.Option(names = "--state-invariant")
         List<String> stateInvariants = new ArrayList<>();
 
+        @CommandLine.Option(names = "--type-invariant")
+        List<String> typeInvariants = new ArrayList<>();
+
+        @CommandLine.Option(names = "--legacy-target-invariant")
+        List<String> legacyTargetInvariants = new ArrayList<>();
+
+        @CommandLine.Option(names = "--adopted-target-invariant")
+        List<String> adoptedTargetInvariants = new ArrayList<>();
+
+        @CommandLine.Option(names = "--derived-source-edit-json")
+        List<String> derivedSourceEditJson = new ArrayList<>();
+
         @CommandLine.Option(names = "--json-report")
         Path jsonReport;
 
@@ -342,7 +377,19 @@ public final class Main implements Runnable {
             ExperimentRunner experiment = new ExperimentRunner(
                     TlcRunner.forCurrentJava(applicationJar, toolsJar, maximumStates, maximumStateBytes),
                     Duration.ofSeconds(timeoutSeconds));
-            ExperimentReport report = experiment.run(modelDirectory, module, config, workDirectory, stateInvariants);
+            List<CorpusManifest.DerivedSourceEdit> edits = parseDerivedSourceEdits(derivedSourceEditJson);
+            SandboxInput input = new SandboxInput(
+                    stateInvariants, typeInvariants, legacyTargetInvariants, adoptedTargetInvariants, edits);
+            Files.createDirectories(workDirectory);
+            ExperimentReport report;
+            if (edits.isEmpty()) {
+                report = runExperiment(experiment, modelDirectory, module, config, workDirectory, input);
+            } else {
+                try (DerivedModelWorkspace workspace =
+                        DerivedModelWorkspace.create(modelDirectory, workDirectory.resolve("derived-model"), edits)) {
+                    report = runExperiment(experiment, workspace.root(), module, config, workDirectory, input);
+                }
+            }
             if (jsonReport != null) {
                 new JsonReportWriter().write(jsonReport, report);
             }
@@ -353,6 +400,44 @@ public final class Main implements Runnable {
             System.out.println(new ObjectMapper().writeValueAsString(report));
             return 0;
         }
+    }
+
+    private static ExperimentReport runExperiment(
+            ExperimentRunner experiment,
+            Path modelDirectory,
+            String module,
+            String config,
+            Path workDirectory,
+            SandboxInput input) {
+        if (!input.flatStateInvariants().isEmpty()
+                || (input.typeInvariants().isEmpty()
+                        && input.legacyTargetInvariants().isEmpty()
+                        && input.adoptedTargetInvariants().isEmpty())) {
+            return experiment.run(modelDirectory, module, config, workDirectory, input.flatStateInvariants());
+        }
+        return experiment.run(
+                modelDirectory,
+                module,
+                config,
+                workDirectory,
+                new InvariantOracleSets(
+                        input.typeInvariants(), input.legacyTargetInvariants(), input.adoptedTargetInvariants()));
+    }
+
+    private static List<CorpusManifest.DerivedSourceEdit> parseDerivedSourceEdits(List<String> jsonValues)
+            throws Exception {
+        if (jsonValues == null || jsonValues.size() > 1) {
+            throw new IllegalArgumentException("At most one derived source edit argument is allowed");
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        List<CorpusManifest.DerivedSourceEdit> edits = new ArrayList<>();
+        for (String json : jsonValues) {
+            if (json == null || json.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 16 * 1024) {
+                throw new IllegalArgumentException("Derived source edit JSON is too large");
+            }
+            edits.add(StrictJson.parse(mapper, json, CorpusManifest.DerivedSourceEdit.class));
+        }
+        return List.copyOf(edits);
     }
 
     @CommandLine.Command(

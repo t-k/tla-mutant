@@ -1,13 +1,15 @@
 package dev.tlamutant.sandbox;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.tlamutant.config.ExecutionPolicy;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
 public final class PodmanCommand {
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
     private PodmanCommand() {}
 
     public static List<String> create(
@@ -37,7 +39,7 @@ public final class PodmanCommand {
                 gid,
                 limits,
                 SandboxTask.EXPERIMENT,
-                List.of());
+                SandboxInput.legacy(List.of()));
     }
 
     public static List<String> create(
@@ -68,7 +70,7 @@ public final class PodmanCommand {
                 gid,
                 limits,
                 task,
-                List.of());
+                SandboxInput.legacy(List.of()));
     }
 
     public static List<String> create(
@@ -86,8 +88,44 @@ public final class PodmanCommand {
             ExecutionPolicy.Limits limits,
             SandboxTask task,
             List<String> stateInvariants) {
-        Objects.requireNonNull(task, "task");
-        List<String> invariants = validateStateInvariants(task, stateInvariants);
+        return create(
+                containerName,
+                runToken,
+                scratchVolume,
+                image,
+                inputDirectory,
+                applicationJar,
+                toolsJar,
+                module,
+                config,
+                uid,
+                gid,
+                limits,
+                task,
+                SandboxInput.legacy(stateInvariants));
+    }
+
+    public static List<String> create(
+            String containerName,
+            String runToken,
+            String scratchVolume,
+            String image,
+            Path inputDirectory,
+            Path applicationJar,
+            Path toolsJar,
+            String module,
+            String config,
+            int uid,
+            int gid,
+            ExecutionPolicy.Limits limits,
+            SandboxTask task,
+            SandboxInput input) {
+        if (task == null || input == null) {
+            throw new IllegalArgumentException("Sandbox task and input are required");
+        }
+        if (task == SandboxTask.CENSUS && input.hasInvariants()) {
+            throw new IllegalArgumentException("Census does not accept state-invariant arguments");
+        }
         List<String> command = new ArrayList<>(List.of(
                 "podman",
                 "create",
@@ -149,29 +187,33 @@ public final class PodmanCommand {
                 "-cp",
                 "/opt/app.jar:/opt/tla2tools.jar",
                 "dev.tlamutant.cli.Main"));
-        command.addAll(applicationArguments(task, module, config, limits, invariants));
+        command.addAll(applicationArguments(task, module, config, limits, input));
         return List.copyOf(command);
     }
 
     private static List<String> applicationArguments(
-            SandboxTask task,
-            String module,
-            String config,
-            ExecutionPolicy.Limits limits,
-            List<String> stateInvariants) {
+            SandboxTask task, String module, String config, ExecutionPolicy.Limits limits, SandboxInput input) {
         List<String> common = List.of("--model-dir", "/input", "--module", module, "--config", config);
         List<String> arguments = new ArrayList<>();
         if (task == SandboxTask.CENSUS) {
             arguments.add("census");
             arguments.addAll(common);
+            appendDerivedEdits(arguments, input);
+            if (!input.derivedSourceEdits().isEmpty()) {
+                arguments.addAll(List.of("--work-dir", "/scratch/work"));
+            }
             return List.copyOf(arguments);
         }
         arguments.add("experiment");
         arguments.addAll(common);
-        for (String invariant : stateInvariants) {
+        for (String invariant : input.flatStateInvariants()) {
             arguments.add("--state-invariant");
             arguments.add(invariant);
         }
+        appendInvariants(arguments, "--type-invariant", input.typeInvariants());
+        appendInvariants(arguments, "--legacy-target-invariant", input.legacyTargetInvariants());
+        appendInvariants(arguments, "--adopted-target-invariant", input.adoptedTargetInvariants());
+        appendDerivedEdits(arguments, input);
         arguments.addAll(List.of(
                 "--tools-jar",
                 "/opt/tla2tools.jar",
@@ -186,16 +228,21 @@ public final class PodmanCommand {
         return List.copyOf(arguments);
     }
 
-    private static List<String> validateStateInvariants(SandboxTask task, List<String> stateInvariants) {
-        List<String> invariants = List.copyOf(Objects.requireNonNull(stateInvariants, "stateInvariants"));
-        if (task == SandboxTask.CENSUS && !invariants.isEmpty()) {
-            throw new IllegalArgumentException("Census does not accept state-invariant arguments");
+    private static void appendInvariants(List<String> arguments, String option, List<String> invariants) {
+        for (String invariant : invariants) {
+            arguments.add(option);
+            arguments.add(invariant);
         }
-        if (invariants.size() > 64
-                || invariants.stream().anyMatch(name -> !name.matches("[A-Za-z_][A-Za-z0-9_]{0,127}"))
-                || Set.copyOf(invariants).size() != invariants.size()) {
-            throw new IllegalArgumentException("State-invariant arguments must be safe, bounded, and unique");
+    }
+
+    private static void appendDerivedEdits(List<String> arguments, SandboxInput input) {
+        for (var edit : input.derivedSourceEdits()) {
+            arguments.add("--derived-source-edit-json");
+            try {
+                arguments.add(MAPPER.writeValueAsString(edit));
+            } catch (JsonProcessingException exception) {
+                throw new IllegalArgumentException("Cannot encode derived source edit", exception);
+            }
         }
-        return invariants;
     }
 }

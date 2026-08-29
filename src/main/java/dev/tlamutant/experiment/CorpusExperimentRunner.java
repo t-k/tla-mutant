@@ -8,6 +8,7 @@ import dev.tlamutant.corpus.CorpusInputSnapshot;
 import dev.tlamutant.corpus.CorpusManifest;
 import dev.tlamutant.sandbox.PodmanExecution;
 import dev.tlamutant.sandbox.PodmanRunner;
+import dev.tlamutant.sandbox.SandboxInput;
 import dev.tlamutant.security.StrictJson;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -65,14 +66,16 @@ public final class CorpusExperimentRunner {
             try (CorpusInputSnapshot snapshot = CorpusInputSnapshot.create(input, entry)) {
                 PodmanRunner sandbox =
                         new PodmanRunner(policy.containerImage(), applicationJar, toolsJar, entry.limits());
-                List<String> stateInvariants = new ArrayList<>(entry.typeInvariants());
-                stateInvariants.addAll(entry.targetInvariants());
                 execution = sandbox.run(
                         snapshot.root(),
                         entry.rootModule(),
                         entry.config(),
                         Duration.ofSeconds(entry.limits().wallClockSeconds()),
-                        stateInvariants);
+                        SandboxInput.attributed(
+                                entry.typeInvariants(),
+                                entry.targetInvariants(),
+                                entry.adoptedTargetInvariants(),
+                                entry.derivedSourceEdits()));
             }
             if (execution.timedOut()) {
                 return incomplete(entry, "TIMEOUT", "The bounded sandbox wall clock expired");

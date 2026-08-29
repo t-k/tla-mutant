@@ -3,6 +3,7 @@ package dev.tlamutant.sandbox;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.tlamutant.config.ExecutionPolicy;
+import dev.tlamutant.corpus.CorpusManifest;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,16 +46,31 @@ public final class PodmanRunner {
     }
 
     public PodmanExecution run(Path inputDirectory, String module, String config, Duration timeout) {
-        return run(inputDirectory, module, config, timeout, SandboxTask.EXPERIMENT, List.of());
+        return run(inputDirectory, module, config, timeout, SandboxTask.EXPERIMENT, SandboxInput.legacy(List.of()));
     }
 
     public PodmanExecution run(
             Path inputDirectory, String module, String config, Duration timeout, List<String> stateInvariants) {
-        return run(inputDirectory, module, config, timeout, SandboxTask.EXPERIMENT, stateInvariants);
+        return run(
+                inputDirectory, module, config, timeout, SandboxTask.EXPERIMENT, SandboxInput.legacy(stateInvariants));
+    }
+
+    public PodmanExecution run(
+            Path inputDirectory, String module, String config, Duration timeout, SandboxInput input) {
+        return run(inputDirectory, module, config, timeout, SandboxTask.EXPERIMENT, input);
     }
 
     public PodmanExecution runCensus(Path inputDirectory, String module, String config, Duration timeout) {
-        return run(inputDirectory, module, config, timeout, SandboxTask.CENSUS, List.of());
+        return run(inputDirectory, module, config, timeout, SandboxTask.CENSUS, SandboxInput.census(List.of()));
+    }
+
+    public PodmanExecution runCensus(
+            Path inputDirectory,
+            String module,
+            String config,
+            Duration timeout,
+            List<CorpusManifest.DerivedSourceEdit> edits) {
+        return run(inputDirectory, module, config, timeout, SandboxTask.CENSUS, SandboxInput.census(edits));
     }
 
     private PodmanExecution run(
@@ -63,7 +79,7 @@ public final class PodmanRunner {
             String config,
             Duration timeout,
             SandboxTask task,
-            List<String> stateInvariants) {
+            SandboxInput sandboxInput) {
         Path input = inputDirectory.toAbsolutePath().normalize();
         if (!Files.isDirectory(input) || Files.isSymbolicLink(input)) {
             throw new IllegalArgumentException("Input must be a real directory");
@@ -101,7 +117,7 @@ public final class PodmanRunner {
                     identity.gid(),
                     limits,
                     task,
-                    stateInvariants);
+                    sandboxInput);
             containerCreateAttempted = true;
             String createOutput = runChecked(create).trim();
             if (!createOutput.matches("[0-9a-f]{64}")) {

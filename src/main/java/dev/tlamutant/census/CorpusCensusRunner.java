@@ -50,7 +50,8 @@ public final class CorpusCensusRunner {
                         snapshot.root(),
                         entry.rootModule(),
                         entry.config(),
-                        Duration.ofSeconds(entry.limits().wallClockSeconds()));
+                        Duration.ofSeconds(entry.limits().wallClockSeconds()),
+                        entry.derivedSourceEdits());
             }
             if (execution.timedOut()) {
                 return incomplete(entry, "TIMEOUT", "The bounded sandbox wall clock expired");

@@ -44,6 +44,24 @@ public final class ExperimentRunner {
             String configFile,
             Path resultDirectory,
             List<String> stateInvariants) {
+        return runInternal(modelDirectory, moduleFile, configFile, resultDirectory, stateInvariants);
+    }
+
+    public ExperimentReport run(
+            Path modelDirectory,
+            String moduleFile,
+            String configFile,
+            Path resultDirectory,
+            InvariantOracleSets oracleSets) {
+        return runInternal(modelDirectory, moduleFile, configFile, resultDirectory, oracleSets.full());
+    }
+
+    private ExperimentReport runInternal(
+            Path modelDirectory,
+            String moduleFile,
+            String configFile,
+            Path resultDirectory,
+            List<String> stateInvariants) {
         Path modelRoot = modelDirectory.toAbsolutePath().normalize();
         Path results = resultDirectory.toAbsolutePath().normalize();
         try {
