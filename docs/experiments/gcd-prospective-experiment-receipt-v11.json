@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "phase": "intervention-experiment",
+  "profile": "gcd-prospective-v11",
+  "artifacts": [
+    {
+      "role": "v10-discovery-receipt",
+      "sha256": "b1eb4678386621b5fdeb062c2517b6bd30c4572f24631df8199037c76cc64d2a",
+      "sizeBytes": 992
+    },
+    {
+      "role": "v10-experiment-receipt",
+      "sha256": "ed032feb79bcb969f719498bd9855c6644bf1e5b292c73207a069d7b0a9a7062",
+      "sizeBytes": 1294
+    },
+    {
+      "role": "v10-protocol",
+      "sha256": "34ae5cd40876b8774381fb778dcd6cc3a2a5b8ffe7bcebbe07202bb3096a1a0f",
+      "sizeBytes": 7809
+    },
+    {
+      "role": "v10-manifest",
+      "sha256": "ade49bbe04aabed5997375d3602fe6c9b2a1bf14ad401e7dceb708504ef12a64",
+      "sizeBytes": 9455
+    },
+    {
+      "role": "v10-census",
+      "sha256": "d83054a85e074a1d01616b4532a57b6dca43706a42e31a9b0b195ed8293e24b9",
+      "sizeBytes": 25491
+    },
+    {
+      "role": "v10-discovery",
+      "sha256": "3002bf1e67a68d9d015283bcca6c8cd72c2aa8d4d050ca53cf51f240214350c3",
+      "sizeBytes": 103370
+    },
+    {
+      "role": "dossier",
+      "sha256": "e39cd4c276c38acdfeb70ce4ada73e9a84a3fb9aad7ba5e2fe29934ad39532db",
+      "sizeBytes": 3486
+    },
+    {
+      "role": "review",
+      "sha256": "8018ae9c1fe2db58de41b39d3b335704e7012ffdd710809618d0f198a554cfdd",
+      "sizeBytes": 4492
+    },
+    {
+      "role": "v11-protocol",
+      "sha256": "e5594e432e15061da72bd330b6718383193bb9049e8ec05f14a2c73eaa7a1fdf",
+      "sizeBytes": 8815
+    },
+    {
+      "role": "v11-manifest",
+      "sha256": "469a4e780784100a0ecf26e8a3a91c0a720fd184b945348e1beae3916a5c7c2f",
+      "sizeBytes": 12271
+    },
+    {
+      "role": "policy",
+      "sha256": "bd518ab8792604352b1986b3e293c9daf2fbcc5e9f455aaeb162bec1d6cf5e76",
+      "sizeBytes": 696
+    },
+    {
+      "role": "tools",
+      "sha256": "eabd140a70f49eb9305a3bd3f3df944eddf87e5a90d329789085f8953a80533a",
+      "sizeBytes": 4487757
+    },
+    {
+      "role": "application",
+      "sha256": "5d6a7a39aabe1ae9a63a9f363b8c29d50c1e4582caea56a5dc098767cfcf5607",
+      "sizeBytes": 3136225
+    },
+    {
+      "role": "census-receipt",
+      "sha256": "1bfdf198494aab7ff91d2e7f3b4fb86e42bfb20a0422ddcab2f54160d228f66a",
+      "sizeBytes": 2080
+    },
+    {
+      "role": "v11-census",
+      "sha256": "ccd616cc07c1fe7d8c4b50a9c16e96dc2b918f6939627343b5e69b5ef0c9d700",
+      "sizeBytes": 25493
+    }
+  ]
+}
