@@ -52,8 +52,8 @@ Each outcome counts specifications with at least one site in that bucket, so col
 
 | Cohort | Specifications | GCD sites | Specifications with equal | Specifications with expanding | Specifications with unresolved | Specifications with witness |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Control | 5 | 14 | 4 | 2 | 0 | 2 |
-| GCD-enriched | 10 | 37 | 6 | 4 | 5 | 4 |
+| Control | 5 | 14 | 5 | 2 | 0 | 2 |
+| GCD-enriched | 10 | 37 | 5 | 4 | 5 | 4 |
 | Overall | 15 | 51 | 10 | 6 | 5 | 6 |
 
 The control cohort produced four expanding sites from 14, while the enriched cohort produced five from 37. This experiment was not designed or powered to establish an uplift in expansion rate. The result supports the feasibility of obtaining useful candidates from a small stratified vertical slice; it does not establish that stratification alone improved the candidate rate.
