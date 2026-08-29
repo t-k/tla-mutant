@@ -11,6 +11,7 @@ import dev.tlamutant.config.ExecutionPolicy;
 import dev.tlamutant.corpus.CorpusManifest;
 import dev.tlamutant.corpus.DerivedModelWorkspace;
 import dev.tlamutant.corpus.ManifestValidator;
+import dev.tlamutant.corpus.ProspectiveInterventionValidator;
 import dev.tlamutant.corpus.StratifiedManifestValidator;
 import dev.tlamutant.experiment.CorpusExperimentReport;
 import dev.tlamutant.experiment.CorpusExperimentRunner;
@@ -22,6 +23,7 @@ import dev.tlamutant.prospective.ProspectiveAssessment;
 import dev.tlamutant.prospective.ProspectiveCensusReport;
 import dev.tlamutant.prospective.ProspectiveCensusValidator;
 import dev.tlamutant.prospective.ProspectiveDiscoveryReport;
+import dev.tlamutant.prospective.ProspectiveInterventionPreflight;
 import dev.tlamutant.prospective.ProspectivePreflight;
 import dev.tlamutant.prospective.ProspectiveProtocol;
 import dev.tlamutant.prospective.ProspectiveReceipt;
@@ -48,7 +50,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import picocli.CommandLine;
 
@@ -66,6 +70,8 @@ import picocli.CommandLine;
             Main.CompareProspectiveReportsCommand.class,
             Main.ProspectiveReviewDossierCommand.class,
             Main.ValidateProspectiveReviewCommand.class,
+            Main.ProspectiveInterventionCensusCommand.class,
+            Main.ProspectiveInterventionExperimentCommand.class,
             Main.CorpusExperimentCommand.class,
             Main.ValidateManifestCommand.class
         })
@@ -538,6 +544,185 @@ public final class Main implements Runnable {
             ProspectiveAssessment result = ProspectiveAssessment.review(parsedDossier, validated);
             new FrozenTextWriter().writeNew(assessment, new ProspectiveMarkdownWriter().renderReview(result));
             System.out.println(mapper.writeValueAsString(result));
+            return 0;
+        }
+    }
+
+    static final class ProspectiveInterventionInputs {
+        @CommandLine.Option(names = "--v10-discovery-receipt", required = true)
+        Path v10DiscoveryReceipt;
+
+        @CommandLine.Option(names = "--v10-experiment-receipt", required = true)
+        Path v10ExperimentReceipt;
+
+        @CommandLine.Option(names = "--v10-protocol", required = true)
+        Path v10Protocol;
+
+        @CommandLine.Option(names = "--v10-manifest", required = true)
+        Path v10Manifest;
+
+        @CommandLine.Option(names = "--v10-census", required = true)
+        Path v10Census;
+
+        @CommandLine.Option(names = "--v10-discovery", required = true)
+        Path v10Discovery;
+
+        @CommandLine.Option(names = "--dossier", required = true)
+        Path dossier;
+
+        @CommandLine.Option(names = "--review", required = true)
+        Path review;
+
+        @CommandLine.Option(names = "--v11-protocol", required = true)
+        Path v11Protocol;
+
+        @CommandLine.Option(names = "--v11-manifest", required = true)
+        Path v11Manifest;
+
+        @CommandLine.Option(names = "--policy", required = true)
+        Path policy;
+
+        @CommandLine.Option(names = "--tools-jar", required = true)
+        Path tools;
+
+        Map<String, Path> paths(Path application) {
+            Map<String, Path> paths = new LinkedHashMap<>();
+            paths.put("v10-discovery-receipt", v10DiscoveryReceipt);
+            paths.put("v10-experiment-receipt", v10ExperimentReceipt);
+            paths.put("v10-protocol", v10Protocol);
+            paths.put("v10-manifest", v10Manifest);
+            paths.put("v10-census", v10Census);
+            paths.put("v10-discovery", v10Discovery);
+            paths.put("dossier", dossier);
+            paths.put("review", review);
+            paths.put("v11-protocol", v11Protocol);
+            paths.put("v11-manifest", v11Manifest);
+            paths.put("policy", policy);
+            paths.put("tools", tools);
+            paths.put("application", application);
+            return paths;
+        }
+    }
+
+    @CommandLine.Command(
+            name = "prospective-intervention-census",
+            mixinStandardHelpOptions = true,
+            description = "Freeze the review-bound v11 census before intervention mutation.")
+    static final class ProspectiveInterventionCensusCommand implements Callable<Integer> {
+        @CommandLine.Mixin
+        ProspectiveInterventionInputs inputs;
+
+        @CommandLine.Option(names = "--receipt", required = true)
+        Path receipt;
+
+        @CommandLine.Option(names = "--cache-dir", required = true)
+        Path cacheDirectory;
+
+        @CommandLine.Option(names = "--census-report", required = true)
+        Path censusReport;
+
+        @CommandLine.Option(names = "--failed-census-report", required = true)
+        Path failedCensusReport;
+
+        @Override
+        public Integer call() throws Exception {
+            ProspectiveInterventionPreflight.ValidatedInputs validated = new ProspectiveInterventionPreflight()
+                    .validate(new ProspectiveInterventionPreflight.Paths(
+                            receipt,
+                            inputs.paths(applicationJar()),
+                            cacheDirectory,
+                            List.of(censusReport, failedCensusReport)));
+            Files.createDirectories(cacheDirectory.toAbsolutePath().normalize());
+            CensusInputIdentity inputIdentity = ProspectiveInterventionPreflight.inputs(validated.snapshots());
+            CorpusCensusReport census;
+            try (TemporaryFileSnapshot frozenApplication =
+                            TemporaryFileSnapshot.create(validated.snapshots().get("application"), "application.jar");
+                    TemporaryFileSnapshot frozenTools =
+                            TemporaryFileSnapshot.create(validated.snapshots().get("tools"), "tla2tools.jar")) {
+                census = new CorpusCensusRunner(
+                                frozenApplication.path(), frozenTools.path(), cacheDirectory, validated.policy())
+                        .run(validated.manifest(), inputIdentity);
+            }
+            ProspectiveCensusReport report = new ProspectiveCensusReport(
+                    1, ProspectiveInterventionPreflight.artifact(validated.receiptSnapshot()), census);
+            try {
+                ProspectiveCensusValidator.validate(
+                        validated.manifest().manifest(),
+                        report,
+                        ProspectiveInterventionPreflight.artifact(validated.receiptSnapshot()),
+                        inputIdentity);
+                ProspectiveInterventionValidator.validate(
+                        validated.v10Manifest(),
+                        validated.manifest().manifest(),
+                        validated.dossier(),
+                        validated.ledger(),
+                        validated.review(),
+                        report,
+                        validated.policy().limits());
+            } catch (RuntimeException failure) {
+                new FrozenJsonWriter().writeNew(failedCensusReport, report);
+                throw failure;
+            }
+            new FrozenJsonWriter().writeNew(censusReport, report);
+            System.out.println(new ObjectMapper().writeValueAsString(report));
+            return 0;
+        }
+    }
+
+    @CommandLine.Command(
+            name = "prospective-intervention-experiment",
+            mixinStandardHelpOptions = true,
+            description = "Run review-bound v11 mutations against the frozen intervention census.")
+    static final class ProspectiveInterventionExperimentCommand implements Callable<Integer> {
+        @CommandLine.Mixin
+        ProspectiveInterventionInputs inputs;
+
+        @CommandLine.Option(names = "--receipt", required = true)
+        Path receipt;
+
+        @CommandLine.Option(names = "--census-receipt", required = true)
+        Path censusReceipt;
+
+        @CommandLine.Option(names = "--v11-census", required = true)
+        Path v11Census;
+
+        @CommandLine.Option(names = "--cache-dir", required = true)
+        Path cacheDirectory;
+
+        @CommandLine.Option(names = "--json-report", required = true)
+        Path jsonReport;
+
+        @CommandLine.Option(names = "--markdown-report", required = true)
+        Path markdownReport;
+
+        @Override
+        public Integer call() throws Exception {
+            Map<String, Path> paths = inputs.paths(applicationJar());
+            paths.put("census-receipt", censusReceipt);
+            paths.put("v11-census", v11Census);
+            ProspectiveInterventionPreflight.ValidatedInputs validated = new ProspectiveInterventionPreflight()
+                    .validate(new ProspectiveInterventionPreflight.Paths(
+                            receipt, paths, cacheDirectory, List.of(jsonReport, markdownReport)));
+            Files.createDirectories(cacheDirectory.toAbsolutePath().normalize());
+            CorpusExperimentReport experiment;
+            try (TemporaryFileSnapshot frozenApplication =
+                            TemporaryFileSnapshot.create(validated.snapshots().get("application"), "application.jar");
+                    TemporaryFileSnapshot frozenTools =
+                            TemporaryFileSnapshot.create(validated.snapshots().get("tools"), "tla2tools.jar")) {
+                experiment = new CorpusExperimentRunner(
+                                frozenApplication.path(), frozenTools.path(), cacheDirectory, validated.policy())
+                        .run(validated.manifest(), validated.census());
+            }
+            ProspectiveDiscoveryReport report = ProspectiveDiscoveryReport.create(
+                    validated.manifest().manifest(),
+                    validated.census(),
+                    ProspectiveInterventionPreflight.artifact(
+                            validated.snapshots().get("v11-census")),
+                    ProspectiveInterventionPreflight.artifact(validated.receiptSnapshot()),
+                    experiment);
+            new FrozenJsonWriter().writeNew(jsonReport, report);
+            new FrozenTextWriter().writeNew(markdownReport, new ProspectiveMarkdownWriter().renderDiscovery(report));
+            System.out.println(new ObjectMapper().writeValueAsString(report));
             return 0;
         }
     }

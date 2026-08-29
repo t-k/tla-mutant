@@ -148,8 +148,7 @@ public final class ProspectivePreflight {
                 receiptSnapshot, receipt, Map.copyOf(snapshots), registry, protocol, policy, validatedManifest);
     }
 
-    private static void validateReceiptIdentities(
-            ProspectiveReceipt receipt, Map<String, BoundedFileSnapshot> snapshots) {
+    static void validateReceiptIdentities(ProspectiveReceipt receipt, Map<String, BoundedFileSnapshot> snapshots) {
         if (!receipt.artifacts().stream()
                 .map(ProspectiveReceipt.Artifact::role)
                 .collect(java.util.stream.Collectors.toUnmodifiableSet())
@@ -176,8 +175,8 @@ public final class ProspectivePreflight {
         }
     }
 
-    private static void validatePathSeparation(
-            Map<String, Path> inputPaths, Path cacheDirectory, List<Path> outputPaths) throws IOException {
+    static void validatePathSeparation(Map<String, Path> inputPaths, Path cacheDirectory, List<Path> outputPaths)
+            throws IOException {
         Objects.requireNonNull(cacheDirectory, "cacheDirectory");
         List<Path> outputs = List.copyOf(Objects.requireNonNull(outputPaths, "outputs"));
         if (outputs.isEmpty()) {

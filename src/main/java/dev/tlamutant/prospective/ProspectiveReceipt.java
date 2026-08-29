@@ -49,13 +49,14 @@ public record ProspectiveReceipt(int schemaVersion, String phase, String profile
                 throw new IllegalArgumentException("Prospective receipt artifact roles must be unique");
             }
         }
-        Set<String> expected = switch (phase) {
-            case "discovery" -> DISCOVERY_ROLES;
-            case "experiment" -> EXPERIMENT_ROLES;
-            case "intervention-census" -> INTERVENTION_CENSUS_ROLES;
-            case "intervention-experiment" -> INTERVENTION_EXPERIMENT_ROLES;
-            default -> throw new IllegalStateException("Validated phase is missing a role set");
-        };
+        Set<String> expected =
+                switch (phase) {
+                    case "discovery" -> DISCOVERY_ROLES;
+                    case "experiment" -> EXPERIMENT_ROLES;
+                    case "intervention-census" -> INTERVENTION_CENSUS_ROLES;
+                    case "intervention-experiment" -> INTERVENTION_EXPERIMENT_ROLES;
+                    default -> throw new IllegalStateException("Validated phase is missing a role set");
+                };
         if (!roles.equals(expected)) {
             throw new IllegalArgumentException("Prospective receipt does not contain the exact phase role set");
         }

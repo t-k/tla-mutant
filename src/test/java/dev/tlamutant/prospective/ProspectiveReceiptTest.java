@@ -41,10 +41,9 @@ final class ProspectiveReceiptTest {
 
     @Test
     void acceptsOnlyTheExactInterventionRoleSets() {
-        ProspectiveReceipt census = receipt(
-                "intervention-census", ProspectiveReceipt.INTERVENTION_CENSUS_ROLES);
-        ProspectiveReceipt experiment = receipt(
-                "intervention-experiment", ProspectiveReceipt.INTERVENTION_EXPERIMENT_ROLES);
+        ProspectiveReceipt census = receipt("intervention-census", ProspectiveReceipt.INTERVENTION_CENSUS_ROLES);
+        ProspectiveReceipt experiment =
+                receipt("intervention-experiment", ProspectiveReceipt.INTERVENTION_EXPERIMENT_ROLES);
 
         assertEquals(
                 ProspectiveReceipt.INTERVENTION_CENSUS_ROLES,
@@ -199,9 +198,7 @@ final class ProspectiveReceiptTest {
     }
 
     private ProspectiveReceipt receipt(String phase, java.util.Set<String> roles) {
-        String profile = phase.startsWith("intervention-")
-                ? "gcd-prospective-v11"
-                : "gcd-prospective-v10";
+        String profile = phase.startsWith("intervention-") ? "gcd-prospective-v11" : "gcd-prospective-v10";
         return new ProspectiveReceipt(1, phase, profile, artifacts(roles));
     }
 

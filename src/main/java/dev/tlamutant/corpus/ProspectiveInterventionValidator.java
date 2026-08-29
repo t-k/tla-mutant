@@ -41,7 +41,8 @@ public final class ProspectiveInterventionValidator {
                     .findFirst()
                     .orElse(null);
             if (key != null) {
-                requireCandidateInDerivedCensus(key, derivedCensus.census().entries().get(index));
+                requireCandidateInDerivedCensus(
+                        key, derivedCensus.census().entries().get(index));
             }
         }
         return validated;
