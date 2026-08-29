@@ -3,6 +3,7 @@ package dev.tlamutant.prospective;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.tlamutant.security.Digests;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -54,12 +55,80 @@ final class HistoricalArtifactFreezeIntegrationTest {
         assertAll(expected.entrySet().stream().map(entry -> () -> assertIdentity(entry.getKey(), entry.getValue())));
     }
 
+    @Test
+    void bindsTheCanonicalClosureAssessmentToEveryAvailableInputArtifact() throws Exception {
+        Path assessmentPath = Path.of("docs/experiments/gcd-prospective-closure-assessment-v11.json");
+        ProspectiveClosureAssessment assessment =
+                new ObjectMapper().readValue(assessmentPath.toFile(), ProspectiveClosureAssessment.class);
+
+        assertEquals(2, assessment.schemaVersion());
+        assertEquals(
+                ProspectiveClosureAssessment.requiredInputRoles(),
+                assessment.inputArtifacts().stream()
+                        .map(ProspectiveClosureAssessment.InputArtifact::role)
+                        .toList());
+
+        Map<String, String> repositoryInputs = new LinkedHashMap<>();
+        repositoryInputs.put("census-receipt", "docs/experiments/gcd-prospective-receipt-v11-closure.json");
+        repositoryInputs.put("dossier", "docs/experiments/gcd-prospective-review-dossier-v10.json");
+        repositoryInputs.put("policy", "config/execution-policy.json");
+        repositoryInputs.put("review", "docs/experiments/gcd-prospective-review-v10.json");
+        repositoryInputs.put("tools", ".tools/tla2tools-1.8.0.jar");
+        repositoryInputs.put("v10-census", "docs/experiments/gcd-prospective-census-v10.json");
+        repositoryInputs.put("v10-discovery", "docs/experiments/gcd-prospective-v10.json");
+        repositoryInputs.put("v10-discovery-receipt", "docs/experiments/gcd-prospective-receipt-v10.json");
+        repositoryInputs.put("v10-experiment-receipt", "docs/experiments/gcd-prospective-experiment-receipt-v10.json");
+        repositoryInputs.put("v10-manifest", "corpus/gcd-prospective-manifest-v10.json");
+        repositoryInputs.put("v10-protocol", "config/prospective-protocol-v10.json");
+        repositoryInputs.put("v11-census", "docs/experiments/gcd-prospective-census-v11-closure.json");
+        repositoryInputs.put("v11-manifest", "corpus/gcd-prospective-manifest-v11.json");
+        repositoryInputs.put("v11-protocol", "config/prospective-protocol-v11.json");
+        repositoryInputs.put("v11-result", "docs/experiments/gcd-prospective-v11-closure.json");
+        repositoryInputs.put(
+                "validation-receipt", "docs/experiments/gcd-prospective-experiment-receipt-v11-closure.json");
+        for (Map.Entry<String, String> entry : repositoryInputs.entrySet()) {
+            assertIdentity(entry.getValue(), artifact(assessment, entry.getKey()));
+        }
+
+        Path validatorApplication = Path.of(System.getProperty("tla.mutant.test.appJar"));
+        assertIdentity(validatorApplication, artifact(assessment, "validator-application"));
+
+        ProspectiveReceipt receipt = new ObjectMapper()
+                .readValue(
+                        Path.of("docs/experiments/gcd-prospective-experiment-receipt-v11-closure.json")
+                                .toFile(),
+                        ProspectiveReceipt.class);
+        ProspectiveReceipt.Artifact executionApplication = receipt.artifact("application");
+        ProspectiveClosureAssessment.InputArtifact assessedApplication = artifact(assessment, "application");
+        assertEquals(executionApplication.sha256(), assessedApplication.sha256());
+        assertEquals(executionApplication.sizeBytes(), assessedApplication.sizeBytes());
+    }
+
     private static void assertIdentity(String relativePath, Identity expected) throws Exception {
         Path path = Path.of(relativePath);
         assertEquals(false, Files.isSymbolicLink(path), relativePath + " must not be a symbolic link");
         assertEquals(true, Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS), relativePath + " must be regular");
         assertEquals(expected.sizeBytes(), Files.size(path), relativePath + " size");
         assertEquals(expected.sha256(), Digests.sha256(path, MAXIMUM_BYTES), relativePath + " SHA-256");
+    }
+
+    private static void assertIdentity(String relativePath, ProspectiveClosureAssessment.InputArtifact expected)
+            throws Exception {
+        assertIdentity(Path.of(relativePath), expected);
+    }
+
+    private static void assertIdentity(Path path, ProspectiveClosureAssessment.InputArtifact expected)
+            throws Exception {
+        assertEquals(expected.sizeBytes(), Files.size(path), path + " size");
+        assertEquals(expected.sha256(), Digests.sha256(path, 128L * 1024 * 1024), path + " SHA-256");
+    }
+
+    private static ProspectiveClosureAssessment.InputArtifact artifact(
+            ProspectiveClosureAssessment assessment, String role) {
+        return assessment.inputArtifacts().stream()
+                .filter(artifact -> artifact.role().equals(role))
+                .findFirst()
+                .orElseThrow();
     }
 
     private record Identity(String sha256, long sizeBytes) {}
