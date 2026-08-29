@@ -80,14 +80,14 @@ Constraints:
 | O06 | classification | Attribute target, type, and unresolved kills with exclusive rules. | Critical | 2 | reducer matrix + real TLC fixture | verified |
 | O07 | efficiency | Do not rerun non-kills and omit nonexistent redundant oracle runs. | High | 2 | unit branch test + output-file evidence | verified |
 | O08 | compatibility | Read/render v8 unattributed results without reclassification. | High | 2 | committed JSON read + Markdown test | verified |
-| O09 | reporting | New and historical buckets conserve all denominators. | Critical | 2 | pure summary test + v9 report validation | verified locally; final v9 artifact pending |
-| O10 | experiment | Derived SimpleAllocator baseline passes all full invariants. | Critical | 1 | pinned v9 run | pending |
-| O11 | experiment | Request GCD mutant is killed only after the adopted invariant is enabled. | Critical | 2 | legacy/full comparison + v9 result | pending |
-| O12 | experiment | At least one SimpleAllocator kill is classified type-only. | High | 1 | v9 result | pending |
-| O13 | experiment | Return/non-kill behavior is not perturbed by attribution. | High | 1 | v9 result | pending |
-| O14 | reproducibility | Application and census bytes are independently reproducible before mutation. | Critical | 2 | double clean build + double census | application verified; census pending |
+| O09 | reporting | New and historical buckets conserve all denominators. | Critical | 2 | pure summary test + v9 report validation | verified |
+| O10 | experiment | Derived SimpleAllocator baseline passes all full invariants. | Critical | 1 | pinned v9 run | verified |
+| O11 | experiment | Request GCD mutant is killed only after the adopted invariant is enabled. | Critical | 2 | legacy/full comparison + v9 result | verified |
+| O12 | experiment | At least one SimpleAllocator kill is classified type-only. | High | 1 | v9 result | not met; Allocate is a legacy-target kill |
+| O13 | experiment | Return/non-kill behavior is not perturbed by attribution. | High | 1 | v9 result | verified |
+| O14 | reproducibility | Application and census bytes are independently reproducible before mutation. | Critical | 2 | double clean build + double census | verified |
 | O15 | lifecycle | Every started container and Gradle/server process is stopped. | Critical | 2 | runner tests + post-task process inspection | sandbox cleanup verified; final audit pending |
-| O16 | validity | Report the intervention's circularity and do not claim out-of-sample validation. | High | 1 | final report review | pending |
+| O16 | validity | Report the intervention's circularity and do not claim out-of-sample validation. | High | 1 | final report review | verified |
 
 ## Coverage Ledger
 
@@ -96,11 +96,11 @@ Constraints:
 | O01 | historical report compatibility test | frozen-path digest assertions | intentional_overlap | verified | v8 is the comparison boundary. |
 | O02-O04 | edit validator/applier tests | Podman command and sandbox tests | layer_overlap | verified | Security review Must Fix findings are resolved. |
 | O05-O07 | attribution reducer tests | real TLC attribution fixture | layer_overlap | verified | Invocation counts and generated files are observed without mocks. |
-| O08-O09 | report unit tests | committed v8/v9 artifact validation | layer_overlap | partial | v8 compatibility and summary conservation pass; committed v9 artifact remains pending. |
-| O10-O13 | focused SimpleAllocator closure check | full v9 corpus result | intentional_overlap | pending | This is confirmatory post-selection evidence. |
-| O14 | reproducible JAR and census commands | frozen identity assertions | layer_overlap | pending | Mutation cannot start before completion. |
+| O08-O09 | report unit tests | committed v8/v9 artifact validation | layer_overlap | verified | The historical bucket remains explicit and v9 totals conserve 51 sites. |
+| O10-O13 | focused SimpleAllocator closure check | full v9 corpus result | intentional_overlap | partial | Primary Request closure and Return checks pass; the preregistered SimpleAllocator type-only expectation does not. |
+| O14 | reproducible JAR and census commands | frozen identity assertions | layer_overlap | verified | Two clean JAR builds and two byte-identical census runs completed before mutation. |
 | O15 | process lifecycle tests | final PID/container audit | layer_overlap | pending | No broad process kills. |
-| O16 | design/report wording review | final human-facing summary | layer_overlap | pending | Generalization remains future work. |
+| O16 | design/report wording review | final human-facing summary | layer_overlap | verified | Generalization remains future work. |
 
 ## Test Scenarios
 

@@ -78,13 +78,13 @@ java -jar build/libs/tla-mutant-all.jar gcd-stratified-census \
   --failed-census-report build/reports/gcd-stratified-census-v9-failed.json
 ```
 
-After reviewing and committing that write-once census, supply its trusted SHA-256 value:
+The reviewed v9 census is committed with SHA-256 `cd714aecfec926c3250922ec52e9dc6caef944c1300ff2cafaf9911c2f7a66cb`:
 
 ```sh
 java -jar build/libs/tla-mutant-all.jar gcd-stratified-experiment \
   --manifest corpus/gcd-stratified-manifest-v9.json \
   --census-report docs/experiments/gcd-stratified-census-v9.json \
-  --expected-census-sha256 REVIEWED_V9_CENSUS_SHA256 \
+  --expected-census-sha256 cd714aecfec926c3250922ec52e9dc6caef944c1300ff2cafaf9911c2f7a66cb \
   --policy config/execution-policy.json \
   --tools-jar .tools/tla2tools-1.8.0.jar \
   --cache-dir .corpus \
@@ -93,3 +93,5 @@ java -jar build/libs/tla-mutant-all.jar gcd-stratified-experiment \
 ```
 
 This is a post-discovery intervention: the v8 witness was used to select the new invariant. Killing that mutant validates the workflow's closed loop but is not out-of-sample evidence of general usefulness.
+
+See the [v9 preregistration](docs/experiments/gcd-stratified-v9-preregistration.md), [generated report](docs/experiments/gcd-stratified-v9.md), and [assessment](docs/experiments/gcd-stratified-assessment-v9.md).
