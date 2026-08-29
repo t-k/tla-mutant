@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "reviewerMode": "user-delegated-agent",
+  "protocolArtifact": {
+    "sha256": "34ae5cd40876b8774381fb778dcd6cc3a2a5b8ffe7bcebbe07202bb3096a1a0f",
+    "sizeBytes": 7809
+  },
+  "dossierArtifact": {
+    "sha256": "e39cd4c276c38acdfeb70ce4ada73e9a84a3fb9aad7ba5e2fe29934ad39532db",
+    "sizeBytes": 3486
+  },
+  "decisions": [
+    {
+      "key": {
+        "entryId": "nbacg-guer01",
+        "candidateId": "gcd-054a154049f5ff140110"
+      },
+      "terminalDecision": "NEEDS_STRENGTHENING",
+      "operator": null,
+      "predicate": null,
+      "predicateSha256": null,
+      "criteria": {
+        "exactPredicate": false,
+        "witnessFalsifies": false,
+        "baselineHolds": false,
+        "actionsPreserve": false,
+        "nonvacuous": true,
+        "nonredundant": true,
+        "abstractionAligned": false
+      },
+      "evidence": {
+        "exactPredicate": "No exact predicate is accepted. A zero-traffic implication can separate the witness, but it overfits global counters instead of recording the affected process's history.",
+        "witnessFalsifies": "The witness has zero sent and faulty-message counters, pc = <<BYZ, NO, NO>>, and someFail = <<FALSE, TRUE, TRUE>>. It falsifies a zero-traffic suspicion implication, but not a robust process-local predicate available in the current state.",
+        "baselineHolds": "The weak zero-traffic implication appears to hold over the frozen model, but that is insufficient for adoption because its antecedent is configuration- and trace-aggregate-specific.",
+        "actionsPreserve": "Crash can act on YES, NO, SENT, ABORT, COMMIT, or other non-BYZ statuses. Without process-local provenance, a stronger suspicion predicate would exclude legal baseline crash paths.",
+        "nonvacuous": "Deleting the suspicion guard expands the explored state set from 24922 to 27782 states, so the guard has observable semantic effect.",
+        "nonredundant": "TypeOK constrains domains only and does not relate someFail, pc, and message history.",
+        "abstractionAligned": "The source comment gives failure-detector intent, but the current variables do not preserve enough per-process history to express that intent without an aggregate-counter workaround."
+      }
+    },
+    {
+      "key": {
+        "entryId": "nbacg-guer01",
+        "candidateId": "gcd-3c1ee8b4429ee7af9c2f"
+      },
+      "terminalDecision": "ACCEPT",
+      "operator": "FaultVoteBoundsWithinCrashed",
+      "predicate": "FaultVoteBoundsWithinCrashed ==\n  nSntNoF + nSntYesF <= Cardinality({ i \\in Proc : pc[i] = \"BYZ\" })",
+      "predicateSha256": "2e114e5ad2a7469fcf28a692500e10c978468dc746cf05d49ba78a95b475490d",
+      "criteria": {
+        "exactPredicate": true,
+        "witnessFalsifies": true,
+        "baselineHolds": true,
+        "actionsPreserve": true,
+        "nonvacuous": true,
+        "nonredundant": true,
+        "abstractionAligned": true
+      },
+      "evidence": {
+        "exactPredicate": "The proposal is one bounded TLA+ state predicate over existing variables and the already imported FiniteSets module.",
+        "witnessFalsifies": "The witness has nSntYesF = 1, nSntNoF = 0, and pc = <<ABORT, NO, NO>>, so the left side is 1 while the set of BYZ processes is empty.",
+        "baselineHolds": "Initialization gives 0 <= 0. A baseline increment of either faulty-message bound occurs only when Crash changes a YES or NO process to BYZ, and the guarded AbortNoYes action cannot move a BYZ process away from BYZ.",
+        "actionsPreserve": "Crash from YES or NO increments one bound and adds one BYZ process; Crash from another status adds BYZ without incrementing a bound. Receive, SendYes, SendNo, AbortSent, Commit, and stuttering do not break the inequality, while baseline AbortNoYes applies only to YES or NO.",
+        "nonvacuous": "Reachable crashes from YES or NO produce states with a positive faulty-message bound and a corresponding BYZ process. The mutant reaches a concrete violating state.",
+        "nonredundant": "TypeOK bounds each counter and the pc codomain independently but does not relate faulty-message bounds to the number of crashed processes; there is no configured legacy target invariant.",
+        "abstractionAligned": "The source defines nSntNoF and nSntYesF as upper bounds for messages from faulty processes and uses BYZ as the crashed-process status, so the inequality states an explicit consistency condition already implicit in the model."
+      }
+    }
+  ]
+}
