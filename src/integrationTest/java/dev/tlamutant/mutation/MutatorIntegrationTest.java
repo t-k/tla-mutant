@@ -93,6 +93,24 @@ final class MutatorIntegrationTest {
     }
 
     @Test
+    void followsANonliteralActionBelowAConfiguredSpecification() throws IOException {
+        Path root = Path.of("src/testFixtures/resources/tla/nonliteral-action");
+        SemanticProject project = new SanyAnalyzer().analyze(root, "NamedAction.tla", "NamedAction.cfg");
+        SourceDocument source = SourceDocument.read(root.resolve("NamedAction.tla"));
+
+        List<MutationCandidate> candidates = new GcdMutator().generate(project, source);
+        GcdCensusReport census = new GcdCensusAnalyzer().analyze(root, "NamedAction.tla", "NamedAction.cfg");
+
+        assertEquals(
+                List.of("Enabled"),
+                candidates.stream().map(MutationCandidate::original).toList());
+        assertEquals(
+                candidates.stream().map(MutationCandidate::id).toList(),
+                census.sites().stream().map(site -> site.candidateId()).toList());
+        assertTrue(census.sites().getFirst().conforms());
+    }
+
+    @Test
     void sharesExactGcdEligibilityWhileSeparatingSuccessorCapableSites() throws IOException {
         Path root = Path.of("src/testFixtures/resources/tla/census");
         SemanticProject project = new SanyAnalyzer().analyze(root, "CensusFixture.tla", "CensusFixture.cfg");

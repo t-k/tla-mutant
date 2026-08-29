@@ -17,13 +17,28 @@ final class MutationSupport {
 
     static List<OperatorDefinition> nextModelDefinitions(SemanticProject project) {
         return project.eligibleModelDefinitions().stream()
-                .filter(MutationSupport::isBelowConfiguredNext)
+                .filter(definition -> definition.sourceModule().equals(project.rootModule()))
+                .filter(definition -> isBelowConfiguredTransition(project, definition))
                 .toList();
     }
 
-    private static boolean isBelowConfiguredNext(OperatorDefinition definition) {
+    private static boolean isBelowConfiguredTransition(SemanticProject project, OperatorDefinition definition) {
         String path = definition.rootPaths().getOrDefault(SemanticRole.MODEL, "");
-        return path.startsWith("NEXT ") || path.endsWith(" -> Next") || path.contains(" -> Next -> ");
+        if (path.startsWith("NEXT ")) {
+            return true;
+        }
+        if (!path.startsWith("SPECIFICATION ")) {
+            return false;
+        }
+        String[] steps = path.split(" -> ");
+        if (steps.length < 2) {
+            return false;
+        }
+        OperatorDefinition transition = project.definitions().get(steps[1]);
+        return transition != null
+                && transition.level() == 2
+                && transition.eligibleForModelMutation()
+                && transition.sourceModule().equals(project.rootModule());
     }
 
     static boolean isEligibleReferencedDefinition(SemanticProject project, SemanticNode node) {
