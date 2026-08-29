@@ -1,0 +1,85 @@
+{
+  "schemaVersion" : 1,
+  "profile" : "gcd-prospective-v10",
+  "protocolArtifact" : {
+    "sha256" : "34ae5cd40876b8774381fb778dcd6cc3a2a5b8ffe7bcebbe07202bb3096a1a0f",
+    "sizeBytes" : 7809
+  },
+  "manifestArtifact" : {
+    "sha256" : "ade49bbe04aabed5997375d3602fe6c9b2a1bf14ad401e7dceb708504ef12a64",
+    "sizeBytes" : 9455
+  },
+  "censusArtifact" : {
+    "sha256" : "d83054a85e074a1d01616b4532a57b6dca43706a42e31a9b0b195ed8293e24b9",
+    "sizeBytes" : 25491
+  },
+  "discoveryArtifact" : {
+    "sha256" : "3002bf1e67a68d9d015283bcca6c8cd72c2aa8d4d050ca53cf51f240214350c3",
+    "sizeBytes" : 103370
+  },
+  "candidates" : [ {
+    "key" : {
+      "entryId" : "nbacg-guer01",
+      "candidateId" : "gcd-054a154049f5ff140110"
+    },
+    "domain" : "atomic-commit",
+    "riskClass" : "standard-risk",
+    "rootModule" : "nbacg_guer01.tla",
+    "sourceFiles" : [ {
+      "path" : "nbacg_guer01.tla",
+      "repositoryPath" : "specifications/nbacg_guer01/nbacg_guer01.tla",
+      "sha256" : "01beedb7aa321e51e626d11fd71298113c56995173569a9814be599f5943703d",
+      "sizeBytes" : 8505
+    }, {
+      "path" : "nbacg_guer01.cfg",
+      "repositoryPath" : "specifications/nbacg_guer01/nbacg_guer01.cfg",
+      "sha256" : "b1199492ce23f3cbbd4d06d3df6461c52df20de86808a4335747867c8968d717",
+      "sizeBytes" : 121
+    } ],
+    "typeInvariants" : [ "TypeOK" ],
+    "legacyTargetInvariants" : [ ],
+    "definition" : "AbortNoYes",
+    "originalGuard" : "someFail[i] = TRUE",
+    "replacement" : "TRUE",
+    "executionStatus" : "COMPLETED",
+    "oracleOutcome" : "PASSED",
+    "stateRelation" : "STATE_EXPANDING",
+    "verdict" : "state-invariant-gap-candidate",
+    "baselineStateCount" : 24922,
+    "mutantStateCount" : 27782,
+    "mutantOnlyWitness" : "7:nRcvdNo:8:function:11:<<0, 0, 0>>;8:nRcvdYes:8:function:11:<<0, 0, 0>>;6:nSntNo:7:integer:1:0;7:nSntNoF:7:integer:1:0;7:nSntYes:7:integer:1:0;8:nSntYesF:7:integer:1:0;2:pc:8:function:21:<<\"BYZ\", \"NO\", \"NO\">>;8:someFail:8:function:21:<<FALSE, TRUE, TRUE>>;",
+    "attribution" : null
+  }, {
+    "key" : {
+      "entryId" : "nbacg-guer01",
+      "candidateId" : "gcd-3c1ee8b4429ee7af9c2f"
+    },
+    "domain" : "atomic-commit",
+    "riskClass" : "standard-risk",
+    "rootModule" : "nbacg_guer01.tla",
+    "sourceFiles" : [ {
+      "path" : "nbacg_guer01.tla",
+      "repositoryPath" : "specifications/nbacg_guer01/nbacg_guer01.tla",
+      "sha256" : "01beedb7aa321e51e626d11fd71298113c56995173569a9814be599f5943703d",
+      "sizeBytes" : 8505
+    }, {
+      "path" : "nbacg_guer01.cfg",
+      "repositoryPath" : "specifications/nbacg_guer01/nbacg_guer01.cfg",
+      "sha256" : "b1199492ce23f3cbbd4d06d3df6461c52df20de86808a4335747867c8968d717",
+      "sizeBytes" : 121
+    } ],
+    "typeInvariants" : [ "TypeOK" ],
+    "legacyTargetInvariants" : [ ],
+    "definition" : "AbortNoYes",
+    "originalGuard" : "\\/ pc[i] = \"YES\"\n     \\/ pc[i] = \"NO\"",
+    "replacement" : "TRUE",
+    "executionStatus" : "COMPLETED",
+    "oracleOutcome" : "PASSED",
+    "stateRelation" : "STATE_EXPANDING",
+    "verdict" : "state-invariant-gap-candidate",
+    "baselineStateCount" : 24922,
+    "mutantStateCount" : 30943,
+    "mutantOnlyWitness" : "7:nRcvdNo:8:function:11:<<0, 0, 0>>;8:nRcvdYes:8:function:11:<<0, 0, 0>>;6:nSntNo:7:integer:1:0;7:nSntNoF:7:integer:1:0;7:nSntYes:7:integer:1:0;8:nSntYesF:7:integer:1:1;2:pc:8:function:23:<<\"ABORT\", \"NO\", \"NO\">>;8:someFail:8:function:20:<<TRUE, TRUE, TRUE>>;",
+    "attribution" : null
+  } ]
+}
