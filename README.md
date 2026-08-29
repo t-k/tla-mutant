@@ -15,7 +15,7 @@ The Gradle build downloads the pinned TLA+ Tools artifact and verifies its size 
 ## Verify
 
 ```sh
-./gradlew spotlessCheck test integrationTest sandboxTest
+./gradlew spotlessCheck test integrationTest sandboxTest verifyFrozenApplication
 ```
 
 ## Reproduce the original corpus experiment
@@ -53,7 +53,7 @@ Then consume that exact census:
 java -jar build/libs/tla-mutant-all.jar gcd-stratified-experiment \
   --manifest corpus/gcd-stratified-manifest.json \
   --census-report docs/experiments/gcd-stratified-census.json \
-  --expected-census-sha256 FROZEN_V8_CENSUS_SHA256 \
+  --expected-census-sha256 6de7c400622557a545a82c3db0d29b20f304ab2e0c47ec29eddfea2e9a72df95 \
   --policy config/execution-policy.json \
   --tools-jar .tools/tla2tools-1.8.0.jar \
   --cache-dir .corpus \
@@ -61,4 +61,4 @@ java -jar build/libs/tla-mutant-all.jar gcd-stratified-experiment \
   --markdown-report docs/experiments/gcd-stratified.md
 ```
 
-The expected census digest must come from the reviewed frozen-census commit, not from an unreviewed file calculated immediately before execution. Replace the placeholder only after the v8 census and two independent no-build-cache clean application builds are committed and byte-verified. Frozen census paths are write-once, so use a new output path for a repeat run. The historical v7 census uses the `-v7` suffix, the failed v6 instrumentation uses the `-v6` suffix, and earlier historical artifacts remain versioned.
+The expected census digest must come from the reviewed frozen-census commit, not from an unreviewed file calculated immediately before execution. The v8 census has 51 sites, 45 conforming sites, application SHA-256 `5c17b77c22fa33dac205cc54d35794c5c09cf9ea6e46ce17f3cdb84f8c569cec`, and census SHA-256 `6de7c400622557a545a82c3db0d29b20f304ab2e0c47ec29eddfea2e9a72df95`. Two no-build-cache clean application builds and two write-once census runs were byte-identical. Frozen census paths are write-once, so use a new output path for a repeat run. The historical v7 census uses the `-v7` suffix, the failed v6 instrumentation uses the `-v6` suffix, and earlier historical artifacts remain versioned.

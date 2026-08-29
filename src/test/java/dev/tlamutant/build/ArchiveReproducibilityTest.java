@@ -17,5 +17,6 @@ final class ArchiveReproducibilityTest {
         assertTrue(build.contains("isReproducibleFileOrder = true"));
         assertTrue(build.contains("filePermissions { unix(\"0644\") }"));
         assertTrue(build.contains("dirPermissions { unix(\"0755\") }"));
+        assertTrue(build.contains("val verifyFrozenApplication by tasks.registering"));
     }
 }

@@ -233,6 +233,33 @@ val fatJar by tasks.registering(Jar::class) {
     })
 }
 
+val frozenCensusFile = layout.projectDirectory.file("docs/experiments/gcd-stratified-census.json")
+val verifyFrozenApplication by tasks.registering {
+    description = "Verifies that the reproducible fat JAR matches the frozen census application identity."
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
+    dependsOn(fatJar)
+    inputs.file(frozenCensusFile)
+    inputs.file(fatJar.flatMap { it.archiveFile })
+    doLast {
+        val census = groovy.json.JsonSlurper().parse(frozenCensusFile.asFile) as Map<*, *>
+        val inputs = census["inputs"] as Map<*, *>
+        val application = inputs["application"] as Map<*, *>
+        val expectedSize = (application["sizeBytes"] as Number).toLong()
+        val expectedDigest = application["sha256"] as String
+        val applicationJar =
+            fatJar
+                .get()
+                .archiveFile
+                .get()
+                .asFile
+                .toPath()
+        val actualSize = Files.size(applicationJar)
+        val actualDigest = MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(applicationJar)).hex()
+        require(actualSize == expectedSize) { "Frozen application size mismatch: $actualSize" }
+        require(actualDigest == expectedDigest) { "Frozen application SHA-256 mismatch: $actualDigest" }
+    }
+}
+
 integrationTest {
     dependsOn(fatJar, verifyTlaTools)
     systemProperty(
