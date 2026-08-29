@@ -25,6 +25,21 @@
 - Modify `docs/experiments/gcd-prospective-final-assessment.md`, `docs/security/2026-08-29-v10-prospective-review.md`, and `README.md`: record the new assessment and resolved provenance finding.
 - Update this plan as an execution coverage ledger.
 
+## Execution coverage ledger
+
+The original task split was adjusted during the RED phase because the assessment constructor, validator signature, and CLI call form one Java compilation boundary. All three failure tests were established before the minimal production change, then the integrated slice was made GREEN without changing the approved architecture.
+
+| Obligation | Status | Evidence |
+|---|---|---|
+| AP01 | implementation_verified | `ProspectiveClosureAssessmentTest` accepts exactly the canonical 18 roles; the generated artifact contains 18 roles. |
+| AP02 | implementation_verified | Constructor tests reject uppercase digest, uppercase role, and zero size; production requires lowercase 64-hex SHA-256 and positive size. |
+| AP03 | implementation_verified | Unit tests reject missing, unexpected, duplicate, and reversed role lists. |
+| AP04 | experiment_verified | CLI generation used the validated bounded snapshots; `HistoricalArtifactFreezeIntegrationTest` recomputes every repository-resident identity. |
+| AP05 | experiment_verified | Integration assertions separate receipt-bound execution JAR `0c84489d...` from validator JAR `99cc4020...`. |
+| AP06 | experiment_verified | Schema version 1 and 2 projections excluding schema/provenance were byte-identical under `jq` normalization and `cmp`. |
+| AP07 | jar_verified | Two clean no-build-cache builds were byte-identical at SHA-256 `99cc4020d7ecd691b2285c1d9d12a1299155228b6e8ff346e6cf54193b1a6148`, size `3152637`; `verifyFrozenApplication` passed. |
+| AP08 | cleanup_verified | Spotless, 154 unit tests, 23 integration tests, and four sandbox tests passed with zero failures, errors, or skips; owned resources, daemon, machine, and orphan audits are clean. |
+
 ### Task 1: Fail-closed schema version 2 assessment
 
 **Files:**

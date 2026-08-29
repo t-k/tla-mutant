@@ -55,3 +55,24 @@ The closure command also requires `--execution-application`. This keeps the inte
 - Independent correctness and security rereviews both returned `GO` with no blocking or high-severity findings. The configured Security Specialist instruction file was absent, so the required Must Fix / Should Fix / Notes perspective was applied directly.
 
 Final verdict: GO.
+
+## Assessment provenance follow-up
+
+### Must Fix
+
+None. Schema version 2 embeds exactly 18 canonically ordered artifact identities. Missing, unexpected, duplicate, reordered, malformed, or zero-sized entries fail assessment construction. The closure CLI derives these identities from the same bounded snapshots used by preflight and result reconstruction, plus a bounded snapshot of its validator JAR.
+
+### Should Fix
+
+- `validator-application` is measured from the `Main` code-source path after the JVM has loaded validator classes. A same-user concurrent replacement or in-place write could make the measured path bytes differ from already loaded class bytes. Eliminating this bounded local TOCTOU risk would require an immutable launcher or frozen-copy execution model; the current result assumes no hostile same-user mutation during validation.
+- Container post-creation inspection and multi-output atomic publication retain the earlier defense-in-depth opportunities documented above.
+
+### Notes
+
+- The schema version 2 assessment is SHA-256 `b8615d046ca5c43807c11988c96722c1710278836a28d6a49604fc085748bff7`, size `3889` bytes. Its closure decision and outcome projection are byte-identical to schema version 1 after removing schema and provenance fields.
+- The provenance-aware validator JAR is reproducible at SHA-256 `99cc4020d7ecd691b2285c1d9d12a1299155228b6e8ff346e6cf54193b1a6148`, size `3152637` bytes. The assessment distinguishes it from the receipt-bound execution JAR at SHA-256 `0c84489df67046b7418cc7dea6f9b794ec17f9de42664049814fe48d02b378dd`, size `3148231` bytes.
+- Integration verification recomputes every repository-resident digest and size, rejects direct symlinks and non-regular files, and asserts that execution and validator JAR identities differ.
+- Final verification completed 154 unit, 23 integration, and four sandbox tests with no failures, errors, or skips. No owned labeled containers or volumes remained; the Gradle daemon and Podman machine were stopped, and the orphan-process audit was empty.
+- Independent correctness review returned `GO` with no Blocker or High findings. Independent security review returned `GO` with no Must Fix findings and identified the bounded local validator-JAR TOCTOU risk above.
+
+Follow-up verdict: GO.

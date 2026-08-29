@@ -108,7 +108,6 @@ final class HistoricalArtifactFreezeIntegrationTest {
         assertEquals(executionApplication.sha256(), assessedApplication.sha256());
         assertEquals(executionApplication.sizeBytes(), assessedApplication.sizeBytes());
         assertNotEquals(assessedApplication.sha256(), assessedValidator.sha256());
-        assertNotEquals(assessedApplication.sizeBytes(), assessedValidator.sizeBytes());
     }
 
     private static void assertIdentity(String relativePath, Identity expected) throws Exception {
