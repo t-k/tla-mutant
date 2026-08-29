@@ -233,17 +233,15 @@ val fatJar by tasks.registering(Jar::class) {
     })
 }
 
-val frozenCensusFile = layout.projectDirectory.file("docs/experiments/gcd-stratified-census.json")
+val currentApplicationLock = layout.projectDirectory.file("config/current-application.json")
 val verifyFrozenApplication by tasks.registering {
-    description = "Verifies that the reproducible fat JAR matches the frozen census application identity."
+    description = "Verifies that the reproducible fat JAR matches the preregistered current application identity."
     group = LifecycleBasePlugin.VERIFICATION_GROUP
     dependsOn(fatJar)
-    inputs.file(frozenCensusFile)
+    inputs.file(currentApplicationLock)
     inputs.file(fatJar.flatMap { it.archiveFile })
     doLast {
-        val census = groovy.json.JsonSlurper().parse(frozenCensusFile.asFile) as Map<*, *>
-        val inputs = census["inputs"] as Map<*, *>
-        val application = inputs["application"] as Map<*, *>
+        val application = groovy.json.JsonSlurper().parse(currentApplicationLock.asFile) as Map<*, *>
         val expectedSize = (application["sizeBytes"] as Number).toLong()
         val expectedDigest = application["sha256"] as String
         val applicationJar =

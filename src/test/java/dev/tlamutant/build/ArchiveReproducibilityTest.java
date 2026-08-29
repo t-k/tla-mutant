@@ -18,6 +18,10 @@ final class ArchiveReproducibilityTest {
         assertTrue(build.contains("filePermissions { unix(\"0644\") }"));
         assertTrue(build.contains("dirPermissions { unix(\"0755\") }"));
         assertTrue(build.contains("val verifyFrozenApplication by tasks.registering"));
+        assertTrue(build.contains("config/current-application.json"));
+        assertTrue(build.contains("val currentApplicationLock"));
+        assertTrue(build.contains("inputs.file(currentApplicationLock)"));
+        assertTrue(!build.contains("val frozenCensusFile"));
         assertTrue(build.contains("dependsOn(integrationTest, \"verifyFrozenApplication\")"));
     }
 }
