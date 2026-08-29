@@ -117,7 +117,7 @@ Constraints:
 - T011: The v9 manifest changes only SimpleAllocator provenance and target registration relative to the frozen v8 corpus membership.
 - T012: The v9 SimpleAllocator baseline passes the new predicate.
 - T013: The Request GCD mutation passes the legacy oracle with the old expanding witness but fails the full oracle and is classified adopted-target.
-- T014: The Allocate GCD mutation fails type-only and is classified type-invariant.
+- T014: The Allocate GCD mutation was expected to fail type-only and be classified type-invariant. This scenario was not met: type-only passed and the legacy target killed it.
 - T015: The Return mutation remains non-killed and has no attribution rerun.
 - T016: Two clean application builds and two v9 censuses are byte-identical and match the frozen identities.
 - T017: Malformed edits fail before public source parsing; successful and failed sandbox runs leave no named container, writable input, or orphaned process.
