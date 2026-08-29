@@ -23,6 +23,7 @@ import dev.tlamutant.prospective.ProspectiveAssessment;
 import dev.tlamutant.prospective.ProspectiveCensusReport;
 import dev.tlamutant.prospective.ProspectiveCensusValidator;
 import dev.tlamutant.prospective.ProspectiveClosureAssessment;
+import dev.tlamutant.prospective.ProspectiveClosureProvenance;
 import dev.tlamutant.prospective.ProspectiveClosureValidator;
 import dev.tlamutant.prospective.ProspectiveDiscoveryReport;
 import dev.tlamutant.prospective.ProspectiveInterventionPreflight;
@@ -788,8 +789,16 @@ public final class Main implements Runnable {
             if (!result.equals(reconstructed)) {
                 throw new IllegalArgumentException("Prospective closure result is not derived from its frozen inputs");
             }
+            BoundedFileSnapshot validatorSnapshot =
+                    BoundedFileSnapshot.read(applicationJar(), MAXIMUM_APPLICATION_BYTES);
             ProspectiveClosureAssessment assessment = ProspectiveClosureValidator.evaluate(
-                    validated.dossier(), validated.ledger(), validated.review(), validated.v10Discovery(), result);
+                    validated.dossier(),
+                    validated.ledger(),
+                    validated.review(),
+                    validated.v10Discovery(),
+                    result,
+                    ProspectiveClosureProvenance.create(
+                            validated.snapshots(), validated.receiptSnapshot(), resultSnapshot, validatorSnapshot));
             new FrozenJsonWriter().writeNew(outputPath, assessment);
             System.out.println(new ObjectMapper().writeValueAsString(assessment));
             return assessment.closureStatus().equals("VERIFIED") ? 0 : 2;

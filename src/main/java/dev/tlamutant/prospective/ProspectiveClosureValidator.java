@@ -18,12 +18,14 @@ public final class ProspectiveClosureValidator {
             ProspectiveReviewLedger ledger,
             ProspectiveReviewValidator.ValidatedReview review,
             ProspectiveDiscoveryReport source,
-            ProspectiveDiscoveryReport intervention) {
+            ProspectiveDiscoveryReport intervention,
+            List<ProspectiveClosureAssessment.InputArtifact> inputArtifacts) {
         Objects.requireNonNull(dossier, "dossier");
         Objects.requireNonNull(ledger, "ledger");
         Objects.requireNonNull(review, "review");
         Objects.requireNonNull(source, "source");
         Objects.requireNonNull(intervention, "intervention");
+        Objects.requireNonNull(inputArtifacts, "inputArtifacts");
         if (!review.isBoundTo(dossier, ledger)
                 || review.selectedInterventions().isEmpty()
                 || !dossier.profile().equals(source.profile())
@@ -54,7 +56,7 @@ public final class ProspectiveClosureValidator {
         }
         int unresolved = outcomes.size() - closed - rejectedByBaseline;
         return new ProspectiveClosureAssessment(
-                1,
+                2,
                 intervention.profile(),
                 ProspectiveProtocol.REVIEWER_MODE,
                 closed == outcomes.size() ? "VERIFIED" : "UNRESOLVED",
@@ -62,6 +64,7 @@ public final class ProspectiveClosureValidator {
                 closed,
                 rejectedByBaseline,
                 unresolved,
+                inputArtifacts,
                 outcomes);
     }
 

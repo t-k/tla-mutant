@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import dev.tlamutant.census.CensusInputIdentity;
 import dev.tlamutant.security.BoundedFileSnapshot;
 import java.nio.file.Path;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 final class ProspectiveClosureValidatorTest {
@@ -20,7 +21,12 @@ final class ProspectiveClosureValidatorTest {
         Fixture fixture = fixture(false);
 
         ProspectiveClosureAssessment assessment = ProspectiveClosureValidator.evaluate(
-                fixture.dossier(), fixture.ledger(), fixture.review(), fixture.source(), fixture.intervention());
+                fixture.dossier(),
+                fixture.ledger(),
+                fixture.review(),
+                fixture.source(),
+                fixture.intervention(),
+                provenance());
 
         assertEquals("UNRESOLVED", assessment.closureStatus());
         assertEquals(0, assessment.closed());
@@ -33,13 +39,19 @@ final class ProspectiveClosureValidatorTest {
         Fixture fixture = fixture(true);
 
         ProspectiveClosureAssessment assessment = ProspectiveClosureValidator.evaluate(
-                fixture.dossier(), fixture.ledger(), fixture.review(), fixture.source(), fixture.intervention());
+                fixture.dossier(),
+                fixture.ledger(),
+                fixture.review(),
+                fixture.source(),
+                fixture.intervention(),
+                provenance());
 
         assertEquals("VERIFIED", assessment.closureStatus());
         assertEquals(1, assessment.selected());
         assertEquals(1, assessment.closed());
         assertEquals(0, assessment.unresolved());
         assertEquals("CLOSED", assessment.outcomes().getFirst().status());
+        assertEquals(provenance(), assessment.inputArtifacts());
     }
 
     @Test
@@ -51,7 +63,7 @@ final class ProspectiveClosureValidatorTest {
         ProspectiveDiscoveryReport substituted = mapper.treeToValue(interventionJson, ProspectiveDiscoveryReport.class);
 
         ProspectiveClosureAssessment assessment = ProspectiveClosureValidator.evaluate(
-                fixture.dossier(), fixture.ledger(), fixture.review(), fixture.source(), substituted);
+                fixture.dossier(), fixture.ledger(), fixture.review(), fixture.source(), substituted, provenance());
 
         assertEquals("UNRESOLVED", assessment.closureStatus());
         assertEquals("UNRESOLVED", assessment.outcomes().getFirst().status());
@@ -108,6 +120,12 @@ final class ProspectiveClosureValidatorTest {
     private static CensusInputIdentity.Artifact artifact(Path path) throws Exception {
         BoundedFileSnapshot snapshot = BoundedFileSnapshot.read(path, 256L * 1024 * 1024);
         return new CensusInputIdentity.Artifact(snapshot.sha256(), snapshot.sizeBytes());
+    }
+
+    private static List<ProspectiveClosureAssessment.InputArtifact> provenance() {
+        return ProspectiveClosureAssessment.requiredInputRoles().stream()
+                .map(role -> new ProspectiveClosureAssessment.InputArtifact(role, "0".repeat(64), 1))
+                .toList();
     }
 
     private record Fixture(
