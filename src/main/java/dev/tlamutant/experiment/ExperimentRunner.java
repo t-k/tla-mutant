@@ -214,7 +214,9 @@ public final class ExperimentRunner {
         try (var files = Files.list(source)) {
             for (Path file : files.sorted().toList()) {
                 if (Files.isRegularFile(file) && !Files.isSymbolicLink(file)) {
-                    Files.copy(file, destination.resolve(file.getFileName().toString()));
+                    try (var input = Files.newInputStream(file)) {
+                        Files.copy(input, destination.resolve(file.getFileName().toString()));
+                    }
                 }
             }
         }
