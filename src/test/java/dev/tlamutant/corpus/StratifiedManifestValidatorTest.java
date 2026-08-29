@@ -35,17 +35,19 @@ final class StratifiedManifestValidatorTest {
     }
 
     @Test
-    void acceptsTheVersionedReselectionProfile() {
+    void acceptsTheVersionedReselectionAndInstrumentationProfiles() {
         CorpusManifest original = manifest(5, 10);
-        CorpusManifest manifest = new CorpusManifest(
-                original.version(),
-                "gcd-stratified-v2",
-                original.repository(),
-                original.commit(),
-                original.license(),
-                original.entries());
+        for (String profile : List.of("gcd-stratified-v2", "gcd-stratified-v3")) {
+            CorpusManifest manifest = new CorpusManifest(
+                    original.version(),
+                    profile,
+                    original.repository(),
+                    original.commit(),
+                    original.license(),
+                    original.entries());
 
-        assertSame(manifest, StratifiedManifestValidator.validate(manifest, GLOBAL));
+            assertSame(manifest, StratifiedManifestValidator.validate(manifest, GLOBAL));
+        }
     }
 
     @Test

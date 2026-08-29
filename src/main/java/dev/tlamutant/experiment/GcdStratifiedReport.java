@@ -33,7 +33,7 @@ public record GcdStratifiedReport(
         CorpusCensusReport census,
         CorpusExperimentReport experiment) {
     public GcdStratifiedReport {
-        if (schemaVersion != 1
+        if ((schemaVersion != 1 && schemaVersion != 2)
                 || censusSha256 == null
                 || !censusSha256.matches("[0-9a-f]{64}")
                 || censusSizeBytes <= 0
@@ -142,7 +142,7 @@ public record GcdStratifiedReport(
                         ? "human-review-eligible"
                         : "insufficient-witness-bearing-gcd-candidates";
         return new GcdStratifiedReport(
-                1,
+                2,
                 manifest.profile(),
                 manifest.repository(),
                 manifest.commit(),

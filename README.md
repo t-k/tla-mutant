@@ -2,7 +2,7 @@
 
 `tla-mutant` is an experimental vertical slice for mutation analysis of TLA+ State Invariants. It intentionally implements only three mutation families: guard-conjunct deletion (GCD), boundary relaxation (BRL), and update off-by-one (UOI).
 
-The first pinned 10-specification experiment produced no witness-bearing state-expanding survivors. A prospectively GCD-stratified 15-specification follow-up produced nine reproducible witness-bearing state expansions across six specifications, domains, and family clusters. This supports continuing the bounded GCD-focused experiment, but human review of the proposed invariant improvements remains pending and two large baselines exceeded the fixed state limit. See the [original assessment](docs/experiments/vertical-slice-assessment.md) and [stratified assessment](docs/experiments/gcd-stratified-assessment.md) before extending the implementation.
+The first pinned 10-specification experiment produced no witness-bearing state-expanding survivors. The historical v2 GCD-stratified 15-specification follow-up produced nine reproducible witness-bearing state expansions across six specifications, domains, and family clusters. This supports continuing the bounded GCD-focused experiment, but human review of the proposed invariant improvements remains pending and two large baselines exceeded the fixed state limit. See the [original assessment](docs/experiments/vertical-slice-assessment.md) and [v2 stratified assessment](docs/experiments/gcd-stratified-assessment-v2.md) before extending the implementation.
 
 ## Requirements
 
@@ -43,7 +43,8 @@ java -jar build/libs/tla-mutant-all.jar gcd-stratified-census \
   --policy config/execution-policy.json \
   --tools-jar .tools/tla2tools-1.8.0.jar \
   --cache-dir .corpus \
-  --census-report docs/experiments/gcd-stratified-census.json
+  --census-report docs/experiments/gcd-stratified-census.json \
+  --failed-census-report build/reports/gcd-stratified-census-failed.json
 ```
 
 Then consume that exact census:
@@ -52,6 +53,7 @@ Then consume that exact census:
 java -jar build/libs/tla-mutant-all.jar gcd-stratified-experiment \
   --manifest corpus/gcd-stratified-manifest.json \
   --census-report docs/experiments/gcd-stratified-census.json \
+  --expected-census-sha256 '<trusted digest from the frozen-census commit>' \
   --policy config/execution-policy.json \
   --tools-jar .tools/tla2tools-1.8.0.jar \
   --cache-dir .corpus \
@@ -59,4 +61,4 @@ java -jar build/libs/tla-mutant-all.jar gcd-stratified-experiment \
   --markdown-report docs/experiments/gcd-stratified.md
 ```
 
-The current frozen run returns exit code 2 after writing both reports because two preregistered baselines exceed the fixed canonical-state limit. Their nine GCD sites remain unresolved in the denominator.
+The expected census digest must come from the reviewed frozen-census commit, not from an unreviewed file calculated immediately before execution. Frozen census paths are write-once; use a new output path for a repeat run. The historical v2 run returned exit code 2 because two preregistered baselines exceeded the fixed canonical-state limit; its artifacts use the `-v2` suffix.

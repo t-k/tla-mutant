@@ -75,7 +75,7 @@ No family cluster may contribute more than 25% of all GCD sites. If the preregis
 
 ## Manifest Metadata
 
-The new manifest uses schema version 2 and profile `gcd-stratified-v2`. The validator also retains `gcd-stratified-v1` so its failed and repaired census artifacts remain reproducible. Existing schema-version-1 manifests remain valid and reproducible.
+The selected manifest uses schema version 2. Profile `gcd-stratified-v2` records the outcome-free cohort reselection. Profile `gcd-stratified-v3` keeps the same 15 entries and incorporates only review-driven instrumentation corrections: transition extraction from the actual `[][Next]_vars` operand, a conservative positive-current-state guard classifier, exact manifest/policy/TLA+ Tools identity binding, an external expected-census digest, write-once census publication, and separate site- and specification-weighted summaries. These corrections were specified after v2 outcomes existed, so v2 remains a separate historical result and v3 must receive a newly frozen census before mutation. The validator retains all three profiles for audit reproduction. Existing schema-version-1 manifests remain valid and reproducible.
 
 Each version-2 entry adds one selection object:
 
@@ -92,7 +92,7 @@ The validator requires exactly five controls and ten enriched entries, at least 
 
 ## Sandboxed GCD Census
 
-Public source remains untrusted and must never be parsed on the host. A new sandbox-internal `census` command performs SANY analysis with the existing closed resolver and emits bounded JSON. The outer `gcd-stratified-census` command fetches digest-pinned inputs, invokes one census container per entry, validates the census result, and persists the outcome-independent artifact. A separate `gcd-stratified-experiment` command requires that persisted census, validates its manifest identity and conformance, and never reruns census after mutation outcomes exist.
+Public source remains untrusted and must never be parsed on the host. A sandbox-internal `census` command performs SANY analysis with the existing closed resolver and emits bounded JSON. The outer `gcd-stratified-census` command snapshots the exact manifest, policy, and TLA+ Tools bytes, fetches digest-pinned inputs, invokes one census container per entry, validates the census result, and publishes a schema-version-2 census to a new path only. A failed census can be retained only at the separately declared failed-report path. The `gcd-stratified-experiment` command reads one bounded no-follow census snapshot, compares it with a trusted expected SHA-256 before parsing or mutation, validates every bound input identity and structural condition, and never reruns census after mutation outcomes exist.
 
 For each eligible GCD site the census records:
 

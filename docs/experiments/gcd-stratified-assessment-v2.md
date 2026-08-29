@@ -72,4 +72,4 @@ Four of six affected specifications therefore produce a concrete, compact improv
 
 Keep the implementation at the vertical-slice scale. The next highest-value step is a short human review of the four strong proposals, starting with the existing `Safe` predicate in `asynchronous-termination-detection` and `NoRequestAllocationOverlap` in `simple-allocator`. If at least one is accepted as a useful specification improvement, proceed to Type-only attribution and focused resolution of the four tool-error mutants. Do not implement the remaining full-product sections yet.
 
-Raw evidence is available in [the frozen census](gcd-stratified-census.json), [the JSON report](gcd-stratified.json), and [the readable report](gcd-stratified.md).
+Raw evidence is available in [the frozen census](gcd-stratified-census-v2.json), [the JSON report](gcd-stratified-v2.json), and [the readable report](gcd-stratified-v2.md).
