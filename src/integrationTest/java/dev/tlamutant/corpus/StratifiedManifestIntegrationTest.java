@@ -38,7 +38,7 @@ final class StratifiedManifestIntegrationTest {
                 .readValue(Path.of("corpus/gcd-stratified-manifest.json").toFile(), CorpusManifest.class);
 
         assertEquals(2, manifest.version());
-        assertEquals("gcd-stratified-v6", manifest.profile());
+        assertEquals("gcd-stratified-v7", manifest.profile());
         assertEquals("ed3cc4c35f7001d7cec08a22dcd698dae7570dc3", manifest.commit());
         assertEquals(
                 APPROVED_IDS,
