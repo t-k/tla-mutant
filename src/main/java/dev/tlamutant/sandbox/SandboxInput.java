@@ -1,7 +1,7 @@
 package dev.tlamutant.sandbox;
 
 import dev.tlamutant.corpus.CorpusManifest;
-import java.nio.charset.StandardCharsets;
+import dev.tlamutant.corpus.DerivedSourceEditValidator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -14,7 +14,6 @@ public record SandboxInput(
         List<String> adoptedTargetInvariants,
         List<CorpusManifest.DerivedSourceEdit> derivedSourceEdits) {
     private static final int MAX_INVARIANTS = 64;
-    private static final int MAX_INSERTED_BYTES = 4096;
 
     public SandboxInput {
         flatStateInvariants = List.copyOf(Objects.requireNonNull(flatStateInvariants, "flatStateInvariants"));
@@ -22,7 +21,7 @@ public record SandboxInput(
         legacyTargetInvariants = List.copyOf(Objects.requireNonNull(legacyTargetInvariants, "legacyTargetInvariants"));
         adoptedTargetInvariants =
                 List.copyOf(Objects.requireNonNull(adoptedTargetInvariants, "adoptedTargetInvariants"));
-        derivedSourceEdits = List.copyOf(Objects.requireNonNull(derivedSourceEdits, "derivedSourceEdits"));
+        derivedSourceEdits = DerivedSourceEditValidator.validateList(derivedSourceEdits);
         if (!flatStateInvariants.isEmpty()
                 && (!typeInvariants.isEmpty()
                         || !legacyTargetInvariants.isEmpty()
@@ -35,16 +34,6 @@ public record SandboxInput(
                 .flatMap(List::stream)
                 .toList();
         validateInvariantNames(categorized);
-        if (derivedSourceEdits.size() > 1) {
-            throw new IllegalArgumentException("At most one derived source edit is allowed");
-        }
-        for (CorpusManifest.DerivedSourceEdit edit : derivedSourceEdits) {
-            if (edit == null
-                    || edit.insertedText() == null
-                    || edit.insertedText().getBytes(StandardCharsets.UTF_8).length > MAX_INSERTED_BYTES) {
-                throw new IllegalArgumentException("Derived source edit argument is invalid or too large");
-            }
-        }
     }
 
     public static SandboxInput legacy(List<String> stateInvariants) {

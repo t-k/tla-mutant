@@ -118,6 +118,7 @@
       "derivedSourceEdits": [
         {
           "path": "SimpleAllocator.tla",
+          "definedOperator": "NoRequestAllocationOverlap",
           "baseSha256": "39180889fb44ea7cbba47e97c2fa727a54c43f8f7ff983caf61d67eb0a2db0e3",
           "baseSizeBytes": 4494,
           "insertionOffset": 2999,

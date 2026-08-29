@@ -85,7 +85,7 @@ final class ManifestValidatorTest {
                 original,
                 List.of("NoOverlap"),
                 List.of(new CorpusManifest.DerivedSourceEdit(
-                        "Spec.tla", "0".repeat(64), 1, 1, "\nNoOverlap == TRUE\n", "1".repeat(64), 20)));
+                        "Spec.tla", "NoOverlap", "0".repeat(64), 1, 1, "\nNoOverlap == TRUE\n", "1".repeat(64), 20)));
 
         assertEquals(edited, ManifestValidator.validateEntry(edited, GLOBAL));
     }
@@ -170,7 +170,14 @@ final class ManifestValidatorTest {
             String derivedSha256,
             long derivedSizeBytes) {
         return new CorpusManifest.DerivedSourceEdit(
-                path, baseSha256, baseSizeBytes, insertionOffset, insertedText, derivedSha256, derivedSizeBytes);
+                path,
+                "NoOverlap",
+                baseSha256,
+                baseSizeBytes,
+                insertionOffset,
+                insertedText,
+                derivedSha256,
+                derivedSizeBytes);
     }
 
     private static CorpusManifest.Entry entry(List<CorpusManifest.SourceFile> files) {

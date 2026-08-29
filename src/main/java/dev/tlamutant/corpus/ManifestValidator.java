@@ -2,7 +2,6 @@ package dev.tlamutant.corpus;
 
 import dev.tlamutant.config.ExecutionPolicy;
 import dev.tlamutant.security.SafeRelativePath;
-import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -14,8 +13,6 @@ public final class ManifestValidator {
     private static final int MAX_FILES_PER_ENTRY = 64;
     private static final long MAX_TOTAL_SOURCE_BYTES = 32L * 1024 * 1024;
     private static final int MAX_INVARIANTS_PER_ENTRY = 64;
-    private static final int MAX_DERIVED_SOURCE_EDITS = 1;
-    private static final int MAX_INSERTED_SOURCE_BYTES = 4096;
     private static final Pattern OPERATOR_NAME = Pattern.compile("[A-Za-z_][A-Za-z0-9_]{0,127}");
     private static final Pattern ENTRY_ID = Pattern.compile("[a-z0-9][a-z0-9-]{0,63}");
 
@@ -103,56 +100,13 @@ public final class ManifestValidator {
 
     private static void validateDerivedSourceEdits(
             List<CorpusManifest.SourceFile> files, List<CorpusManifest.DerivedSourceEdit> edits) {
-        if (edits == null || edits.size() > MAX_DERIVED_SOURCE_EDITS) {
-            throw new IllegalArgumentException("At most one derived source edit is allowed per entry");
-        }
-        Set<String> paths = new HashSet<>();
-        for (CorpusManifest.DerivedSourceEdit edit : edits) {
-            Objects.requireNonNull(edit, "derived source edit");
-            SafeRelativePath path = SafeRelativePath.parse(edit.path());
-            if (!path.value().endsWith(".tla") || !paths.add(path.value())) {
-                throw new IllegalArgumentException("Derived source edits require a unique listed TLA+ path");
-            }
+        for (CorpusManifest.DerivedSourceEdit edit : DerivedSourceEditValidator.validateList(edits)) {
             CorpusManifest.SourceFile source = files.stream()
-                    .filter(file -> file.path().equals(path.value()))
+                    .filter(file -> file.path().equals(edit.path()))
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("Derived source edit path is not listed"));
-            if (!source.sha256().equals(edit.baseSha256()) || source.sizeBytes() != edit.baseSizeBytes()) {
-                throw new IllegalArgumentException("Derived source edit base identity does not match the source file");
-            }
-            if (edit.insertionOffset() < 0 || edit.insertionOffset() > edit.baseSizeBytes()) {
-                throw new IllegalArgumentException("Derived source insertion offset is outside the base file");
-            }
-            if (edit.insertedText() == null || edit.insertedText().isEmpty()) {
-                throw new IllegalArgumentException("Derived source insertion text is required");
-            }
-            byte[] inserted = edit.insertedText().getBytes(StandardCharsets.UTF_8);
-            if (inserted.length > MAX_INSERTED_SOURCE_BYTES
-                    || edit.insertedText().codePoints().anyMatch(ManifestValidator::isForbiddenInsertedCodePoint)) {
-                throw new IllegalArgumentException("Derived source insertion text is unsafe or too large");
-            }
-            if (edit.derivedSha256() == null || !edit.derivedSha256().matches("[0-9a-f]{64}")) {
-                throw new IllegalArgumentException("Derived source digest is invalid");
-            }
-            long expectedDerivedSize;
-            try {
-                expectedDerivedSize = Math.addExact(edit.baseSizeBytes(), inserted.length);
-            } catch (ArithmeticException exception) {
-                throw new IllegalArgumentException("Derived source size overflowed", exception);
-            }
-            if (edit.derivedSizeBytes() != expectedDerivedSize) {
-                throw new IllegalArgumentException("Derived source size does not match the insertion");
-            }
+            DerivedSourceEditValidator.validateAgainstSource(edit, source);
         }
-    }
-
-    private static boolean isForbiddenInsertedCodePoint(int codePoint) {
-        return (Character.isISOControl(codePoint) && codePoint != '\n' && codePoint != '\r' && codePoint != '\t')
-                || codePoint == 0x061C
-                || codePoint == 0x200E
-                || codePoint == 0x200F
-                || (codePoint >= 0x202A && codePoint <= 0x202E)
-                || (codePoint >= 0x2066 && codePoint <= 0x2069);
     }
 
     private static void requireText(String value, String name) {

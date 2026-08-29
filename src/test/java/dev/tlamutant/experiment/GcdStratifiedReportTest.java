@@ -166,6 +166,34 @@ final class GcdStratifiedReportTest {
     }
 
     @Test
+    void usesSchemaFourForCategorizedExperimentsEvenWhenNoGcdMutantIsKilled() {
+        Fixture fixture = fixture(
+                List.of(entry("passing", "domain-a", "cluster-a")),
+                List.of(List.of(result(0, "STATE_EQUAL", "state-equal", null))));
+        CorpusEntryResult original = fixture.experiment().entries().getFirst();
+        ExperimentReport categorized = new ExperimentReport(
+                2,
+                original.report().module(),
+                original.report().config(),
+                original.report().reviewStatus(),
+                original.report().generatedMutants(),
+                original.report().evaluatedMutants(),
+                original.report().gapCandidates(),
+                original.report().results());
+        CorpusExperimentReport experiment = CorpusExperimentReport.create(
+                fixture.experiment().repository(),
+                fixture.experiment().commit(),
+                List.of(new CorpusEntryResult(
+                        original.id(), original.domain(), original.status(), original.diagnostic(), categorized)));
+
+        GcdStratifiedReport report =
+                GcdStratifiedReport.create(fixture.manifest(), fixture.census(), "f".repeat(64), 100, experiment);
+
+        assertEquals(4, report.schemaVersion());
+        assertEquals(0, report.summaries().getFirst().killedAdoptedTarget());
+    }
+
+    @Test
     void makesHumanReviewEligibleOnlyAcrossTwoSpecificationsDomainsAndClusters() {
         List<CorpusManifest.Entry> independent =
                 List.of(entry("first", "domain-a", "cluster-a"), entry("second", "domain-b", "cluster-b"));

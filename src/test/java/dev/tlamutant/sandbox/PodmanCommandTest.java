@@ -211,9 +211,54 @@ final class PodmanCommandTest {
                         SandboxInput.legacy(List.of("Safety"))));
     }
 
+    @Test
+    void rejectsMalformedDerivedEditMetadataBeforeCreatingAPodmanCommand() {
+        CorpusManifest.DerivedSourceEdit valid = edit("x");
+        List<CorpusManifest.DerivedSourceEdit> invalid = List.of(
+                new CorpusManifest.DerivedSourceEdit(
+                        "../Spec.tla", "NoOverlap", valid.baseSha256(), 1, 1, "x", valid.derivedSha256(), 2),
+                new CorpusManifest.DerivedSourceEdit(
+                        "Spec.tla", "bad operator", valid.baseSha256(), 1, 1, "x", valid.derivedSha256(), 2),
+                new CorpusManifest.DerivedSourceEdit(
+                        "Spec.tla", "NoOverlap", "bad", 1, 1, "x", valid.derivedSha256(), 2),
+                new CorpusManifest.DerivedSourceEdit(
+                        "Spec.tla", "NoOverlap", valid.baseSha256(), 1, -1, "x", valid.derivedSha256(), 2),
+                new CorpusManifest.DerivedSourceEdit(
+                        "Spec.tla", "NoOverlap", valid.baseSha256(), 1, 1, "", valid.derivedSha256(), 1),
+                new CorpusManifest.DerivedSourceEdit(
+                        "Spec.tla", "NoOverlap", valid.baseSha256(), 1, 1, "\u0000", valid.derivedSha256(), 2),
+                new CorpusManifest.DerivedSourceEdit(
+                        "Spec.tla", "NoOverlap", valid.baseSha256(), 1, 1, "\u202e", valid.derivedSha256(), 4),
+                new CorpusManifest.DerivedSourceEdit(
+                        "Spec.tla",
+                        "NoOverlap",
+                        valid.baseSha256(),
+                        1,
+                        1,
+                        "x".repeat(4097),
+                        valid.derivedSha256(),
+                        4098),
+                new CorpusManifest.DerivedSourceEdit(
+                        "Spec.tla", "NoOverlap", valid.baseSha256(), 1, 1, "x", valid.derivedSha256(), 3),
+                new CorpusManifest.DerivedSourceEdit(
+                        "Spec.tla",
+                        "NoOverlap",
+                        valid.baseSha256(),
+                        Long.MAX_VALUE,
+                        Long.MAX_VALUE,
+                        "x",
+                        valid.derivedSha256(),
+                        Long.MAX_VALUE));
+
+        for (CorpusManifest.DerivedSourceEdit edit : invalid) {
+            assertThrows(IllegalArgumentException.class, () -> SandboxInput.census(List.of(edit)));
+        }
+    }
+
     private static CorpusManifest.DerivedSourceEdit edit(String insertedText) {
         return new CorpusManifest.DerivedSourceEdit(
                 "Spec.tla",
+                "NoOverlap",
                 "0".repeat(64),
                 1,
                 1,

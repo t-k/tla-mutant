@@ -1,9 +1,11 @@
 package dev.tlamutant.corpus;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import dev.tlamutant.config.ExecutionPolicy;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -11,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.HexFormat;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -91,6 +94,40 @@ final class CorpusFetcherTest {
                 CorpusFetcher.isPublicGlobalAddress(java.net.InetAddress.getByName("8.8.8.8")));
         org.junit.jupiter.api.Assertions.assertTrue(
                 CorpusFetcher.isPublicGlobalAddress(java.net.InetAddress.getByName("2606:4700:4700::1111")));
+    }
+
+    @Test
+    void acceptsTheVersionThreeV9ProvenanceFromAPrepopulatedVerifiedCacheWithoutNetwork() throws Exception {
+        byte[] model = "m".getBytes(StandardCharsets.UTF_8);
+        byte[] config = "c".getBytes(StandardCharsets.UTF_8);
+        CorpusManifest.Entry entry = new CorpusManifest.Entry(
+                "sample",
+                "domain",
+                "Spec.tla",
+                "Spec.cfg",
+                List.of(
+                        new CorpusManifest.SourceFile("Spec.tla", "Spec.tla", sha256(model), model.length),
+                        new CorpusManifest.SourceFile("Spec.cfg", "Spec.cfg", sha256(config), config.length)),
+                List.of("TypeOK"),
+                List.of(),
+                List.of("NoOverlap"),
+                List.of(new CorpusManifest.DerivedSourceEdit(
+                        "Spec.tla", "NoOverlap", sha256(model), 1, 1, "x", "2".repeat(64), 2)),
+                new ExecutionPolicy.Limits(1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+                null);
+        CorpusManifest v9 = new CorpusManifest(
+                3, "gcd-stratified-v9", "https://github.com/tlaplus/Examples", "a".repeat(40), "MIT", List.of(entry));
+        CorpusManifest wrongVersion =
+                new CorpusManifest(3, "gcd-stratified-v8", v9.repository(), v9.commit(), v9.license(), v9.entries());
+        Path cached = temporaryDirectory.resolve(v9.commit()).resolve(entry.id());
+        Files.createDirectories(cached);
+        Files.write(cached.resolve("Spec.tla"), model);
+        Files.write(cached.resolve("Spec.cfg"), config);
+
+        Path fetched =
+                assertDoesNotThrow(() -> new CorpusFetcher().fetch(v9, entry, entry.limits(), temporaryDirectory));
+        assertArrayEquals(model, Files.readAllBytes(fetched.resolve("Spec.tla")));
+        assertThrows(IllegalArgumentException.class, () -> CorpusFetcher.validateManifest(wrongVersion));
     }
 
     private static String sha256(byte[] content) {

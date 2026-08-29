@@ -156,8 +156,13 @@ public record GcdStratifiedReport(
                 candidateSpecifications.size() >= 2 && candidateDomains.size() >= 2 && candidateClusters.size() >= 2
                         ? "human-review-eligible"
                         : "insufficient-witness-bearing-gcd-candidates";
-        int schemaVersion =
-                gcdOutcomes.stream().anyMatch(outcome -> outcome.result().attribution() != null) ? 4 : 3;
+        int schemaVersion = experiment.entries().stream()
+                                .map(CorpusEntryResult::report)
+                                .filter(Objects::nonNull)
+                                .anyMatch(report -> report.schemaVersion() >= 2)
+                        || "gcd-stratified-v9".equals(manifest.profile())
+                ? 4
+                : 3;
         return new GcdStratifiedReport(
                 schemaVersion,
                 manifest.profile(),

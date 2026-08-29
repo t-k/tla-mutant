@@ -46,8 +46,7 @@ public final class StratifiedManifestValidator {
         Set<String> ids = new HashSet<>();
         Set<String> domains = new HashSet<>();
         Set<String> enrichedStrata = new HashSet<>();
-        int adoptedEntries = 0;
-        int editedEntries = 0;
+        CorpusManifest.Entry interventionEntry = null;
         for (CorpusManifest.Entry entry : manifest.entries()) {
             ManifestValidator.validateEntry(entry, globalLimits);
             if (!v9
@@ -55,8 +54,24 @@ public final class StratifiedManifestValidator {
                             || !entry.derivedSourceEdits().isEmpty())) {
                 throw new IllegalArgumentException("Derived edits and adopted targets require the v9 profile");
             }
-            adoptedEntries += entry.adoptedTargetInvariants().isEmpty() ? 0 : 1;
-            editedEntries += entry.derivedSourceEdits().isEmpty() ? 0 : 1;
+            if (v9
+                    && (!entry.adoptedTargetInvariants().isEmpty()
+                            || !entry.derivedSourceEdits().isEmpty())) {
+                if (interventionEntry != null
+                        || entry.adoptedTargetInvariants().size() != 1
+                        || entry.derivedSourceEdits().size() != 1) {
+                    throw new IllegalArgumentException("The v9 intervention requires one adopted invariant and edit");
+                }
+                CorpusManifest.DerivedSourceEdit edit =
+                        entry.derivedSourceEdits().getFirst();
+                if (!edit.path().equals(entry.rootModule())
+                        || !edit.definedOperator()
+                                .equals(entry.adoptedTargetInvariants().getFirst())) {
+                    throw new IllegalArgumentException(
+                            "The v9 edit must define its adopted invariant in the root module");
+                }
+                interventionEntry = entry;
+            }
             if (!ids.add(entry.id())) {
                 throw new IllegalArgumentException("Corpus entry IDs must be unique");
             }
@@ -89,7 +104,7 @@ public final class StratifiedManifestValidator {
         if (enrichedStrata.size() < 3) {
             throw new IllegalArgumentException("The enriched cohort must cover at least three strata");
         }
-        if (v9 && (adoptedEntries != 1 || editedEntries != 1)) {
+        if (v9 && interventionEntry == null) {
             throw new IllegalArgumentException("The v9 intervention requires exactly one adopted and edited entry");
         }
         return manifest;
@@ -97,6 +112,10 @@ public final class StratifiedManifestValidator {
 
     static boolean isApprovedProfile(String profile) {
         return PROFILES.contains(profile);
+    }
+
+    static boolean isLegacyApprovedProfile(String profile) {
+        return isApprovedProfile(profile) && !"gcd-stratified-v9".equals(profile);
     }
 
     private static void requireIdentifier(String value, String name) {

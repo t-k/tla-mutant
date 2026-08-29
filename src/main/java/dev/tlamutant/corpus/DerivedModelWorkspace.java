@@ -14,13 +14,11 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Set;
 
 public final class DerivedModelWorkspace implements AutoCloseable {
-    private static final int MAX_INSERTED_BYTES = 4096;
     private final Path root;
 
     private DerivedModelWorkspace(Path root) {
@@ -38,8 +36,7 @@ public final class DerivedModelWorkspace implements AutoCloseable {
         if (Files.exists(workspace, LinkOption.NOFOLLOW_LINKS)) {
             throw new IllegalArgumentException("Derived model workspace must not already exist");
         }
-        List<CorpusManifest.DerivedSourceEdit> requested = List.copyOf(edits);
-        validateEditMetadata(requested);
+        List<CorpusManifest.DerivedSourceEdit> requested = DerivedSourceEditValidator.validateList(edits);
         try {
             Files.createDirectory(workspace);
             setPermissions(workspace, directoryPermissions());
@@ -61,52 +58,6 @@ public final class DerivedModelWorkspace implements AutoCloseable {
     @Override
     public void close() throws IOException {
         deleteTree(root);
-    }
-
-    private static void validateEditMetadata(List<CorpusManifest.DerivedSourceEdit> edits) {
-        if (edits.size() > 1) {
-            throw new IllegalArgumentException("At most one derived source edit is allowed");
-        }
-        Set<String> paths = new HashSet<>();
-        for (CorpusManifest.DerivedSourceEdit edit : edits) {
-            if (edit == null) {
-                throw new IllegalArgumentException("Derived source edit is required");
-            }
-            String path = SafeRelativePath.parse(edit.path()).value();
-            byte[] inserted = edit.insertedText() == null
-                    ? new byte[0]
-                    : edit.insertedText().getBytes(StandardCharsets.UTF_8);
-            long expectedSize;
-            try {
-                expectedSize = Math.addExact(edit.baseSizeBytes(), inserted.length);
-            } catch (ArithmeticException exception) {
-                throw new IllegalArgumentException("Derived source size overflowed", exception);
-            }
-            if (!path.endsWith(".tla")
-                    || !paths.add(path)
-                    || edit.baseSizeBytes() <= 0
-                    || edit.insertionOffset() < 0
-                    || edit.insertionOffset() > edit.baseSizeBytes()
-                    || inserted.length == 0
-                    || inserted.length > MAX_INSERTED_BYTES
-                    || edit.insertedText().codePoints().anyMatch(DerivedModelWorkspace::isForbiddenInsertedCodePoint)
-                    || edit.baseSha256() == null
-                    || !edit.baseSha256().matches("[0-9a-f]{64}")
-                    || edit.derivedSha256() == null
-                    || !edit.derivedSha256().matches("[0-9a-f]{64}")
-                    || edit.derivedSizeBytes() != expectedSize) {
-                throw new IllegalArgumentException("Derived source edit metadata is invalid");
-            }
-        }
-    }
-
-    private static boolean isForbiddenInsertedCodePoint(int codePoint) {
-        return (Character.isISOControl(codePoint) && codePoint != '\n' && codePoint != '\r' && codePoint != '\t')
-                || codePoint == 0x061C
-                || codePoint == 0x200E
-                || codePoint == 0x200F
-                || (codePoint >= 0x202A && codePoint <= 0x202E)
-                || (codePoint >= 0x2066 && codePoint <= 0x2069);
     }
 
     private static void copyTree(Path input, Path workspace) throws IOException {

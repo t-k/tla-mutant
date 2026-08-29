@@ -72,31 +72,31 @@ Constraints:
 
 | ID | Type | Required behavior or risk | Risk | Minimum checks | Preferred verification | Status |
 |---|---|---|---|---|---|---|
-| O01 | compatibility | Frozen v8 artifacts remain byte-identical and readable. | Critical | 2 | git diff assertion + historical JSON test | pending |
-| O02 | security | Validate all edit metadata before sandbox execution. | Critical | 2 | validation table + sandbox rejection | pending |
-| O03 | integrity | Verify base and derived bytes and keep source inputs immutable. | Critical | 2 | byte-level unit test + sandbox inspection | pending |
-| O04 | security | Transport edits without shell interpretation or host-side TLA parsing. | Critical | 2 | command test + sandbox integration | pending |
-| O05 | invariant | Preserve separate type, legacy, and adopted lists end to end. | Critical | 2 | command/CLI test + real TLC fixture | pending |
-| O06 | classification | Attribute target, type, and unresolved kills with exclusive rules. | Critical | 2 | reducer matrix + real TLC fixture | pending |
-| O07 | efficiency | Do not rerun non-kills and omit nonexistent redundant oracle runs. | High | 2 | unit branch test + output-file evidence | pending |
-| O08 | compatibility | Read/render v8 unattributed results without reclassification. | High | 2 | committed JSON read + Markdown test | pending |
-| O09 | reporting | New and historical buckets conserve all denominators. | Critical | 2 | pure summary test + v9 report validation | pending |
+| O01 | compatibility | Frozen v8 artifacts remain byte-identical and readable. | Critical | 2 | git diff assertion + historical JSON test | verified |
+| O02 | security | Validate all edit metadata before sandbox execution. | Critical | 2 | validation table + sandbox rejection | verified |
+| O03 | integrity | Verify base and derived bytes and keep source inputs immutable. | Critical | 2 | byte-level unit test + sandbox inspection | verified |
+| O04 | security | Transport edits without shell interpretation or host-side TLA parsing. | Critical | 2 | command test + sandbox integration | verified |
+| O05 | invariant | Preserve separate type, legacy, and adopted lists end to end. | Critical | 2 | command/CLI test + real TLC fixture | verified |
+| O06 | classification | Attribute target, type, and unresolved kills with exclusive rules. | Critical | 2 | reducer matrix + real TLC fixture | verified |
+| O07 | efficiency | Do not rerun non-kills and omit nonexistent redundant oracle runs. | High | 2 | unit branch test + output-file evidence | verified |
+| O08 | compatibility | Read/render v8 unattributed results without reclassification. | High | 2 | committed JSON read + Markdown test | verified |
+| O09 | reporting | New and historical buckets conserve all denominators. | Critical | 2 | pure summary test + v9 report validation | verified locally; final v9 artifact pending |
 | O10 | experiment | Derived SimpleAllocator baseline passes all full invariants. | Critical | 1 | pinned v9 run | pending |
 | O11 | experiment | Request GCD mutant is killed only after the adopted invariant is enabled. | Critical | 2 | legacy/full comparison + v9 result | pending |
 | O12 | experiment | At least one SimpleAllocator kill is classified type-only. | High | 1 | v9 result | pending |
 | O13 | experiment | Return/non-kill behavior is not perturbed by attribution. | High | 1 | v9 result | pending |
-| O14 | reproducibility | Application and census bytes are independently reproducible before mutation. | Critical | 2 | double clean build + double census | pending |
-| O15 | lifecycle | Every started container and Gradle/server process is stopped. | Critical | 2 | runner tests + post-task process inspection | pending |
+| O14 | reproducibility | Application and census bytes are independently reproducible before mutation. | Critical | 2 | double clean build + double census | application verified; census pending |
+| O15 | lifecycle | Every started container and Gradle/server process is stopped. | Critical | 2 | runner tests + post-task process inspection | sandbox cleanup verified; final audit pending |
 | O16 | validity | Report the intervention's circularity and do not claim out-of-sample validation. | High | 1 | final report review | pending |
 
 ## Coverage Ledger
 
 | Obligation | Primary artifact | Secondary artifact | Overlap | Current status | Debt or note |
 |---|---|---|---|---|---|
-| O01 | historical report compatibility test | frozen-path diff check | intentional_overlap | pending | v8 is the comparison boundary. |
-| O02-O04 | edit validator/applier tests | Podman command and sandbox tests | layer_overlap | pending | Security review Must Fix findings block execution. |
-| O05-O07 | attribution reducer tests | real TLC attribution fixture | layer_overlap | pending | Exact invocation counts must be observable without mocks. |
-| O08-O09 | report unit tests | committed v8/v9 artifact validation | layer_overlap | pending | Keep the old bucket explicit. |
+| O01 | historical report compatibility test | frozen-path digest assertions | intentional_overlap | verified | v8 is the comparison boundary. |
+| O02-O04 | edit validator/applier tests | Podman command and sandbox tests | layer_overlap | verified | Security review Must Fix findings are resolved. |
+| O05-O07 | attribution reducer tests | real TLC attribution fixture | layer_overlap | verified | Invocation counts and generated files are observed without mocks. |
+| O08-O09 | report unit tests | committed v8/v9 artifact validation | layer_overlap | partial | v8 compatibility and summary conservation pass; committed v9 artifact remains pending. |
 | O10-O13 | focused SimpleAllocator closure check | full v9 corpus result | intentional_overlap | pending | This is confirmatory post-selection evidence. |
 | O14 | reproducible JAR and census commands | frozen identity assertions | layer_overlap | pending | Mutation cannot start before completion. |
 | O15 | process lifecycle tests | final PID/container audit | layer_overlap | pending | No broad process kills. |

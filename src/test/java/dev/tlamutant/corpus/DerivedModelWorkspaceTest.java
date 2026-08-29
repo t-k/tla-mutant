@@ -50,9 +50,23 @@ final class DerivedModelWorkspaceTest {
         byte[] expected = "axbc".getBytes(StandardCharsets.UTF_8);
         CorpusManifest.DerivedSourceEdit valid = edit(original, 1, "x", expected);
         CorpusManifest.DerivedSourceEdit wrongBase = new CorpusManifest.DerivedSourceEdit(
-                valid.path(), "0".repeat(64), valid.baseSizeBytes(), 1, "x", valid.derivedSha256(), 4);
+                valid.path(),
+                valid.definedOperator(),
+                "0".repeat(64),
+                valid.baseSizeBytes(),
+                1,
+                "x",
+                valid.derivedSha256(),
+                4);
         CorpusManifest.DerivedSourceEdit wrongDerived = new CorpusManifest.DerivedSourceEdit(
-                valid.path(), valid.baseSha256(), valid.baseSizeBytes(), 1, "x", "1".repeat(64), 4);
+                valid.path(),
+                valid.definedOperator(),
+                valid.baseSha256(),
+                valid.baseSizeBytes(),
+                1,
+                "x",
+                "1".repeat(64),
+                4);
 
         Path baseWorkspace = temporaryDirectory.resolve("base-workspace");
         Path derivedWorkspace = temporaryDirectory.resolve("derived-workspace");
@@ -114,7 +128,14 @@ final class DerivedModelWorkspaceTest {
     private static CorpusManifest.DerivedSourceEdit edit(
             byte[] original, int offset, String insertedText, byte[] expected) throws Exception {
         return new CorpusManifest.DerivedSourceEdit(
-                "Spec.tla", digest(original), original.length, offset, insertedText, digest(expected), expected.length);
+                "Spec.tla",
+                "NoOverlap",
+                digest(original),
+                original.length,
+                offset,
+                insertedText,
+                digest(expected),
+                expected.length);
     }
 
     private static byte[] insert(byte[] original, int offset, byte[] inserted) {

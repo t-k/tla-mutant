@@ -142,6 +142,7 @@ final class StratifiedManifestIntegrationTest {
         assertEquals(1, simple.derivedSourceEdits().size());
         CorpusManifest.DerivedSourceEdit edit = simple.derivedSourceEdits().getFirst();
         assertEquals("SimpleAllocator.tla", edit.path());
+        assertEquals("NoRequestAllocationOverlap", edit.definedOperator());
         assertEquals("39180889fb44ea7cbba47e97c2fa727a54c43f8f7ff983caf61d67eb0a2db0e3", edit.baseSha256());
         assertEquals(4494, edit.baseSizeBytes());
         assertEquals(2999, edit.insertionOffset());
@@ -151,5 +152,6 @@ final class StratifiedManifestIntegrationTest {
         assertEquals("020b1ee89ca9c54925f46b080a7421bbe1497d4a60d5cb0df4d849dc783381d3", edit.derivedSha256());
         assertEquals(4574, edit.derivedSizeBytes());
         assertSame(v9, StratifiedManifestValidator.validate(v9, GLOBAL));
+        CorpusFetcher.validateManifest(v9);
     }
 }

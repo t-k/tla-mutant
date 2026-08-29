@@ -71,7 +71,7 @@ final class StratifiedManifestValidatorTest {
                 selected.targetInvariants(),
                 List.of("NoOverlap"),
                 List.of(new CorpusManifest.DerivedSourceEdit(
-                        "Spec.tla", "0".repeat(64), 1, 1, "\nNoOverlap == TRUE\n", "1".repeat(64), 20)),
+                        "Spec.tla", "NoOverlap", "0".repeat(64), 1, 1, "\nNoOverlap == TRUE\n", "1".repeat(64), 20)),
                 selected.limits(),
                 selected.selection());
         List<CorpusManifest.Entry> entries = new ArrayList<>(original.entries());
@@ -115,6 +115,45 @@ final class StratifiedManifestValidatorTest {
                 2, "gcd-stratified-v8", original.repository(), original.commit(), original.license(), entries);
 
         assertThrows(IllegalArgumentException.class, () -> StratifiedManifestValidator.validate(legacy, GLOBAL));
+    }
+
+    @Test
+    void requiresOneAdoptedInvariantAndOneRootModuleEditOnTheSameV9Entry() {
+        CorpusManifest original = manifest(5, 10);
+        CorpusManifest.Entry adoptedOnly = withV9Fields(original.entries().get(5), List.of("NoOverlap"), List.of());
+        CorpusManifest.Entry editedOnly =
+                withV9Fields(original.entries().get(6), List.of(), List.of(validEdit("Spec.tla")));
+        List<CorpusManifest.Entry> splitEntries = new ArrayList<>(original.entries());
+        splitEntries.set(5, adoptedOnly);
+        splitEntries.set(6, editedOnly);
+        CorpusManifest split = v9(splitEntries);
+        CorpusManifest multipleNames = v9(replace(
+                original.entries(),
+                5,
+                withV9Fields(
+                        original.entries().get(5),
+                        List.of("NoOverlap", "AnotherInvariant"),
+                        List.of(validEdit("Spec.tla")))));
+        CorpusManifest nonRootEdit = v9(replace(
+                original.entries(),
+                5,
+                withEntryFilesAndV9Fields(
+                        original.entries().get(5),
+                        List.of(file("Spec.tla"), file("Helper.tla"), file("Spec.cfg")),
+                        List.of("NoOverlap"),
+                        List.of(validEdit("Helper.tla")))));
+        CorpusManifest.DerivedSourceEdit mismatched = new CorpusManifest.DerivedSourceEdit(
+                "Spec.tla", "DifferentOperator", "0".repeat(64), 1, 1, "x", "1".repeat(64), 2);
+        CorpusManifest mismatchedOperator = v9(replace(
+                original.entries(),
+                5,
+                withV9Fields(original.entries().get(5), List.of("NoOverlap"), List.of(mismatched))));
+
+        assertThrows(IllegalArgumentException.class, () -> StratifiedManifestValidator.validate(split, GLOBAL));
+        assertThrows(IllegalArgumentException.class, () -> StratifiedManifestValidator.validate(multipleNames, GLOBAL));
+        assertThrows(IllegalArgumentException.class, () -> StratifiedManifestValidator.validate(nonRootEdit, GLOBAL));
+        assertThrows(
+                IllegalArgumentException.class, () -> StratifiedManifestValidator.validate(mismatchedOperator, GLOBAL));
     }
 
     @Test
@@ -193,6 +232,48 @@ final class StratifiedManifestValidatorTest {
         List<CorpusManifest.Entry> entries = new ArrayList<>(manifest(5, 10).entries());
         entries.set(index, replacement);
         return withSelections(entries);
+    }
+
+    private static List<CorpusManifest.Entry> replace(
+            List<CorpusManifest.Entry> original, int index, CorpusManifest.Entry replacement) {
+        List<CorpusManifest.Entry> entries = new ArrayList<>(original);
+        entries.set(index, replacement);
+        return entries;
+    }
+
+    private static CorpusManifest v9(List<CorpusManifest.Entry> entries) {
+        return new CorpusManifest(
+                3, "gcd-stratified-v9", "https://github.com/tlaplus/Examples", "a".repeat(40), "MIT", entries);
+    }
+
+    private static CorpusManifest.Entry withV9Fields(
+            CorpusManifest.Entry entry,
+            List<String> adoptedTargetInvariants,
+            List<CorpusManifest.DerivedSourceEdit> edits) {
+        return withEntryFilesAndV9Fields(entry, entry.files(), adoptedTargetInvariants, edits);
+    }
+
+    private static CorpusManifest.Entry withEntryFilesAndV9Fields(
+            CorpusManifest.Entry entry,
+            List<CorpusManifest.SourceFile> files,
+            List<String> adoptedTargetInvariants,
+            List<CorpusManifest.DerivedSourceEdit> edits) {
+        return new CorpusManifest.Entry(
+                entry.id(),
+                entry.domain(),
+                entry.rootModule(),
+                entry.config(),
+                files,
+                entry.typeInvariants(),
+                entry.targetInvariants(),
+                adoptedTargetInvariants,
+                edits,
+                entry.limits(),
+                entry.selection());
+    }
+
+    private static CorpusManifest.DerivedSourceEdit validEdit(String path) {
+        return new CorpusManifest.DerivedSourceEdit(path, "NoOverlap", "0".repeat(64), 1, 1, "x", "1".repeat(64), 2);
     }
 
     private static CorpusManifest replaceSelection(int index, CorpusManifest.Selection selection) {

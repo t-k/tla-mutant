@@ -54,6 +54,7 @@ public record CorpusManifest(
 
     public record DerivedSourceEdit(
             String path,
+            String definedOperator,
             String baseSha256,
             long baseSizeBytes,
             long insertionOffset,

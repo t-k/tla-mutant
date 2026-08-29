@@ -35,12 +35,13 @@ The upstream SimpleAllocator source does not define the adopted predicate. v9 th
 Each derived edit records:
 
 - the existing manifest-listed relative source path;
+- the operator name introduced for the adopted target invariant;
 - the verified base byte size and SHA-256 digest;
 - the exact byte insertion offset;
 - the inserted UTF-8 text;
 - the expected derived byte size and SHA-256 digest.
 
-The edit is applied only after the upstream base file has passed its existing size and digest checks. The insertion offset must be on a UTF-8 boundary, the inserted text must satisfy a small byte limit and contain no NUL or disallowed control characters, and the derived bytes must match the declared size and digest. Any mismatch fails closed as an integrity rejection.
+The edit is applied only after the upstream base file has passed its existing size and digest checks. The insertion offset must be on a UTF-8 boundary, the inserted text must satisfy a small byte limit and contain no NUL or disallowed control characters, and the derived bytes must match the declared size and digest. The v9 manifest must define exactly one adopted target invariant and exactly one edit on the same entry; the edit path must be that entry's root module and `definedOperator` must equal the adopted invariant name. Any mismatch fails closed as an integrity rejection.
 
 The host never parses or executes the public TLA+ source. It copies the verified input into the existing read-only snapshot, records the edit metadata in the bounded command, and applies the edit only to the private mutable model copy inside the Podman sandbox. SANY validates the derived module before baseline execution. The original cache and mounted input remain unchanged.
 
