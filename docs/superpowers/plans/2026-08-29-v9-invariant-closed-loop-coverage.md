@@ -86,7 +86,7 @@ Constraints:
 | O12 | experiment | At least one SimpleAllocator kill is classified type-only. | High | 1 | v9 result | not met; Allocate is a legacy-target kill |
 | O13 | experiment | Return/non-kill behavior is not perturbed by attribution. | High | 1 | v9 result | verified |
 | O14 | reproducibility | Application and census bytes are independently reproducible before mutation. | Critical | 2 | double clean build + double census | verified |
-| O15 | lifecycle | Every started container and Gradle/server process is stopped. | Critical | 2 | runner tests + post-task process inspection | sandbox cleanup verified; final audit pending |
+| O15 | lifecycle | Every started container and Gradle/server process is stopped. | Critical | 2 | runner tests + post-task process inspection | verified |
 | O16 | validity | Report the intervention's circularity and do not claim out-of-sample validation. | High | 1 | final report review | verified |
 
 ## Coverage Ledger
@@ -99,7 +99,7 @@ Constraints:
 | O08-O09 | report unit tests | committed v8/v9 artifact validation | layer_overlap | verified | The historical bucket remains explicit and v9 totals conserve 51 sites. |
 | O10-O13 | focused SimpleAllocator closure check | full v9 corpus result | intentional_overlap | partial | Primary Request closure and Return checks pass; the preregistered SimpleAllocator type-only expectation does not. |
 | O14 | reproducible JAR and census commands | frozen identity assertions | layer_overlap | verified | Two clean JAR builds and two byte-identical census runs completed before mutation. |
-| O15 | process lifecycle tests | final PID/container audit | layer_overlap | pending | No broad process kills. |
+| O15 | process lifecycle tests | final PID/container audit | layer_overlap | verified | No labeled containers or volumes remained; Podman machine and Gradle daemons were stopped explicitly. |
 | O16 | design/report wording review | final human-facing summary | layer_overlap | verified | Generalization remains future work. |
 
 ## Test Scenarios
