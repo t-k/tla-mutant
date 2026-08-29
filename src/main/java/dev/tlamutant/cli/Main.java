@@ -22,6 +22,8 @@ import dev.tlamutant.prospective.ProspectiveCensusReport;
 import dev.tlamutant.prospective.ProspectiveCensusValidator;
 import dev.tlamutant.prospective.ProspectiveDiscoveryReport;
 import dev.tlamutant.prospective.ProspectivePreflight;
+import dev.tlamutant.prospective.ProspectiveReceipt;
+import dev.tlamutant.prospective.ProspectiveReviewDossier;
 import dev.tlamutant.prospective.ProspectiveSemanticComparator;
 import dev.tlamutant.report.AtomicJsonWriter;
 import dev.tlamutant.report.AtomicTextWriter;
@@ -58,6 +60,7 @@ import picocli.CommandLine;
             Main.ProspectiveCensusCommand.class,
             Main.ProspectiveExperimentCommand.class,
             Main.CompareProspectiveReportsCommand.class,
+            Main.ProspectiveReviewDossierCommand.class,
             Main.CorpusExperimentCommand.class,
             Main.ValidateManifestCommand.class
         })
@@ -413,6 +416,71 @@ public final class Main implements Runnable {
     }
 
     @CommandLine.Command(
+            name = "prospective-review-dossier",
+            mixinStandardHelpOptions = true,
+            description = "Derive the complete receipt-bound set of prospective review candidates.")
+    static final class ProspectiveReviewDossierCommand implements Callable<Integer> {
+        @CommandLine.Option(names = "--receipt", required = true)
+        Path receiptPath;
+
+        @CommandLine.Option(names = "--protocol", required = true)
+        Path protocolPath;
+
+        @CommandLine.Option(names = "--manifest", required = true)
+        Path manifestPath;
+
+        @CommandLine.Option(names = "--census-report", required = true)
+        Path censusPath;
+
+        @CommandLine.Option(names = "--discovery-report", required = true)
+        Path discoveryPath;
+
+        @CommandLine.Option(names = "--output", required = true)
+        Path outputPath;
+
+        @Override
+        public Integer call() throws Exception {
+            ObjectMapper mapper = new ObjectMapper();
+            Path output = outputPath.toAbsolutePath().normalize();
+            if (Files.exists(output)) {
+                throw new IllegalArgumentException("Prospective canonical output already exists");
+            }
+            List<Path> inputs = List.of(receiptPath, protocolPath, manifestPath, censusPath, discoveryPath).stream()
+                    .map(path -> path.toAbsolutePath().normalize())
+                    .toList();
+            if (inputs.stream().distinct().count() != inputs.size() || inputs.contains(output)) {
+                throw new IllegalArgumentException("Prospective dossier paths must be disjoint");
+            }
+            BoundedFileSnapshot receiptSnapshot = BoundedFileSnapshot.read(receiptPath, MAXIMUM_POLICY_BYTES);
+            BoundedFileSnapshot protocolSnapshot = BoundedFileSnapshot.read(protocolPath, MAXIMUM_POLICY_BYTES * 2);
+            BoundedFileSnapshot manifestSnapshot = BoundedFileSnapshot.read(manifestPath, MAXIMUM_MANIFEST_BYTES);
+            BoundedFileSnapshot censusSnapshot = BoundedFileSnapshot.read(censusPath, MAXIMUM_PROSPECTIVE_REPORT_BYTES);
+            BoundedFileSnapshot discoverySnapshot =
+                    BoundedFileSnapshot.read(discoveryPath, MAXIMUM_PROSPECTIVE_REPORT_BYTES);
+            ProspectiveReceipt receipt = receiptSnapshot.parse(mapper, ProspectiveReceipt.class);
+            ProspectiveDiscoveryReport discovery = discoverySnapshot.parse(mapper, ProspectiveDiscoveryReport.class);
+            CorpusManifest manifest = manifestSnapshot.parse(mapper, CorpusManifest.class);
+            if (!receipt.phase().equals("experiment")
+                    || !artifact(receiptSnapshot).equals(discovery.experimentReceipt())
+                    || !receiptMatches(receipt.artifact("protocol"), protocolSnapshot)
+                    || !receiptMatches(receipt.artifact("manifest"), manifestSnapshot)
+                    || !receiptMatches(receipt.artifact("census"), censusSnapshot)
+                    || !artifact(censusSnapshot).equals(discovery.censusArtifact())) {
+                throw new IllegalArgumentException("Prospective dossier inputs do not match frozen discovery");
+            }
+            ProspectiveReviewDossier dossier = ProspectiveReviewDossier.derive(
+                    manifest,
+                    discovery,
+                    artifact(protocolSnapshot),
+                    artifact(manifestSnapshot),
+                    artifact(discoverySnapshot));
+            new FrozenJsonWriter().writeNew(output, dossier);
+            System.out.println(mapper.writeValueAsString(dossier));
+            return 0;
+        }
+    }
+
+    @CommandLine.Command(
             name = "gcd-stratified-experiment",
             mixinStandardHelpOptions = true,
             description = "Run the preregistered corpus only after validating its frozen GCD census.")
@@ -508,6 +576,10 @@ public final class Main implements Runnable {
 
     private static CensusInputIdentity.Artifact artifact(BoundedFileSnapshot snapshot) {
         return new CensusInputIdentity.Artifact(snapshot.sha256(), snapshot.sizeBytes());
+    }
+
+    private static boolean receiptMatches(ProspectiveReceipt.Artifact expected, BoundedFileSnapshot actual) {
+        return expected.sha256().equals(actual.sha256()) && expected.sizeBytes() == actual.sizeBytes();
     }
 
     private static Path applicationJar() throws Exception {
