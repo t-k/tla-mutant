@@ -36,4 +36,12 @@ public record InvariantOracleSets(
                 .flatMap(List::stream)
                 .toList();
     }
+
+    public boolean needsTypeOnlyRerun() {
+        return !typeInvariants.isEmpty() && !full().equals(typeInvariants);
+    }
+
+    public boolean needsLegacyRerun() {
+        return !adoptedTargetInvariants.isEmpty() && !legacyTargetInvariants.isEmpty();
+    }
 }

@@ -44,7 +44,7 @@ public final class ExperimentRunner {
             String configFile,
             Path resultDirectory,
             List<String> stateInvariants) {
-        return runInternal(modelDirectory, moduleFile, configFile, resultDirectory, stateInvariants);
+        return runInternal(modelDirectory, moduleFile, configFile, resultDirectory, stateInvariants, null);
     }
 
     public ExperimentReport run(
@@ -53,7 +53,7 @@ public final class ExperimentRunner {
             String configFile,
             Path resultDirectory,
             InvariantOracleSets oracleSets) {
-        return runInternal(modelDirectory, moduleFile, configFile, resultDirectory, oracleSets.full());
+        return runInternal(modelDirectory, moduleFile, configFile, resultDirectory, oracleSets.full(), oracleSets);
     }
 
     private ExperimentReport runInternal(
@@ -61,7 +61,8 @@ public final class ExperimentRunner {
             String moduleFile,
             String configFile,
             Path resultDirectory,
-            List<String> stateInvariants) {
+            List<String> stateInvariants,
+            InvariantOracleSets oracleSets) {
         Path modelRoot = modelDirectory.toAbsolutePath().normalize();
         Path results = resultDirectory.toAbsolutePath().normalize();
         try {
@@ -77,11 +78,22 @@ public final class ExperimentRunner {
             throw new IllegalStateException("Cannot read root module", exception);
         }
         Path stateInvariantConfig = results.resolve("state-invariants.cfg");
+        Path typeOnlyConfig = oracleSets != null && oracleSets.needsTypeOnlyRerun()
+                ? results.resolve("type-only-invariants.cfg")
+                : null;
+        Path legacyConfig =
+                oracleSets != null && oracleSets.needsLegacyRerun() ? results.resolve("legacy-invariants.cfg") : null;
         try {
             if (stateInvariants.isEmpty()) {
                 StateInvariantConfig.write(modelRoot.resolve(configFile), stateInvariantConfig);
             } else {
                 StateInvariantConfig.write(modelRoot.resolve(configFile), stateInvariantConfig, stateInvariants);
+            }
+            if (typeOnlyConfig != null) {
+                StateInvariantConfig.write(modelRoot.resolve(configFile), typeOnlyConfig, oracleSets.typeInvariants());
+            }
+            if (legacyConfig != null) {
+                StateInvariantConfig.write(modelRoot.resolve(configFile), legacyConfig, oracleSets.legacy());
             }
         } catch (IOException exception) {
             throw new IllegalStateException("Cannot create the State Invariant-only configuration", exception);
@@ -112,7 +124,17 @@ public final class ExperimentRunner {
         List<MutationResult> mutationResults = new ArrayList<>();
         for (MutationCandidate candidate : candidates) {
             mutationResults.add(runCandidate(
-                    modelRoot, moduleFile, configFile, stateInvariantConfig, results, source, baseline, candidate));
+                    modelRoot,
+                    moduleFile,
+                    configFile,
+                    stateInvariantConfig,
+                    typeOnlyConfig,
+                    legacyConfig,
+                    results,
+                    source,
+                    baseline,
+                    candidate,
+                    oracleSets));
         }
         int evaluated = (int) mutationResults.stream()
                 .filter(result -> result.executionStatus().equals(ExecutionStatus.COMPLETED.name()))
@@ -121,7 +143,14 @@ public final class ExperimentRunner {
                 .filter(result -> result.verdict().equals("state-invariant-gap-candidate"))
                 .count();
         return new ExperimentReport(
-                1, moduleFile, configFile, "proxy-agent-review", candidates.size(), evaluated, gaps, mutationResults);
+                oracleSets == null ? 1 : 2,
+                moduleFile,
+                configFile,
+                "proxy-agent-review",
+                candidates.size(),
+                evaluated,
+                gaps,
+                mutationResults);
     }
 
     private static String bounded(String value) {
@@ -134,10 +163,13 @@ public final class ExperimentRunner {
             String moduleFile,
             String configFile,
             Path stateInvariantConfig,
+            Path typeOnlyConfig,
+            Path legacyConfig,
             Path results,
             SourceDocument source,
             TlcExecution baseline,
-            MutationCandidate candidate) {
+            MutationCandidate candidate,
+            InvariantOracleSets oracleSets) {
         Path workspace = null;
         try {
             workspace = Files.createTempDirectory(results, ".mutant-" + candidate.id() + "-");
@@ -151,7 +183,36 @@ public final class ExperimentRunner {
                     stateInvariantConfig.toString(),
                     results.resolve(candidate.id() + "-states.jsonl"),
                     timeout);
-            return classify(candidate, baseline, mutant);
+            TlcExecution typeOnly = null;
+            TlcExecution legacy = null;
+            StateRelationAnalyzer.Analysis legacyRelation = null;
+            if (oracleSets != null
+                    && mutant.status() == ExecutionStatus.COMPLETED
+                    && mutant.oracle() == OracleOutcome.KILLED_STATE_SAFETY) {
+                if (oracleSets.needsTypeOnlyRerun()) {
+                    typeOnly = tlcRunner.run(
+                            workspace,
+                            moduleFile,
+                            typeOnlyConfig.toString(),
+                            results.resolve(candidate.id() + "-type-only-states.jsonl"),
+                            timeout);
+                }
+                boolean typeAllowsTargetAttribution = typeOnly == null
+                        || (typeOnly.status() == ExecutionStatus.COMPLETED
+                                && typeOnly.oracle() == OracleOutcome.PASSED);
+                if (typeAllowsTargetAttribution && oracleSets.needsLegacyRerun()) {
+                    legacy = tlcRunner.run(
+                            workspace,
+                            moduleFile,
+                            legacyConfig.toString(),
+                            results.resolve(candidate.id() + "-legacy-states.jsonl"),
+                            timeout);
+                    if (legacy.status() == ExecutionStatus.COMPLETED && legacy.oracle() == OracleOutcome.PASSED) {
+                        legacyRelation = relationAnalyzer.analyze(baseline.states(), legacy.states());
+                    }
+                }
+            }
+            return classify(candidate, baseline, mutant, oracleSets, typeOnly, legacy, legacyRelation);
         } catch (IllegalArgumentException | IOException exception) {
             return new MutationResult(
                     candidate.id(),
@@ -172,14 +233,28 @@ public final class ExperimentRunner {
         }
     }
 
-    private MutationResult classify(MutationCandidate candidate, TlcExecution baseline, TlcExecution mutant) {
+    private MutationResult classify(
+            MutationCandidate candidate,
+            TlcExecution baseline,
+            TlcExecution mutant,
+            InvariantOracleSets oracleSets,
+            TlcExecution typeOnly,
+            TlcExecution legacy,
+            StateRelationAnalyzer.Analysis legacyRelation) {
         String relationName = "STATE_UNRESOLVED";
         String verdict;
         String witness = null;
         String diagnosticReason = null;
+        KillAttribution attribution = null;
         if (mutant.status() == ExecutionStatus.COMPLETED && mutant.oracle() == OracleOutcome.KILLED_STATE_SAFETY) {
-            verdict = "state-invariant-kill-unattributed";
-            diagnosticReason = "configured-state-invariant-violation; type attribution not run";
+            if (oracleSets == null) {
+                verdict = "state-invariant-kill-unattributed";
+                diagnosticReason = "configured-state-invariant-violation; type attribution not run";
+            } else {
+                attribution = KillAttribution.classify(oracleSets, typeOnly, legacy, legacyRelation);
+                verdict = attribution.category();
+                diagnosticReason = attribution.diagnosticReason();
+            }
         } else if (mutant.status() == ExecutionStatus.COMPLETED && mutant.oracle() == OracleOutcome.PASSED) {
             StateRelationAnalyzer.Analysis relation = relationAnalyzer.analyze(baseline.states(), mutant.states());
             relationName = relation.relation().name();
@@ -207,7 +282,8 @@ public final class ExperimentRunner {
                 diagnosticReason,
                 baseline.states().size(),
                 mutant.states().size(),
-                witness);
+                witness,
+                attribution);
     }
 
     private static String diagnosticReason(TlcExecution execution) {

@@ -80,4 +80,24 @@ final class StateInvariantConfigTest {
                 () -> StateInvariantConfig.write(
                         source, temporaryDirectory.resolve("Duplicate.cfg"), List.of("TypeOK", "TypeOK")));
     }
+
+    @Test
+    void writesFullTypeOnlyAndLegacyOracleConfigurationsToDistinctNewFiles() throws Exception {
+        Path source = temporaryDirectory.resolve("Oracle.cfg");
+        Files.writeString(source, "INIT Init\nNEXT Next\nINVARIANT Existing\n");
+        Path full = temporaryDirectory.resolve("full.cfg");
+        Path typeOnly = temporaryDirectory.resolve("type-only.cfg");
+        Path legacy = temporaryDirectory.resolve("legacy.cfg");
+
+        StateInvariantConfig.write(source, full, List.of("TypeOK", "LegacyOK", "AdoptedOK"));
+        StateInvariantConfig.write(source, typeOnly, List.of("TypeOK"));
+        StateInvariantConfig.write(source, legacy, List.of("TypeOK", "LegacyOK"));
+
+        assertEquals("INIT Init\nNEXT Next\nINVARIANTS\n  TypeOK\n  LegacyOK\n  AdoptedOK\n", Files.readString(full));
+        assertEquals("INIT Init\nNEXT Next\nINVARIANTS\n  TypeOK\n", Files.readString(typeOnly));
+        assertEquals("INIT Init\nNEXT Next\nINVARIANTS\n  TypeOK\n  LegacyOK\n", Files.readString(legacy));
+        assertThrows(
+                java.nio.file.FileAlreadyExistsException.class,
+                () -> StateInvariantConfig.write(source, full, List.of("TypeOK")));
+    }
 }
