@@ -1,6 +1,8 @@
 package dev.tlamutant.cli;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.tlamutant.census.GcdCensusAnalyzer;
+import dev.tlamutant.census.GcdCensusReport;
 import dev.tlamutant.config.ExecutionPolicy;
 import dev.tlamutant.corpus.CorpusManifest;
 import dev.tlamutant.corpus.ManifestValidator;
@@ -24,6 +26,7 @@ import picocli.CommandLine;
         description = "Experimental TLA+ mutation vertical slice.",
         subcommands = {
             Main.ExperimentCommand.class,
+            Main.CensusCommand.class,
             Main.CorpusExperimentCommand.class,
             Main.ValidateManifestCommand.class
         })
@@ -79,6 +82,28 @@ public final class Main implements Runnable {
     @Override
     public void run() {
         CommandLine.usage(this, System.out);
+    }
+
+    @CommandLine.Command(
+            name = "census",
+            mixinStandardHelpOptions = true,
+            description = "Report outcome-free GCD action structure for one trusted sandbox input.")
+    static final class CensusCommand implements Callable<Integer> {
+        @CommandLine.Option(names = "--model-dir", required = true)
+        Path modelDirectory;
+
+        @CommandLine.Option(names = "--module", required = true)
+        String module;
+
+        @CommandLine.Option(names = "--config", required = true)
+        String config;
+
+        @Override
+        public Integer call() throws Exception {
+            GcdCensusReport report = new GcdCensusAnalyzer().analyze(modelDirectory, module, config);
+            System.out.println(new ObjectMapper().writeValueAsString(report));
+            return 0;
+        }
     }
 
     @CommandLine.Command(

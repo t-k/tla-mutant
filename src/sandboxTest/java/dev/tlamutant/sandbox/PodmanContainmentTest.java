@@ -36,4 +36,31 @@ final class PodmanContainmentTest {
         Process inspection = new ProcessBuilder("podman", "container", "exists", execution.containerId()).start();
         assertEquals(1, inspection.waitFor());
     }
+
+    @Test
+    void runsOutcomeFreeCensusInsideTheSameBoundaryAndRemovesTheContainer() throws Exception {
+        ExecutionPolicy.Limits limits = new ExecutionPolicy.Limits(
+                120, 1_073_741_824, 128, 256, 67_108_864, 4096, 1_048_576, 1_048_576, 1_000_000, 180);
+        PodmanRunner runner = new PodmanRunner(
+                "docker.io/library/eclipse-temurin@sha256:cc0a57a8aa0730b543dc34e56ff6679609532a43f685f459863330d64e97fbb6",
+                Path.of(System.getProperty("tla.mutant.test.appJar")),
+                Path.of(System.getProperty("tla.mutant.test.toolsJar")),
+                limits);
+
+        PodmanExecution execution = runner.runCensus(
+                Path.of("src/testFixtures/resources/tla/census"),
+                "CensusFixture.tla",
+                "CensusFixture.cfg",
+                Duration.ofSeconds(60));
+
+        assertEquals(0, execution.exitCode(), execution.stderr());
+        assertFalse(execution.timedOut());
+        JsonNode report = new ObjectMapper().readTree(execution.stdout());
+        assertTrue(report.required("sites").isArray());
+        assertTrue(report.required("sites").size() > 0);
+        assertFalse(report.toString().contains("verdict"));
+        assertFalse(report.toString().contains("stateRelation"));
+        Process inspection = new ProcessBuilder("podman", "container", "exists", execution.containerId()).start();
+        assertEquals(1, inspection.waitFor());
+    }
 }
