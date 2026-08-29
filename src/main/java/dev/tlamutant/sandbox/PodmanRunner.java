@@ -109,7 +109,7 @@ public final class PodmanRunner {
             }
             containerId = createOutput;
             verifyContainer(containerId, name, runToken);
-            return startAttached(containerId, effectiveTimeout);
+            return startAttached(containerId, scratchVolume, effectiveTimeout);
         } finally {
             boolean restoreInterrupt = Thread.interrupted();
             try {
@@ -251,7 +251,7 @@ public final class PodmanRunner {
         }
     }
 
-    private PodmanExecution startAttached(String containerId, Duration timeout) {
+    private PodmanExecution startAttached(String containerId, String scratchVolume, Duration timeout) {
         ProcessBuilder builder = new ProcessBuilder("podman", "start", "--attach", containerId);
         Process process = null;
         ExecutorService executor = null;
@@ -277,8 +277,9 @@ public final class PodmanRunner {
             Capture err = stderr.get(5, TimeUnit.SECONDS);
             return new PodmanExecution(
                     containerId,
+                    scratchVolume,
                     completed ? process.exitValue() : -1,
-                    out.text().trim(),
+                    out.text(),
                     err.text(),
                     !completed,
                     out.truncated() || err.truncated());

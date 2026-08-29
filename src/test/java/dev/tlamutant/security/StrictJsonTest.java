@@ -17,6 +17,7 @@ final class StrictJsonTest {
                 JsonProcessingException.class,
                 () -> StrictJson.parse(mapper, "{\"value\":1,\"value\":2}", Value.class));
         assertThrows(JsonProcessingException.class, () -> StrictJson.parse(mapper, "{\"value\":1} {}", Value.class));
+        assertThrows(JsonProcessingException.class, () -> StrictJson.parse(mapper, "{\"value\":1}\0", Value.class));
         assertThrows(JsonProcessingException.class, () -> StrictJson.parse(mapper, "{\"value\":null}", Value.class));
     }
 
