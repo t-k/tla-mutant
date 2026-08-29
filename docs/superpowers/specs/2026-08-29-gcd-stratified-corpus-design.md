@@ -88,7 +88,7 @@ The validator requires exactly five controls and ten enriched entries, at least 
 
 ## Sandboxed GCD Census
 
-Public source remains untrusted and must never be parsed on the host. A new sandbox-internal `census` command performs SANY analysis with the existing closed resolver and emits bounded JSON. The outer `gcd-stratified-experiment` command fetches digest-pinned inputs, invokes one census container per entry, validates the census result, and only then starts the mutation experiment.
+Public source remains untrusted and must never be parsed on the host. A new sandbox-internal `census` command performs SANY analysis with the existing closed resolver and emits bounded JSON. The outer `gcd-stratified-census` command fetches digest-pinned inputs, invokes one census container per entry, validates the census result, and persists the outcome-independent artifact. A separate `gcd-stratified-experiment` command requires that persisted census, validates its manifest identity and conformance, and never reruns census after mutation outcomes exist.
 
 For each eligible GCD site the census records:
 
