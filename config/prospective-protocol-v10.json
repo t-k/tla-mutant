@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 1,
+  "profile": "gcd-prospective-v10",
+  "repository": "https://github.com/tlaplus/Examples",
+  "commit": "ed3cc4c35f7001d7cec08a22dcd698dae7570dc3",
+  "standardRiskEntries": 6,
+  "highRiskEntries": 2,
+  "interventionCap": 3,
+  "historicalSet": {
+    "rootPathCount": 19,
+    "rootPathSetSha256": "ed6de70903c046aa736d2f3a89638c0e623354ef17ff41e2148a36ecb1dd57a3",
+    "sourceCount": 80,
+    "sourceSetSha256": "f80703d7ac9157ea33be5f9f7ba63ce244f9f4dac3a3a9f6babd9b0b6d84df63"
+  },
+  "eligibility": {
+    "requiredExecutionStatuses": ["COMPLETED"],
+    "allowedStateRelations": ["STATE_EXPANDING", "STATE_INCOMPARABLE"],
+    "requireWitness": true
+  },
+  "rubric": {
+    "reviewerMode": "user-delegated-agent",
+    "criteria": [
+      "exact-predicate",
+      "witness-falsifies-mutant",
+      "baseline-holds",
+      "actions-preserve",
+      "nonvacuous",
+      "nonredundant",
+      "abstraction-aligned"
+    ],
+    "terminalDecisions": [
+      "ACCEPT",
+      "REJECT_ALLOWED_STATE",
+      "REJECT_REDUNDANT",
+      "REJECT_NON_INDUCTIVE",
+      "CONFIGURATION_FIX",
+      "NEEDS_DOMAIN_OWNER",
+      "NEEDS_STRENGTHENING"
+    ]
+  },
+  "entries": [
+    {
+      "id": "readers-writers",
+      "domain": "concurrency",
+      "riskClass": "standard-risk",
+      "familyCluster": "readers-writers",
+      "rootModule": "ReadersWriters.tla",
+      "config": "APReadersWriters.cfg",
+      "repositoryPaths": [
+        "specifications/ReadersWriters/ReadersWriters.tla",
+        "specifications/ReadersWriters/APReadersWriters.cfg"
+      ],
+      "typeInvariants": [],
+      "legacyTargetInvariants": ["Safety"],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "rationale": "A compact reader-writer synchronization model with a configured mutual-exclusion safety oracle and no historical source overlap."
+    },
+    {
+      "id": "coffee-can",
+      "domain": "state-machine",
+      "riskClass": "standard-risk",
+      "familyCluster": "coffee-can",
+      "rootModule": "CoffeeCan.tla",
+      "config": "APCoffeeCan.cfg",
+      "repositoryPaths": [
+        "specifications/CoffeeCan/CoffeeCan.tla",
+        "specifications/CoffeeCan/APCoffeeCan.cfg"
+      ],
+      "typeInvariants": ["TypeInvariant"],
+      "legacyTargetInvariants": [],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "rationale": "A small finite transition system selected as a type-only control for unseen GCD behavior."
+    },
+    {
+      "id": "ewd840",
+      "domain": "termination-detection",
+      "riskClass": "standard-risk",
+      "familyCluster": "ewd840",
+      "rootModule": "EWD840.tla",
+      "config": "EWD840.cfg",
+      "repositoryPaths": [
+        "specifications/ewd840/EWD840.tla",
+        "specifications/ewd840/EWD840.cfg",
+        "specifications/ewd840/SyncTerminationDetection.tla"
+      ],
+      "typeInvariants": ["TypeOK"],
+      "legacyTargetInvariants": ["TerminationDetection", "Inv"],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "rationale": "A token-based distributed protocol whose configured State Invariants provide type and domain-safety attribution."
+    },
+    {
+      "id": "nbacg-guer01",
+      "domain": "atomic-commit",
+      "riskClass": "standard-risk",
+      "familyCluster": "nonblocking-atomic-commit",
+      "rootModule": "nbacg_guer01.tla",
+      "config": "nbacg_guer01.cfg",
+      "repositoryPaths": [
+        "specifications/nbacg_guer01/nbacg_guer01.tla",
+        "specifications/nbacg_guer01/nbacg_guer01.cfg"
+      ],
+      "typeInvariants": ["TypeOK"],
+      "legacyTargetInvariants": [],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "rationale": "An unseen atomic-commit model selected to test type-only survivor discovery in a guarded distributed protocol."
+    },
+    {
+      "id": "c1cs",
+      "domain": "crash-consensus",
+      "riskClass": "standard-risk",
+      "familyCluster": "one-crash-consensus",
+      "rootModule": "c1cs.tla",
+      "config": "c1cs.cfg",
+      "repositoryPaths": [
+        "specifications/c1cs/c1cs.tla",
+        "specifications/c1cs/c1cs.cfg"
+      ],
+      "typeInvariants": ["TypeOK"],
+      "legacyTargetInvariants": ["Validity", "Agreement", "WeakAgreement", "IndStrengthens"],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "rationale": "A crash-fault consensus model with four configured domain invariants for survivor kill attribution."
+    },
+    {
+      "id": "bosco",
+      "domain": "byzantine-consensus",
+      "riskClass": "standard-risk",
+      "familyCluster": "byzantine-one-step-consensus",
+      "rootModule": "bosco.tla",
+      "config": "bosco.cfg",
+      "repositoryPaths": [
+        "specifications/bosco/bosco.tla",
+        "specifications/bosco/bosco.cfg"
+      ],
+      "typeInvariants": ["TypeOK"],
+      "legacyTargetInvariants": ["Lemma3_0", "Lemma3_1", "Lemma4_0", "Lemma4_1"],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "rationale": "A Byzantine consensus model with four configured decision-consistency invariants and explicit guarded process steps."
+    },
+    {
+      "id": "slush-small",
+      "domain": "probabilistic-consensus",
+      "riskClass": "high-risk-no-replacement",
+      "familyCluster": "slush-protocol",
+      "rootModule": "Slush.tla",
+      "config": "SlushSmall.cfg",
+      "repositoryPaths": [
+        "specifications/SlushProtocol/Slush.tla",
+        "specifications/SlushProtocol/SlushSmall.cfg"
+      ],
+      "typeInvariants": ["TypeInvariant"],
+      "legacyTargetInvariants": [],
+      "limits": {"cpuSeconds": 120, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 1000000, "wallClockSeconds": 180},
+      "rationale": "A larger generated-style protocol retained as a preregistered high-risk observation with no replacement on failure."
+    },
+    {
+      "id": "buffered-random-access-file",
+      "domain": "storage",
+      "riskClass": "high-risk-no-replacement",
+      "familyCluster": "buffered-file",
+      "rootModule": "BufferedRandomAccessFile.tla",
+      "config": "BufferedRandomAccessFile.cfg",
+      "repositoryPaths": [
+        "specifications/braf/BufferedRandomAccessFile.tla",
+        "specifications/braf/BufferedRandomAccessFile.cfg"
+      ],
+      "typeInvariants": ["TypeOK"],
+      "legacyTargetInvariants": ["Inv1", "Inv3", "Inv4", "Inv5"],
+      "limits": {"cpuSeconds": 120, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 1000000, "wallClockSeconds": 180},
+      "rationale": "A multi-module buffered-storage model retained as a preregistered high-risk observation with no replacement on failure."
+    }
+  ]
+}

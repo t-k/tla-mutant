@@ -1,0 +1,651 @@
+{
+  "schemaVersion": 1,
+  "repository": "https://github.com/tlaplus/Examples",
+  "commit": "ed3cc4c35f7001d7cec08a22dcd698dae7570dc3",
+  "rootPathCount": 19,
+  "rootPathSetSha256": "ed6de70903c046aa736d2f3a89638c0e623354ef17ff41e2148a36ecb1dd57a3",
+  "sourceCount": 80,
+  "sourceSetSha256": "f80703d7ac9157ea33be5f9f7ba63ce244f9f4dac3a3a9f6babd9b0b6d84df63",
+  "sources": [
+    {
+      "manifestPath": "corpus/manifest.json",
+      "entryId": "cigarette-smokers",
+      "role": "root",
+      "repositoryPath": "specifications/CigaretteSmokers/CigaretteSmokers.tla",
+      "sha256": "c0dc0ebf3fef3e95be8f7173197f6798f4c2ada5e99aa34fcadc9f71bececa51",
+      "sizeBytes": 2942
+    },
+    {
+      "manifestPath": "corpus/manifest.json",
+      "entryId": "cigarette-smokers",
+      "role": "config",
+      "repositoryPath": "specifications/CigaretteSmokers/CigaretteSmokers.cfg",
+      "sha256": "1d3b7af9618a5ed95a4a27562827259196706c3ec5e2976f3a171938757ac3f8",
+      "sizeBytes": 168
+    },
+    {
+      "manifestPath": "corpus/manifest.json",
+      "entryId": "game-of-life",
+      "role": "root",
+      "repositoryPath": "specifications/GameOfLife/GameOfLife.tla",
+      "sha256": "dcd6d626946faab35ac22ad38a031b0d9bd9bc274d8750340506acc407dccbc6",
+      "sizeBytes": 1265
+    },
+    {
+      "manifestPath": "corpus/manifest.json",
+      "entryId": "game-of-life",
+      "role": "config",
+      "repositoryPath": "specifications/GameOfLife/GameOfLife.cfg",
+      "sha256": "89b3dd94f35fb6cee4b093fa2b9a2e0f44e6cf0d3e43707b82c801690eeb9bf3",
+      "sizeBytes": 52
+    },
+    {
+      "manifestPath": "corpus/manifest.json",
+      "entryId": "chameneos",
+      "role": "root",
+      "repositoryPath": "specifications/Chameneos/Chameneos.tla",
+      "sha256": "0e709f85c9fd764e8410fd57201b5c0900eb5bcb881168709c2376e921b29b32",
+      "sizeBytes": 3691
+    },
+    {
+      "manifestPath": "corpus/manifest.json",
+      "entryId": "chameneos",
+      "role": "config",
+      "repositoryPath": "specifications/Chameneos/Chameneos.cfg",
+      "sha256": "fbfb1dc9697f4161719cd924c6049fe48cded01cca00d58f8b6fe928c466118c",
+      "sizeBytes": 148
+    },
+    {
+      "manifestPath": "corpus/manifest.json",
+      "entryId": "channel",
+      "role": "root",
+      "repositoryPath": "specifications/SpecifyingSystems/AsynchronousInterface/Channel.tla",
+      "sha256": "8b2cbd4533a157ae0760e3117e3c008fb9a31dc3673005fc8b537d3879de1bfc",
+      "sizeBytes": 761
+    },
+    {
+      "manifestPath": "corpus/manifest.json",
+      "entryId": "channel",
+      "role": "config",
+      "repositoryPath": "specifications/SpecifyingSystems/AsynchronousInterface/Channel.cfg",
+      "sha256": "1d5437ab52c06defaa83bd3b860310e94865e2e19b60524d56c4de08f13c068f",
+      "sizeBytes": 1085
+    },
+    {
+      "manifestPath": "corpus/manifest.json",
+      "entryId": "asynchronous-interface",
+      "role": "root",
+      "repositoryPath": "specifications/SpecifyingSystems/AsynchronousInterface/AsynchInterface.tla",
+      "sha256": "86adf068c65219ebe140e047dece85a9d04b9492d508e4aa4d5f86685ada09d4",
+      "sizeBytes": 764
+    },
+    {
+      "manifestPath": "corpus/manifest.json",
+      "entryId": "asynchronous-interface",
+      "role": "config",
+      "repositoryPath": "specifications/SpecifyingSystems/AsynchronousInterface/AsynchInterface.cfg",
+      "sha256": "1d5437ab52c06defaa83bd3b860310e94865e2e19b60524d56c4de08f13c068f",
+      "sizeBytes": 1085
+    },
+    {
+      "manifestPath": "corpus/manifest.json",
+      "entryId": "nbacc-ray97",
+      "role": "root",
+      "repositoryPath": "specifications/nbacc_ray97/nbacc_ray97.tla",
+      "sha256": "c763b946f4135a439c67daa5b3d4ce55977726855b8af8198e453fc795c2f353",
+      "sizeBytes": 4267
+    },
+    {
+      "manifestPath": "corpus/manifest.json",
+      "entryId": "nbacc-ray97",
+      "role": "config",
+      "repositoryPath": "specifications/nbacc_ray97/nbacc_ray97.cfg",
+      "sha256": "dc4f86156dab28a6b053805dade4dc803f851c681083d540bfdae2928d2e7871",
+      "sizeBytes": 52
+    },
+    {
+      "manifestPath": "corpus/manifest.json",
+      "entryId": "barrier",
+      "role": "root",
+      "repositoryPath": "specifications/barriers/Barrier.tla",
+      "sha256": "e4a28b2900e3769602e700c3d474e5ac2147a1187ce80ef2f365a029abc5c220",
+      "sizeBytes": 849
+    },
+    {
+      "manifestPath": "corpus/manifest.json",
+      "entryId": "barrier",
+      "role": "config",
+      "repositoryPath": "specifications/barriers/Barrier.cfg",
+      "sha256": "493424bad25906d0c8202fc727fec04cec8edba8e09ab89ebab06a577e54d6e1",
+      "sizeBytes": 76
+    },
+    {
+      "manifestPath": "corpus/manifest.json",
+      "entryId": "two-phase-commit-btm",
+      "role": "root",
+      "repositoryPath": "specifications/transaction_commit/2PCwithBTM.tla",
+      "sha256": "ea518313d91f44080ddd8a062439e24be52c6851173952558436124f35227198",
+      "sizeBytes": 7152
+    },
+    {
+      "manifestPath": "corpus/manifest.json",
+      "entryId": "two-phase-commit-btm",
+      "role": "config",
+      "repositoryPath": "specifications/transaction_commit/2PCwithBTM.cfg",
+      "sha256": "3da95f63bdd374311f671f5cda8c0504517fa910811f7491ac9c96482c3a55d7",
+      "sizeBytes": 121
+    },
+    {
+      "manifestPath": "corpus/manifest.json",
+      "entryId": "token-ring",
+      "role": "root",
+      "repositoryPath": "specifications/ewd426/TokenRing.tla",
+      "sha256": "e13841dfa43b3bd65a35d53c0c7c02bf8de42bb6864bd202ba30b724b33a056f",
+      "sizeBytes": 2124
+    },
+    {
+      "manifestPath": "corpus/manifest.json",
+      "entryId": "token-ring",
+      "role": "config",
+      "repositoryPath": "specifications/ewd426/TokenRing.cfg",
+      "sha256": "8dcdfc79502bc6074033e444e96adb838b89224a53a00a4d21fac94a7a70c740",
+      "sizeBytes": 141
+    },
+    {
+      "manifestPath": "corpus/manifest.json",
+      "entryId": "asynchronous-termination-detection",
+      "role": "root",
+      "repositoryPath": "specifications/ewd998/AsyncTerminationDetection.tla",
+      "sha256": "c1b15be68a73c6e5f69c5c09f2736870182a9b0765ad9860452240119911b030",
+      "sizeBytes": 4783
+    },
+    {
+      "manifestPath": "corpus/manifest.json",
+      "entryId": "asynchronous-termination-detection",
+      "role": "config",
+      "repositoryPath": "specifications/ewd998/AsyncTerminationDetection.cfg",
+      "sha256": "6affac15002d814a67775f16affa001d9e01c2a758a9d35dbfbaccdd1fc9f5c6",
+      "sizeBytes": 128
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "channel",
+      "role": "root",
+      "repositoryPath": "specifications/SpecifyingSystems/AsynchronousInterface/Channel.tla",
+      "sha256": "8b2cbd4533a157ae0760e3117e3c008fb9a31dc3673005fc8b537d3879de1bfc",
+      "sizeBytes": 761
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "channel",
+      "role": "config",
+      "repositoryPath": "specifications/SpecifyingSystems/AsynchronousInterface/Channel.cfg",
+      "sha256": "1d5437ab52c06defaa83bd3b860310e94865e2e19b60524d56c4de08f13c068f",
+      "sizeBytes": 1085
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "nbacc-ray97",
+      "role": "root",
+      "repositoryPath": "specifications/nbacc_ray97/nbacc_ray97.tla",
+      "sha256": "c763b946f4135a439c67daa5b3d4ce55977726855b8af8198e453fc795c2f353",
+      "sizeBytes": 4267
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "nbacc-ray97",
+      "role": "config",
+      "repositoryPath": "specifications/nbacc_ray97/nbacc_ray97.cfg",
+      "sha256": "dc4f86156dab28a6b053805dade4dc803f851c681083d540bfdae2928d2e7871",
+      "sizeBytes": 52
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "barrier",
+      "role": "root",
+      "repositoryPath": "specifications/barriers/Barrier.tla",
+      "sha256": "e4a28b2900e3769602e700c3d474e5ac2147a1187ce80ef2f365a029abc5c220",
+      "sizeBytes": 849
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "barrier",
+      "role": "config",
+      "repositoryPath": "specifications/barriers/Barrier.cfg",
+      "sha256": "493424bad25906d0c8202fc727fec04cec8edba8e09ab89ebab06a577e54d6e1",
+      "sizeBytes": 76
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "token-ring",
+      "role": "root",
+      "repositoryPath": "specifications/ewd426/TokenRing.tla",
+      "sha256": "e13841dfa43b3bd65a35d53c0c7c02bf8de42bb6864bd202ba30b724b33a056f",
+      "sizeBytes": 2124
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "token-ring",
+      "role": "config",
+      "repositoryPath": "specifications/ewd426/TokenRing.cfg",
+      "sha256": "8dcdfc79502bc6074033e444e96adb838b89224a53a00a4d21fac94a7a70c740",
+      "sizeBytes": 141
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "asynchronous-termination-detection",
+      "role": "root",
+      "repositoryPath": "specifications/ewd998/AsyncTerminationDetection.tla",
+      "sha256": "c1b15be68a73c6e5f69c5c09f2736870182a9b0765ad9860452240119911b030",
+      "sizeBytes": 4783
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "asynchronous-termination-detection",
+      "role": "config",
+      "repositoryPath": "specifications/ewd998/AsyncTerminationDetection.cfg",
+      "sha256": "6affac15002d814a67775f16affa001d9e01c2a758a9d35dbfbaccdd1fc9f5c6",
+      "sizeBytes": 128
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "prisoner-single-switch",
+      "role": "root",
+      "repositoryPath": "specifications/Prisoners_Single_Switch/Prisoner.tla",
+      "sha256": "00f8885e6cc56862b7dbf349809ae4415d1eac77d7dfaa6e480316be7f0cbeea",
+      "sizeBytes": 5995
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "prisoner-single-switch",
+      "role": "config",
+      "repositoryPath": "specifications/Prisoners_Single_Switch/Prisoner.cfg",
+      "sha256": "57014b119f91c9a0ede76987c0d2f4ee9408bf618a38d00e1b26e9064b111562",
+      "sizeBytes": 150
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "dining-philosophers",
+      "role": "root",
+      "repositoryPath": "specifications/DiningPhilosophers/DiningPhilosophers.tla",
+      "sha256": "2290c338922895e78990171ce5a5bfe80c9470bd5c9bb1ff8f58ed1563f6d4ff",
+      "sizeBytes": 7827
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "dining-philosophers",
+      "role": "config",
+      "repositoryPath": "specifications/DiningPhilosophers/DiningPhilosophers.cfg",
+      "sha256": "9a96d81b6117e554a654f0eec209f9e768527bd2b2693350ae38d8140b73a8d5",
+      "sizeBytes": 142
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "simple-allocator",
+      "role": "root",
+      "repositoryPath": "specifications/allocator/SimpleAllocator.tla",
+      "sha256": "39180889fb44ea7cbba47e97c2fa727a54c43f8f7ff983caf61d67eb0a2db0e3",
+      "sizeBytes": 4494
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "simple-allocator",
+      "role": "config",
+      "repositoryPath": "specifications/allocator/SimpleAllocator.cfg",
+      "sha256": "584308b2df46126ebb5423d58186ec149ae5048c348b6cb48f052fb3ec5305ca",
+      "sizeBytes": 253
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "voucher-life-cycle",
+      "role": "root",
+      "repositoryPath": "specifications/byihive/VoucherLifeCycle.tla",
+      "sha256": "6eadee511ab80cc35f389104c8b558677ba5572ce621422a0f0ffdebdc72505f",
+      "sizeBytes": 5739
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "voucher-life-cycle",
+      "role": "config",
+      "repositoryPath": "specifications/byihive/VoucherLifeCycle.cfg",
+      "sha256": "51c27e2b132c95a167abc28a23c9e0c2368f609f2f0b728dbfeff199e7d81d9a",
+      "sizeBytes": 99
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "tcommit",
+      "role": "root",
+      "repositoryPath": "specifications/transaction_commit/TCommit.tla",
+      "sha256": "98974d8c5ee007f4f62188737c20c7dcdb05af099cc53a59c8b8651331fd925d",
+      "sizeBytes": 4122
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "tcommit",
+      "role": "config",
+      "repositoryPath": "specifications/transaction_commit/TCommit.cfg",
+      "sha256": "a896b1bb937ac8fee372e6bc05029c1ffae64acbac7ca58b02e097c40862c415",
+      "sizeBytes": 103
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "missionaries-and-cannibals",
+      "role": "root",
+      "repositoryPath": "specifications/MissionariesAndCannibals/MissionariesAndCannibals.tla",
+      "sha256": "afb87e6ebc4af897ab9b27f90729c0170f061f8d95444a54035df1afaf21c65a",
+      "sizeBytes": 15962
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "missionaries-and-cannibals",
+      "role": "config",
+      "repositoryPath": "specifications/MissionariesAndCannibals/MissionariesAndCannibals.cfg",
+      "sha256": "8c0b9134393385ec605f5c6cd31e1215aef6f8c7b8b20ffe1e5261c614bcd5b8",
+      "sizeBytes": 121
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "cigarette-smokers",
+      "role": "root",
+      "repositoryPath": "specifications/CigaretteSmokers/CigaretteSmokers.tla",
+      "sha256": "c0dc0ebf3fef3e95be8f7173197f6798f4c2ada5e99aa34fcadc9f71bececa51",
+      "sizeBytes": 2942
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "cigarette-smokers",
+      "role": "config",
+      "repositoryPath": "specifications/CigaretteSmokers/CigaretteSmokers.cfg",
+      "sha256": "1d3b7af9618a5ed95a4a27562827259196706c3ec5e2976f3a171938757ac3f8",
+      "sizeBytes": 168
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "glowing-raccoon-clean",
+      "role": "root",
+      "repositoryPath": "specifications/glowingRaccoon/clean.tla",
+      "sha256": "48ba67d167d158f4e34238e13b135ad83cb705ea12d842c0a3506ff851990d73",
+      "sizeBytes": 4013
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "glowing-raccoon-clean",
+      "role": "config",
+      "repositoryPath": "specifications/glowingRaccoon/clean.cfg",
+      "sha256": "2b7080287e3d0b68acc3c9c6ee647ab8f9d5814cb7899a88d7c5c12ead8bd3d8",
+      "sizeBytes": 138
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "cf1s-folklore",
+      "role": "root",
+      "repositoryPath": "specifications/cf1s-folklore/cf1s_folklore.tla",
+      "sha256": "50dec6842e4af32c020bf0d72dd2c7b11cc89b574218aa206c23c04ad3d1e7e2",
+      "sizeBytes": 5267
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "cf1s-folklore",
+      "role": "config",
+      "repositoryPath": "specifications/cf1s-folklore/cf1s_folklore.cfg",
+      "sha256": "7d0a10cbdee6feff4759fdbfd28f08ff3aefae05d665a03177486d787bcf8af8",
+      "sizeBytes": 109
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "bcast-folklore",
+      "role": "root",
+      "repositoryPath": "specifications/bcastFolklore/bcastFolklore.tla",
+      "sha256": "1a5daf85a82219184ce6531d1b7600bf5dfc15dd04d98a75d06cf8109496ddd3",
+      "sizeBytes": 6903
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest.json",
+      "entryId": "bcast-folklore",
+      "role": "config",
+      "repositoryPath": "specifications/bcastFolklore/bcastFolklore.cfg",
+      "sha256": "2c919ef223d3eb8a7e59a4a7f5f3ce89bf27f22e3656c9d25c27e979f31e8147",
+      "sizeBytes": 123
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "channel",
+      "role": "root",
+      "repositoryPath": "specifications/SpecifyingSystems/AsynchronousInterface/Channel.tla",
+      "sha256": "8b2cbd4533a157ae0760e3117e3c008fb9a31dc3673005fc8b537d3879de1bfc",
+      "sizeBytes": 761
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "channel",
+      "role": "config",
+      "repositoryPath": "specifications/SpecifyingSystems/AsynchronousInterface/Channel.cfg",
+      "sha256": "1d5437ab52c06defaa83bd3b860310e94865e2e19b60524d56c4de08f13c068f",
+      "sizeBytes": 1085
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "nbacc-ray97",
+      "role": "root",
+      "repositoryPath": "specifications/nbacc_ray97/nbacc_ray97.tla",
+      "sha256": "c763b946f4135a439c67daa5b3d4ce55977726855b8af8198e453fc795c2f353",
+      "sizeBytes": 4267
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "nbacc-ray97",
+      "role": "config",
+      "repositoryPath": "specifications/nbacc_ray97/nbacc_ray97.cfg",
+      "sha256": "dc4f86156dab28a6b053805dade4dc803f851c681083d540bfdae2928d2e7871",
+      "sizeBytes": 52
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "barrier",
+      "role": "root",
+      "repositoryPath": "specifications/barriers/Barrier.tla",
+      "sha256": "e4a28b2900e3769602e700c3d474e5ac2147a1187ce80ef2f365a029abc5c220",
+      "sizeBytes": 849
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "barrier",
+      "role": "config",
+      "repositoryPath": "specifications/barriers/Barrier.cfg",
+      "sha256": "493424bad25906d0c8202fc727fec04cec8edba8e09ab89ebab06a577e54d6e1",
+      "sizeBytes": 76
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "token-ring",
+      "role": "root",
+      "repositoryPath": "specifications/ewd426/TokenRing.tla",
+      "sha256": "e13841dfa43b3bd65a35d53c0c7c02bf8de42bb6864bd202ba30b724b33a056f",
+      "sizeBytes": 2124
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "token-ring",
+      "role": "config",
+      "repositoryPath": "specifications/ewd426/TokenRing.cfg",
+      "sha256": "8dcdfc79502bc6074033e444e96adb838b89224a53a00a4d21fac94a7a70c740",
+      "sizeBytes": 141
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "asynchronous-termination-detection",
+      "role": "root",
+      "repositoryPath": "specifications/ewd998/AsyncTerminationDetection.tla",
+      "sha256": "c1b15be68a73c6e5f69c5c09f2736870182a9b0765ad9860452240119911b030",
+      "sizeBytes": 4783
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "asynchronous-termination-detection",
+      "role": "config",
+      "repositoryPath": "specifications/ewd998/AsyncTerminationDetection.cfg",
+      "sha256": "6affac15002d814a67775f16affa001d9e01c2a758a9d35dbfbaccdd1fc9f5c6",
+      "sizeBytes": 128
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "prisoner-single-switch",
+      "role": "root",
+      "repositoryPath": "specifications/Prisoners_Single_Switch/Prisoner.tla",
+      "sha256": "00f8885e6cc56862b7dbf349809ae4415d1eac77d7dfaa6e480316be7f0cbeea",
+      "sizeBytes": 5995
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "prisoner-single-switch",
+      "role": "config",
+      "repositoryPath": "specifications/Prisoners_Single_Switch/Prisoner.cfg",
+      "sha256": "57014b119f91c9a0ede76987c0d2f4ee9408bf618a38d00e1b26e9064b111562",
+      "sizeBytes": 150
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "dining-philosophers",
+      "role": "root",
+      "repositoryPath": "specifications/DiningPhilosophers/DiningPhilosophers.tla",
+      "sha256": "2290c338922895e78990171ce5a5bfe80c9470bd5c9bb1ff8f58ed1563f6d4ff",
+      "sizeBytes": 7827
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "dining-philosophers",
+      "role": "config",
+      "repositoryPath": "specifications/DiningPhilosophers/DiningPhilosophers.cfg",
+      "sha256": "9a96d81b6117e554a654f0eec209f9e768527bd2b2693350ae38d8140b73a8d5",
+      "sizeBytes": 142
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "simple-allocator",
+      "role": "root",
+      "repositoryPath": "specifications/allocator/SimpleAllocator.tla",
+      "sha256": "39180889fb44ea7cbba47e97c2fa727a54c43f8f7ff983caf61d67eb0a2db0e3",
+      "sizeBytes": 4494
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "simple-allocator",
+      "role": "config",
+      "repositoryPath": "specifications/allocator/SimpleAllocator.cfg",
+      "sha256": "584308b2df46126ebb5423d58186ec149ae5048c348b6cb48f052fb3ec5305ca",
+      "sizeBytes": 253
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "voucher-life-cycle",
+      "role": "root",
+      "repositoryPath": "specifications/byihive/VoucherLifeCycle.tla",
+      "sha256": "6eadee511ab80cc35f389104c8b558677ba5572ce621422a0f0ffdebdc72505f",
+      "sizeBytes": 5739
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "voucher-life-cycle",
+      "role": "config",
+      "repositoryPath": "specifications/byihive/VoucherLifeCycle.cfg",
+      "sha256": "51c27e2b132c95a167abc28a23c9e0c2368f609f2f0b728dbfeff199e7d81d9a",
+      "sizeBytes": 99
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "tcommit",
+      "role": "root",
+      "repositoryPath": "specifications/transaction_commit/TCommit.tla",
+      "sha256": "98974d8c5ee007f4f62188737c20c7dcdb05af099cc53a59c8b8651331fd925d",
+      "sizeBytes": 4122
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "tcommit",
+      "role": "config",
+      "repositoryPath": "specifications/transaction_commit/TCommit.cfg",
+      "sha256": "a896b1bb937ac8fee372e6bc05029c1ffae64acbac7ca58b02e097c40862c415",
+      "sizeBytes": 103
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "missionaries-and-cannibals",
+      "role": "root",
+      "repositoryPath": "specifications/MissionariesAndCannibals/MissionariesAndCannibals.tla",
+      "sha256": "afb87e6ebc4af897ab9b27f90729c0170f061f8d95444a54035df1afaf21c65a",
+      "sizeBytes": 15962
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "missionaries-and-cannibals",
+      "role": "config",
+      "repositoryPath": "specifications/MissionariesAndCannibals/MissionariesAndCannibals.cfg",
+      "sha256": "8c0b9134393385ec605f5c6cd31e1215aef6f8c7b8b20ffe1e5261c614bcd5b8",
+      "sizeBytes": 121
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "cigarette-smokers",
+      "role": "root",
+      "repositoryPath": "specifications/CigaretteSmokers/CigaretteSmokers.tla",
+      "sha256": "c0dc0ebf3fef3e95be8f7173197f6798f4c2ada5e99aa34fcadc9f71bececa51",
+      "sizeBytes": 2942
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "cigarette-smokers",
+      "role": "config",
+      "repositoryPath": "specifications/CigaretteSmokers/CigaretteSmokers.cfg",
+      "sha256": "1d3b7af9618a5ed95a4a27562827259196706c3ec5e2976f3a171938757ac3f8",
+      "sizeBytes": 168
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "glowing-raccoon-clean",
+      "role": "root",
+      "repositoryPath": "specifications/glowingRaccoon/clean.tla",
+      "sha256": "48ba67d167d158f4e34238e13b135ad83cb705ea12d842c0a3506ff851990d73",
+      "sizeBytes": 4013
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "glowing-raccoon-clean",
+      "role": "config",
+      "repositoryPath": "specifications/glowingRaccoon/clean.cfg",
+      "sha256": "2b7080287e3d0b68acc3c9c6ee647ab8f9d5814cb7899a88d7c5c12ead8bd3d8",
+      "sizeBytes": 138
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "cf1s-folklore",
+      "role": "root",
+      "repositoryPath": "specifications/cf1s-folklore/cf1s_folklore.tla",
+      "sha256": "50dec6842e4af32c020bf0d72dd2c7b11cc89b574218aa206c23c04ad3d1e7e2",
+      "sizeBytes": 5267
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "cf1s-folklore",
+      "role": "config",
+      "repositoryPath": "specifications/cf1s-folklore/cf1s_folklore.cfg",
+      "sha256": "7d0a10cbdee6feff4759fdbfd28f08ff3aefae05d665a03177486d787bcf8af8",
+      "sizeBytes": 109
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "bcast-folklore",
+      "role": "root",
+      "repositoryPath": "specifications/bcastFolklore/bcastFolklore.tla",
+      "sha256": "1a5daf85a82219184ce6531d1b7600bf5dfc15dd04d98a75d06cf8109496ddd3",
+      "sizeBytes": 6903
+    },
+    {
+      "manifestPath": "corpus/gcd-stratified-manifest-v9.json",
+      "entryId": "bcast-folklore",
+      "role": "config",
+      "repositoryPath": "specifications/bcastFolklore/bcastFolklore.cfg",
+      "sha256": "2c919ef223d3eb8a7e59a4a7f5f3ce89bf27f22e3656c9d25c27e979f31e8147",
+      "sizeBytes": 123
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+{
+  "version": 4,
+  "profile": "gcd-prospective-v10",
+  "repository": "https://github.com/tlaplus/Examples",
+  "commit": "ed3cc4c35f7001d7cec08a22dcd698dae7570dc3",
+  "license": "MIT",
+  "entries": [
+    {
+      "id": "readers-writers",
+      "domain": "concurrency",
+      "rootModule": "ReadersWriters.tla",
+      "config": "APReadersWriters.cfg",
+      "files": [
+        {"path": "ReadersWriters.tla", "repositoryPath": "specifications/ReadersWriters/ReadersWriters.tla", "sha256": "3b51a02efbb409271f00133e32096459e4d0db2deb196dcbbee25638d0d07c8d", "sizeBytes": 3415},
+        {"path": "APReadersWriters.cfg", "repositoryPath": "specifications/ReadersWriters/APReadersWriters.cfg", "sha256": "72b96918d7256397680646894ccb8f5f45b44f47759ac9351970339609f0924e", "sizeBytes": 318}
+      ],
+      "typeInvariants": [],
+      "targetInvariants": ["Safety"],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "selection": {"cohort": "prospective", "gcdStratum": "standard-risk", "familyCluster": "readers-writers", "selectionRationale": "A compact reader-writer synchronization model with a configured mutual-exclusion safety oracle and no historical source overlap."}
+    },
+    {
+      "id": "coffee-can",
+      "domain": "state-machine",
+      "rootModule": "CoffeeCan.tla",
+      "config": "APCoffeeCan.cfg",
+      "files": [
+        {"path": "CoffeeCan.tla", "repositoryPath": "specifications/CoffeeCan/CoffeeCan.tla", "sha256": "32c5d9c900104c0d8be0d3730a6013d141dc90901e08ccaea403fb0be731cd90", "sizeBytes": 5461},
+        {"path": "APCoffeeCan.cfg", "repositoryPath": "specifications/CoffeeCan/APCoffeeCan.cfg", "sha256": "47b87131aab41a7f7c1994dad45a1f284105eab3d2f942f671c0a47a0a594052", "sizeBytes": 71}
+      ],
+      "typeInvariants": ["TypeInvariant"],
+      "targetInvariants": [],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "selection": {"cohort": "prospective", "gcdStratum": "standard-risk", "familyCluster": "coffee-can", "selectionRationale": "A small finite transition system selected as a type-only control for unseen GCD behavior."}
+    },
+    {
+      "id": "ewd840",
+      "domain": "termination-detection",
+      "rootModule": "EWD840.tla",
+      "config": "EWD840.cfg",
+      "files": [
+        {"path": "EWD840.tla", "repositoryPath": "specifications/ewd840/EWD840.tla", "sha256": "4a42e8a67c7ecb8425c6e370a5d3b180ad697751128d7b331e778afbcd29b747", "sizeBytes": 8874},
+        {"path": "EWD840.cfg", "repositoryPath": "specifications/ewd840/EWD840.cfg", "sha256": "9a217ccbacc3209c0b132606eef01ccd62c5fc2889cc2ce32c06b478bb9f0e89", "sizeBytes": 157},
+        {"path": "SyncTerminationDetection.tla", "repositoryPath": "specifications/ewd840/SyncTerminationDetection.tla", "sha256": "3626ab87e7431a7c07cf0f92b442fdf38363e6d7a9928f2391476c54a1e4fb2e", "sizeBytes": 2288}
+      ],
+      "typeInvariants": ["TypeOK"],
+      "targetInvariants": ["TerminationDetection", "Inv"],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "selection": {"cohort": "prospective", "gcdStratum": "standard-risk", "familyCluster": "ewd840", "selectionRationale": "A token-based distributed protocol whose configured State Invariants provide type and domain-safety attribution."}
+    },
+    {
+      "id": "nbacg-guer01",
+      "domain": "atomic-commit",
+      "rootModule": "nbacg_guer01.tla",
+      "config": "nbacg_guer01.cfg",
+      "files": [
+        {"path": "nbacg_guer01.tla", "repositoryPath": "specifications/nbacg_guer01/nbacg_guer01.tla", "sha256": "01beedb7aa321e51e626d11fd71298113c56995173569a9814be599f5943703d", "sizeBytes": 8505},
+        {"path": "nbacg_guer01.cfg", "repositoryPath": "specifications/nbacg_guer01/nbacg_guer01.cfg", "sha256": "b1199492ce23f3cbbd4d06d3df6461c52df20de86808a4335747867c8968d717", "sizeBytes": 121}
+      ],
+      "typeInvariants": ["TypeOK"],
+      "targetInvariants": [],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "selection": {"cohort": "prospective", "gcdStratum": "standard-risk", "familyCluster": "nonblocking-atomic-commit", "selectionRationale": "An unseen atomic-commit model selected to test type-only survivor discovery in a guarded distributed protocol."}
+    },
+    {
+      "id": "c1cs",
+      "domain": "crash-consensus",
+      "rootModule": "c1cs.tla",
+      "config": "c1cs.cfg",
+      "files": [
+        {"path": "c1cs.tla", "repositoryPath": "specifications/c1cs/c1cs.tla", "sha256": "ee222e8a5a7defc2d449ec30ee24053036560b6b7f1107ab2ab115427fb53af0", "sizeBytes": 9467},
+        {"path": "c1cs.cfg", "repositoryPath": "specifications/c1cs/c1cs.cfg", "sha256": "0ef50a8cc706e60f6285efe627f2b34ff9a52d8dfdf9287bed2b358157c4d233", "sizeBytes": 181}
+      ],
+      "typeInvariants": ["TypeOK"],
+      "targetInvariants": ["Validity", "Agreement", "WeakAgreement", "IndStrengthens"],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "selection": {"cohort": "prospective", "gcdStratum": "standard-risk", "familyCluster": "one-crash-consensus", "selectionRationale": "A crash-fault consensus model with four configured domain invariants for survivor kill attribution."}
+    },
+    {
+      "id": "bosco",
+      "domain": "byzantine-consensus",
+      "rootModule": "bosco.tla",
+      "config": "bosco.cfg",
+      "files": [
+        {"path": "bosco.tla", "repositoryPath": "specifications/bosco/bosco.tla", "sha256": "a2b9f8564b658992f036dadaeb5acdc8ba8b79ba1262400ca3217721796f7fd8", "sizeBytes": 8832},
+        {"path": "bosco.cfg", "repositoryPath": "specifications/bosco/bosco.cfg", "sha256": "f741200793a0fe4c09aab8275476a1ad6f49ef597db3c9de7c823b257af94e84", "sizeBytes": 108}
+      ],
+      "typeInvariants": ["TypeOK"],
+      "targetInvariants": ["Lemma3_0", "Lemma3_1", "Lemma4_0", "Lemma4_1"],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "selection": {"cohort": "prospective", "gcdStratum": "standard-risk", "familyCluster": "byzantine-one-step-consensus", "selectionRationale": "A Byzantine consensus model with four configured decision-consistency invariants and explicit guarded process steps."}
+    },
+    {
+      "id": "slush-small",
+      "domain": "probabilistic-consensus",
+      "rootModule": "Slush.tla",
+      "config": "SlushSmall.cfg",
+      "files": [
+        {"path": "Slush.tla", "repositoryPath": "specifications/SlushProtocol/Slush.tla", "sha256": "95303e105352d257abfd17feb6363948f728364a0aa47b043e43fd4118e3b16f", "sizeBytes": 15827},
+        {"path": "SlushSmall.cfg", "repositoryPath": "specifications/SlushProtocol/SlushSmall.cfg", "sha256": "61aff32a7e3d47874166d83bbdaf8216dc0f7b5692b6018696fbfb5b52104ba1", "sizeBytes": 333}
+      ],
+      "typeInvariants": ["TypeInvariant"],
+      "targetInvariants": [],
+      "limits": {"cpuSeconds": 120, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 1000000, "wallClockSeconds": 180},
+      "selection": {"cohort": "prospective", "gcdStratum": "high-risk-no-replacement", "familyCluster": "slush-protocol", "selectionRationale": "A larger generated-style protocol retained as a preregistered high-risk observation with no replacement on failure."}
+    },
+    {
+      "id": "buffered-random-access-file",
+      "domain": "storage",
+      "rootModule": "BufferedRandomAccessFile.tla",
+      "config": "BufferedRandomAccessFile.cfg",
+      "files": [
+        {"path": "BufferedRandomAccessFile.tla", "repositoryPath": "specifications/braf/BufferedRandomAccessFile.tla", "sha256": "9fc2d7d7e2d73699da1da538fb21830171ebd905ed8bb63ae8108aba6652de17", "sizeBytes": 16653},
+        {"path": "BufferedRandomAccessFile.cfg", "repositoryPath": "specifications/braf/BufferedRandomAccessFile.cfg", "sha256": "3b82f9554bc28097581d0a35fa1ccf9c3856308b500003c32c0a15e1cec61798", "sizeBytes": 512}
+      ],
+      "typeInvariants": ["TypeOK"],
+      "targetInvariants": ["Inv1", "Inv3", "Inv4", "Inv5"],
+      "limits": {"cpuSeconds": 120, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 1000000, "wallClockSeconds": 180},
+      "selection": {"cohort": "prospective", "gcdStratum": "high-risk-no-replacement", "familyCluster": "buffered-file", "selectionRationale": "A multi-module buffered-storage model retained as a preregistered high-risk observation with no replacement on failure."}
+    }
+  ]
+}

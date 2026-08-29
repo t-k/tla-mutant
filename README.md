@@ -95,3 +95,24 @@ java -jar build/libs/tla-mutant-all.jar gcd-stratified-experiment \
 This is a post-discovery intervention: the v8 witness was used to select the new invariant. Killing that mutant validates the workflow's closed loop but is not out-of-sample evidence of general usefulness.
 
 See the [v9 preregistration](docs/experiments/gcd-stratified-v9-preregistration.md), [generated report](docs/experiments/gcd-stratified-v9.md), and [assessment](docs/experiments/gcd-stratified-assessment-v9.md).
+
+## Run the preregistered v10 prospective evaluation
+
+v10 freezes eight previously unevaluated specifications before inspecting their GCD outcomes. The cohort contains six standard-risk entries and two high-risk observations that remain in the denominator without replacement if they fail. The historical source registry rejects both reused repository paths and reused source bytes, while the protocol fixes the eligibility rule, complete review rubric, and three-intervention cap. The discovery receipt binds the registry, protocol, manifest, execution policy, TLA+ Tools JAR, and reproducible application JAR.
+
+Freeze the failure-preserving census only from the commit containing all outcome-free inputs:
+
+```sh
+java -jar build/libs/tla-mutant-all.jar prospective-census \
+  --registry corpus/historical-source-registry-v10.json \
+  --protocol config/prospective-protocol-v10.json \
+  --manifest corpus/gcd-prospective-manifest-v10.json \
+  --receipt docs/experiments/gcd-prospective-receipt-v10.json \
+  --policy config/execution-policy.json \
+  --tools-jar .tools/tla2tools-1.8.0.jar \
+  --cache-dir .corpus-v10 \
+  --census-report docs/experiments/gcd-prospective-census-v10.json \
+  --failed-census-report build/reports/gcd-prospective-census-v10-failed.json
+```
+
+The census must be committed before any v10 mutation starts. Failed and zero-site entries are retained without replacement. After census, a separate experiment receipt binds the unchanged discovery receipt and the exact census bytes; the mutation command requires both receipts. Discovery outcomes, review decisions, and any accepted-predicate intervention are published in later commits so Git ancestry preserves the prospective boundary. User-delegated agent review is not external human or upstream-maintainer acceptance.

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "phase": "discovery",
+  "profile": "gcd-prospective-v10",
+  "artifacts": [
+    {
+      "role": "registry",
+      "sha256": "ecc294949d3cb655b74e98a4dc17bf2a1141d710e94e523ee58428ad6158475f",
+      "sizeBytes": 25543
+    },
+    {
+      "role": "protocol",
+      "sha256": "34ae5cd40876b8774381fb778dcd6cc3a2a5b8ffe7bcebbe07202bb3096a1a0f",
+      "sizeBytes": 7809
+    },
+    {
+      "role": "manifest",
+      "sha256": "ade49bbe04aabed5997375d3602fe6c9b2a1bf14ad401e7dceb708504ef12a64",
+      "sizeBytes": 9455
+    },
+    {
+      "role": "policy",
+      "sha256": "bd518ab8792604352b1986b3e293c9daf2fbcc5e9f455aaeb162bec1d6cf5e76",
+      "sizeBytes": 696
+    },
+    {
+      "role": "tools",
+      "sha256": "eabd140a70f49eb9305a3bd3f3df944eddf87e5a90d329789085f8953a80533a",
+      "sizeBytes": 4487757
+    },
+    {
+      "role": "application",
+      "sha256": "31e4ad6b9fcf4edc8ac954eb9851f99867f9e8020832f53ac6961ab9b2c6714a",
+      "sizeBytes": 3118864
+    }
+  ]
+}

@@ -86,19 +86,19 @@ Constraints:
 
 | ID | Type | Required behavior | Risk | Minimum independent checks | Status |
 |---|---|---|---|---:|---|
-| P01 | validity | Exact holdout sources are absent from all historical execution inputs. | Critical | 2 | planned |
-| P02 | validity | Cohort, rubric, limits, censoring, and endpoints are receipt-bound before outcomes. | Critical | 2 | planned |
+| P01 | validity | Exact holdout sources are absent from all historical execution inputs. | Critical | 2 | implementation_verified |
+| P02 | validity | Cohort, rubric, limits, censoring, and endpoints are receipt-bound before outcomes. | Critical | 2 | implementation_verified |
 | P03 | integrity | Outcome-free census is write-once and retains all eight entries. | Critical | 2 | planned |
-| P04 | security | Any receipt or census mismatch fails before fetch, SANY, or Podman. | Critical | 3 | planned |
-| P05 | review | Dossier eligibility and review ledger form an exact bijection. | Critical | 2 | planned |
-| P06 | review | `ACCEPT` requires exact predicate, seven criteria, and bounded safe evidence. | Critical | 2 | planned |
-| P07 | traceability | Accepted decisions bind exactly to v11 entry, candidate, operator, predicate bytes, and edit. | Critical | 2 | planned |
+| P04 | security | Any receipt or census mismatch fails before fetch, SANY, or Podman. | Critical | 3 | implementation_verified |
+| P05 | review | Dossier eligibility and review ledger form an exact bijection. | Critical | 2 | implementation_verified |
+| P06 | review | `ACCEPT` requires exact predicate, seven criteria, and bounded safe evidence. | Critical | 2 | implementation_verified |
+| P07 | traceability | Accepted decisions bind exactly to v11 entry, candidate, operator, predicate bytes, and edit. | Critical | 2 | implementation_verified |
 | P08 | behavior | Derived baseline accepts original behavior under the frozen finite model. | Critical | 2 | planned |
 | P09 | attribution | Source survivor passes type/legacy and is killed by adopted oracle. | Critical | 2 | planned |
-| P10 | reporting | Discovery, review, and intervention denominators conserve all terminal outcomes. | Critical | 2 | planned |
-| P11 | failure mode | Tool/resource/baseline errors remain censored and never become success evidence. | Critical | 2 | planned |
-| P12 | reproducibility | JAR and censuses are byte reproducible; experiments are semantically reproducible. | Critical | 2 | planned |
-| P13 | compatibility | All frozen v8/v9 artifacts and legacy behavior remain unchanged. | Critical | 2 | planned |
+| P10 | reporting | Discovery, review, and intervention denominators conserve all terminal outcomes. | Critical | 2 | implementation_verified |
+| P11 | failure mode | Tool/resource/baseline errors remain censored and never become success evidence. | Critical | 2 | implementation_verified |
+| P12 | reproducibility | JAR and censuses are byte reproducible; experiments are semantically reproducible. | Critical | 2 | jar_verified |
+| P13 | compatibility | All frozen v8/v9 artifacts and legacy behavior remain unchanged. | Critical | 2 | implementation_verified |
 | P14 | security | Source parsing, edit application, and TLC execution stay in the sandbox trust boundary. | Critical | 2 | planned |
 | P15 | lifecycle | Owned containers, volumes, Podman machine, and Gradle daemons are stopped. | Critical | 2 | planned |
 | P16 | interpretation | Agent review and finite-model limitations are explicit in every assessment. | High | 2 | planned |
@@ -107,13 +107,13 @@ Constraints:
 
 | Obligations | Primary artifact | Secondary artifact | Overlap | Current status | Debt or note |
 |---|---|---|---|---|---|
-| P01 | `ProspectiveHoldoutValidatorTest` | committed registry reconstruction audit | intentional_overlap | planned | Canonical historical serialization must be explicit. |
-| P02-P04 | receipt/preflight unit tests | CLI preflight integration and sandbox non-start evidence | layer_overlap | planned | Git commit order remains an audited history property. |
-| P05-P06 | dossier/review pure tests | committed dossier-ledger key audit | layer_overlap | planned | Review quality is rubric-bound but still agent judgment. |
-| P07-P09 | intervention binding tests | real TLC fixture and v11 result | intentional_overlap | planned | Exact predicate bytes or digest must be decision-bound. |
-| P10-P11 | assessment reducer matrix | final artifact assertions | layer_overlap | planned | Zero-site and failed entries remain in specification denominators. |
-| P12 | reproducibility tests and comparator | double public runs | layer_overlap | planned | Only declared diagnostic seed/scratch fields may differ. |
-| P13 | historical digest integration test | git diff against `b6c5483` | intentional_overlap | planned | v9 needs exact artifact coverage matching v8. |
+| P01 | `ProspectiveHoldoutValidatorTest` | committed registry reconstruction audit | intentional_overlap | implementation_verified | Canonical registry contains 80 source records and 19 historical root paths. |
+| P02-P04 | receipt/preflight unit tests | CLI preflight integration and sandbox non-start evidence | layer_overlap | implementation_verified | Git commit order remains an audited history property. |
+| P05-P06 | dossier/review pure tests | committed dossier-ledger key audit | layer_overlap | implementation_verified | Review quality is rubric-bound but still agent judgment. |
+| P07-P09 | intervention binding tests | real TLC fixture and v11 result | intentional_overlap | partial | Binding tests pass; real v11 evidence depends on accepted reviews. |
+| P10-P11 | assessment reducer matrix | final artifact assertions | layer_overlap | implementation_verified | Public denominators remain to be populated by the run. |
+| P12 | reproducibility tests and comparator | double public runs | layer_overlap | jar_verified | Two clean no-build-cache JAR builds were byte-identical; public runs remain pending. |
+| P13 | historical digest integration test | git diff against `b6c5483` | intentional_overlap | implementation_verified | Eleven exact historical artifacts are frozen by integration tests. |
 | P14-P15 | sandbox containment tests | exact final resource/process audit | layer_overlap | planned | No broad process kills. |
 | P16 | report writer tests | security/correctness review | layer_overlap | planned | External human acceptance remains unfulfilled. |
 
