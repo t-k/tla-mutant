@@ -1,15 +1,20 @@
 package dev.tlamutant.cli;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.tlamutant.census.CensusConformanceValidator;
+import dev.tlamutant.census.CorpusCensusReport;
+import dev.tlamutant.census.CorpusCensusRunner;
 import dev.tlamutant.census.GcdCensusAnalyzer;
 import dev.tlamutant.census.GcdCensusReport;
 import dev.tlamutant.config.ExecutionPolicy;
 import dev.tlamutant.corpus.CorpusManifest;
 import dev.tlamutant.corpus.ManifestValidator;
+import dev.tlamutant.corpus.StratifiedManifestValidator;
 import dev.tlamutant.experiment.CorpusExperimentReport;
 import dev.tlamutant.experiment.CorpusExperimentRunner;
 import dev.tlamutant.experiment.ExperimentReport;
 import dev.tlamutant.experiment.ExperimentRunner;
+import dev.tlamutant.report.AtomicJsonWriter;
 import dev.tlamutant.report.CorpusMarkdownReportWriter;
 import dev.tlamutant.report.JsonReportWriter;
 import dev.tlamutant.report.MarkdownReportWriter;
@@ -27,6 +32,7 @@ import picocli.CommandLine;
         subcommands = {
             Main.ExperimentCommand.class,
             Main.CensusCommand.class,
+            Main.GcdStratifiedCensusCommand.class,
             Main.CorpusExperimentCommand.class,
             Main.ValidateManifestCommand.class
         })
@@ -102,6 +108,46 @@ public final class Main implements Runnable {
         public Integer call() throws Exception {
             GcdCensusReport report = new GcdCensusAnalyzer().analyze(modelDirectory, module, config);
             System.out.println(new ObjectMapper().writeValueAsString(report));
+            return 0;
+        }
+    }
+
+    @CommandLine.Command(
+            name = "gcd-stratified-census",
+            mixinStandardHelpOptions = true,
+            description = "Freeze the outcome-free GCD census for the preregistered corpus.")
+    static final class GcdStratifiedCensusCommand implements Callable<Integer> {
+        @CommandLine.Option(names = "--manifest", required = true)
+        Path manifestPath;
+
+        @CommandLine.Option(names = "--policy", required = true)
+        Path policyPath;
+
+        @CommandLine.Option(names = "--tools-jar", required = true)
+        Path toolsJar;
+
+        @CommandLine.Option(names = "--cache-dir", required = true)
+        Path cacheDirectory;
+
+        @CommandLine.Option(names = "--census-report", required = true)
+        Path censusReportPath;
+
+        @Override
+        public Integer call() throws Exception {
+            ObjectMapper mapper = new ObjectMapper();
+            CorpusManifest manifest = mapper.readValue(manifestPath.toFile(), CorpusManifest.class);
+            ExecutionPolicy policy = mapper.readValue(policyPath.toFile(), ExecutionPolicy.class);
+            StratifiedManifestValidator.validate(manifest, policy.limits());
+            Path applicationJar = Path.of(Main.class
+                    .getProtectionDomain()
+                    .getCodeSource()
+                    .getLocation()
+                    .toURI());
+            CorpusCensusReport census =
+                    new CorpusCensusRunner(applicationJar, toolsJar, cacheDirectory, policy).run(manifest);
+            new AtomicJsonWriter().write(censusReportPath, census);
+            CensusConformanceValidator.validate(manifest, census);
+            System.out.println(mapper.writeValueAsString(census));
             return 0;
         }
     }
