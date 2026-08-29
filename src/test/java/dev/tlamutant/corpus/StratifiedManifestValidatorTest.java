@@ -58,6 +58,66 @@ final class StratifiedManifestValidatorTest {
     }
 
     @Test
+    void acceptsVersionThreeOnlyForTheV9Profile() {
+        CorpusManifest original = manifest(5, 10);
+        CorpusManifest.Entry selected = original.entries().get(5);
+        CorpusManifest.Entry edited = new CorpusManifest.Entry(
+                selected.id(),
+                selected.domain(),
+                selected.rootModule(),
+                selected.config(),
+                selected.files(),
+                selected.typeInvariants(),
+                selected.targetInvariants(),
+                List.of("NoOverlap"),
+                List.of(new CorpusManifest.DerivedSourceEdit(
+                        "Spec.tla", "0".repeat(64), 1, 1, "\nNoOverlap == TRUE\n", "1".repeat(64), 20)),
+                selected.limits(),
+                selected.selection());
+        List<CorpusManifest.Entry> entries = new ArrayList<>(original.entries());
+        entries.set(5, edited);
+        CorpusManifest v9 = new CorpusManifest(
+                3, "gcd-stratified-v9", original.repository(), original.commit(), original.license(), entries);
+
+        assertSame(v9, StratifiedManifestValidator.validate(v9, GLOBAL));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> StratifiedManifestValidator.validate(
+                        new CorpusManifest(2, v9.profile(), v9.repository(), v9.commit(), v9.license(), v9.entries()),
+                        GLOBAL));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> StratifiedManifestValidator.validate(
+                        new CorpusManifest(
+                                3, "gcd-stratified-v8", v9.repository(), v9.commit(), v9.license(), v9.entries()),
+                        GLOBAL));
+    }
+
+    @Test
+    void rejectsV9FieldsFromLegacyProfiles() {
+        CorpusManifest original = manifest(5, 10);
+        CorpusManifest.Entry selected = original.entries().get(5);
+        CorpusManifest.Entry edited = new CorpusManifest.Entry(
+                selected.id(),
+                selected.domain(),
+                selected.rootModule(),
+                selected.config(),
+                selected.files(),
+                selected.typeInvariants(),
+                selected.targetInvariants(),
+                List.of("NoOverlap"),
+                List.of(),
+                selected.limits(),
+                selected.selection());
+        List<CorpusManifest.Entry> entries = new ArrayList<>(original.entries());
+        entries.set(5, edited);
+        CorpusManifest legacy = new CorpusManifest(
+                2, "gcd-stratified-v8", original.repository(), original.commit(), original.license(), entries);
+
+        assertThrows(IllegalArgumentException.class, () -> StratifiedManifestValidator.validate(legacy, GLOBAL));
+    }
+
+    @Test
     void rejectsWrongCohortCountsOrTooFewEnrichedStrata() {
         CorpusManifest wrongCounts = manifest(4, 11);
         CorpusManifest tooFewStrata = withSelections(manifest(5, 10).entries().stream()

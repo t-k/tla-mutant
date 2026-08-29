@@ -78,6 +78,57 @@ final class ManifestValidatorTest {
         assertThrows(IllegalArgumentException.class, () -> ManifestValidator.validateEntry(overlap, GLOBAL));
     }
 
+    @Test
+    void acceptsOneBoundedDigestPinnedInsertionAndAdoptedTarget() {
+        CorpusManifest.Entry original = entry(List.of(file("Spec.tla"), file("Spec.cfg")));
+        CorpusManifest.Entry edited = withV9Fields(
+                original,
+                List.of("NoOverlap"),
+                List.of(new CorpusManifest.DerivedSourceEdit(
+                        "Spec.tla", "0".repeat(64), 1, 1, "\nNoOverlap == TRUE\n", "1".repeat(64), 20)));
+
+        assertEquals(edited, ManifestValidator.validateEntry(edited, GLOBAL));
+    }
+
+    @Test
+    void rejectsInvalidDerivedSourceEditMetadata() {
+        CorpusManifest.Entry original = entry(List.of(file("Spec.tla"), file("Spec.cfg")));
+        List<CorpusManifest.DerivedSourceEdit> invalid = List.of(
+                edit("Missing.tla", "0".repeat(64), 1, 1, "x", "1".repeat(64), 2),
+                edit("Spec.cfg", "0".repeat(64), 1, 1, "x", "1".repeat(64), 2),
+                edit("Spec.tla", "2".repeat(64), 1, 1, "x", "1".repeat(64), 2),
+                edit("Spec.tla", "0".repeat(64), 2, 1, "x", "1".repeat(64), 3),
+                edit("Spec.tla", "0".repeat(64), 1, -1, "x", "1".repeat(64), 2),
+                edit("Spec.tla", "0".repeat(64), 1, 2, "x", "1".repeat(64), 2),
+                edit("Spec.tla", "0".repeat(64), 1, 1, "", "1".repeat(64), 1),
+                edit("Spec.tla", "0".repeat(64), 1, 1, "x\u0000", "1".repeat(64), 3),
+                edit("Spec.tla", "0".repeat(64), 1, 1, "x".repeat(4097), "1".repeat(64), 4098),
+                edit("Spec.tla", "0".repeat(64), 1, 1, "x", "bad", 2),
+                edit("Spec.tla", "0".repeat(64), 1, 1, "x", "1".repeat(64), 3));
+
+        for (CorpusManifest.DerivedSourceEdit edit : invalid) {
+            CorpusManifest.Entry entry = withV9Fields(original, List.of("NoOverlap"), List.of(edit));
+            assertThrows(IllegalArgumentException.class, () -> ManifestValidator.validateEntry(entry, GLOBAL));
+        }
+
+        CorpusManifest.Entry duplicateEdits = withV9Fields(
+                original,
+                List.of("NoOverlap"),
+                List.of(
+                        edit("Spec.tla", "0".repeat(64), 1, 1, "x", "1".repeat(64), 2),
+                        edit("Spec.tla", "0".repeat(64), 1, 1, "y", "2".repeat(64), 2)));
+        assertThrows(IllegalArgumentException.class, () -> ManifestValidator.validateEntry(duplicateEdits, GLOBAL));
+    }
+
+    @Test
+    void rejectsAdoptedInvariantOverlapWithExistingCategories() {
+        CorpusManifest.Entry original = entry(List.of(file("Spec.tla"), file("Spec.cfg")));
+
+        CorpusManifest.Entry overlap = withV9Fields(original, List.of("Safety"), List.of());
+
+        assertThrows(IllegalArgumentException.class, () -> ManifestValidator.validateEntry(overlap, GLOBAL));
+    }
+
     private static CorpusManifest.Entry withInvariants(List<String> type, List<String> target) {
         CorpusManifest.Entry entry = entry(List.of(file("Spec.tla"), file("Spec.cfg")));
         return new CorpusManifest.Entry(
@@ -90,6 +141,36 @@ final class ManifestValidatorTest {
                 target,
                 entry.limits(),
                 entry.selection());
+    }
+
+    private static CorpusManifest.Entry withV9Fields(
+            CorpusManifest.Entry entry,
+            List<String> adoptedTargetInvariants,
+            List<CorpusManifest.DerivedSourceEdit> edits) {
+        return new CorpusManifest.Entry(
+                entry.id(),
+                entry.domain(),
+                entry.rootModule(),
+                entry.config(),
+                entry.files(),
+                entry.typeInvariants(),
+                entry.targetInvariants(),
+                adoptedTargetInvariants,
+                edits,
+                entry.limits(),
+                entry.selection());
+    }
+
+    private static CorpusManifest.DerivedSourceEdit edit(
+            String path,
+            String baseSha256,
+            long baseSizeBytes,
+            long insertionOffset,
+            String insertedText,
+            String derivedSha256,
+            long derivedSizeBytes) {
+        return new CorpusManifest.DerivedSourceEdit(
+                path, baseSha256, baseSizeBytes, insertionOffset, insertedText, derivedSha256, derivedSizeBytes);
     }
 
     private static CorpusManifest.Entry entry(List<CorpusManifest.SourceFile> files) {
