@@ -185,6 +185,7 @@ public final class ExperimentRunner {
                     timeout);
             TlcExecution typeOnly = null;
             TlcExecution legacy = null;
+            StateRelationAnalyzer.Analysis typeOnlyRelation = null;
             StateRelationAnalyzer.Analysis legacyRelation = null;
             if (oracleSets != null
                     && mutant.status() == ExecutionStatus.COMPLETED
@@ -196,6 +197,9 @@ public final class ExperimentRunner {
                             typeOnlyConfig.toString(),
                             results.resolve(candidate.id() + "-type-only-states.jsonl"),
                             timeout);
+                    if (typeOnly.status() == ExecutionStatus.COMPLETED && typeOnly.oracle() == OracleOutcome.PASSED) {
+                        typeOnlyRelation = relationAnalyzer.analyze(baseline.states(), typeOnly.states());
+                    }
                 }
                 boolean typeAllowsTargetAttribution = typeOnly == null
                         || (typeOnly.status() == ExecutionStatus.COMPLETED
@@ -212,7 +216,8 @@ public final class ExperimentRunner {
                     }
                 }
             }
-            return classify(candidate, baseline, mutant, oracleSets, typeOnly, legacy, legacyRelation);
+            return classify(
+                    candidate, baseline, mutant, oracleSets, typeOnly, typeOnlyRelation, legacy, legacyRelation);
         } catch (IllegalArgumentException | IOException exception) {
             return new MutationResult(
                     candidate.id(),
@@ -239,6 +244,7 @@ public final class ExperimentRunner {
             TlcExecution mutant,
             InvariantOracleSets oracleSets,
             TlcExecution typeOnly,
+            StateRelationAnalyzer.Analysis typeOnlyRelation,
             TlcExecution legacy,
             StateRelationAnalyzer.Analysis legacyRelation) {
         String relationName = "STATE_UNRESOLVED";
@@ -251,7 +257,7 @@ public final class ExperimentRunner {
                 verdict = "state-invariant-kill-unattributed";
                 diagnosticReason = "configured-state-invariant-violation; type attribution not run";
             } else {
-                attribution = KillAttribution.classify(oracleSets, typeOnly, legacy, legacyRelation);
+                attribution = KillAttribution.classify(oracleSets, typeOnly, typeOnlyRelation, legacy, legacyRelation);
                 verdict = attribution.category();
                 diagnosticReason = attribution.diagnosticReason();
             }

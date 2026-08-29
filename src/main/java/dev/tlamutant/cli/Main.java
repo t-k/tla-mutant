@@ -22,6 +22,8 @@ import dev.tlamutant.experiment.InvariantOracleSets;
 import dev.tlamutant.prospective.ProspectiveAssessment;
 import dev.tlamutant.prospective.ProspectiveCensusReport;
 import dev.tlamutant.prospective.ProspectiveCensusValidator;
+import dev.tlamutant.prospective.ProspectiveClosureAssessment;
+import dev.tlamutant.prospective.ProspectiveClosureValidator;
 import dev.tlamutant.prospective.ProspectiveDiscoveryReport;
 import dev.tlamutant.prospective.ProspectiveInterventionPreflight;
 import dev.tlamutant.prospective.ProspectivePreflight;
@@ -72,6 +74,7 @@ import picocli.CommandLine;
             Main.ValidateProspectiveReviewCommand.class,
             Main.ProspectiveInterventionCensusCommand.class,
             Main.ProspectiveInterventionExperimentCommand.class,
+            Main.ValidateProspectiveClosureCommand.class,
             Main.CorpusExperimentCommand.class,
             Main.ValidateManifestCommand.class
         })
@@ -724,6 +727,66 @@ public final class Main implements Runnable {
             new FrozenTextWriter().writeNew(markdownReport, new ProspectiveMarkdownWriter().renderDiscovery(report));
             System.out.println(new ObjectMapper().writeValueAsString(report));
             return 0;
+        }
+    }
+
+    @CommandLine.Command(
+            name = "validate-prospective-closure",
+            mixinStandardHelpOptions = true,
+            description = "Derive a fail-closed assessment from the frozen review and corrected v11 result.")
+    static final class ValidateProspectiveClosureCommand implements Callable<Integer> {
+        @CommandLine.Mixin
+        ProspectiveInterventionInputs inputs;
+
+        @CommandLine.Option(names = "--receipt", required = true)
+        Path receipt;
+
+        @CommandLine.Option(names = "--census-receipt", required = true)
+        Path censusReceipt;
+
+        @CommandLine.Option(names = "--v11-census", required = true)
+        Path v11Census;
+
+        @CommandLine.Option(names = "--v11-result", required = true)
+        Path v11Result;
+
+        @CommandLine.Option(names = "--cache-dir", required = true)
+        Path cacheDirectory;
+
+        @CommandLine.Option(names = "--output", required = true)
+        Path output;
+
+        @Override
+        public Integer call() throws Exception {
+            Path resultPath = v11Result.toAbsolutePath().normalize();
+            Path outputPath = output.toAbsolutePath().normalize();
+            if (resultPath.equals(outputPath) || Files.exists(outputPath)) {
+                throw new IllegalArgumentException("Prospective closure result and output paths must be disjoint");
+            }
+            Map<String, Path> paths = inputs.paths(applicationJar());
+            paths.put("census-receipt", censusReceipt);
+            paths.put("v11-census", v11Census);
+            ProspectiveInterventionPreflight.ValidatedInputs validated = new ProspectiveInterventionPreflight()
+                    .validate(new ProspectiveInterventionPreflight.Paths(
+                            receipt, paths, cacheDirectory, List.of(outputPath)));
+            BoundedFileSnapshot resultSnapshot = BoundedFileSnapshot.read(resultPath, MAXIMUM_PROSPECTIVE_REPORT_BYTES);
+            ProspectiveDiscoveryReport result =
+                    resultSnapshot.parse(new ObjectMapper(), ProspectiveDiscoveryReport.class);
+            ProspectiveDiscoveryReport reconstructed = ProspectiveDiscoveryReport.create(
+                    validated.manifest().manifest(),
+                    validated.census(),
+                    ProspectiveInterventionPreflight.artifact(
+                            validated.snapshots().get("v11-census")),
+                    ProspectiveInterventionPreflight.artifact(validated.receiptSnapshot()),
+                    result.experiment());
+            if (!result.equals(reconstructed)) {
+                throw new IllegalArgumentException("Prospective closure result is not derived from its frozen inputs");
+            }
+            ProspectiveClosureAssessment assessment = ProspectiveClosureValidator.evaluate(
+                    validated.dossier(), validated.ledger(), validated.review(), validated.v10Discovery(), result);
+            new FrozenJsonWriter().writeNew(outputPath, assessment);
+            System.out.println(new ObjectMapper().writeValueAsString(assessment));
+            return assessment.closureStatus().equals("VERIFIED") ? 0 : 2;
         }
     }
 

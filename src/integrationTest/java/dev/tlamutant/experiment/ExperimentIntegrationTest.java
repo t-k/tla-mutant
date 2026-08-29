@@ -3,6 +3,8 @@ package dev.tlamutant.experiment;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.tlamutant.tlc.TlcRunner;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -86,6 +88,12 @@ final class ExperimentIntegrationTest {
         MutationResult pass = result(report, "PassStep");
         assertEquals("adopted-target-invariant-kill", target.verdict());
         assertEquals("PASSED", target.attribution().typeOnlyOracleOutcome());
+        JsonNode targetAttribution = new ObjectMapper().valueToTree(target.attribution());
+        assertEquals(
+                "STATE_EXPANDING",
+                targetAttribution.path("typeOnlyStateRelation").asText(null));
+        assertTrue(
+                !targetAttribution.path("typeOnlyMutantOnlyWitness").asText("").isBlank());
         assertEquals("PASSED", target.attribution().legacyOracleOutcome());
         assertEquals("STATE_EXPANDING", target.attribution().legacyStateRelation());
         assertEquals("type-invariant-kill", type.verdict());
@@ -99,6 +107,30 @@ final class ExperimentIntegrationTest {
         assertTrue(Files.notExists(results.resolve(type.id() + "-legacy-states.jsonl")));
         assertTrue(Files.notExists(results.resolve(pass.id() + "-type-only-states.jsonl")));
         assertTrue(Files.notExists(results.resolve(pass.id() + "-legacy-states.jsonl")));
+    }
+
+    @Test
+    void recordsTypeOnlyExpansionAndWitnessWhenNoLegacyOracleExists() {
+        TlcRunner runner = TlcRunner.forCurrentJava(
+                Path.of(System.getProperty("tla.mutant.test.appJar")),
+                Path.of(System.getProperty("tla.mutant.test.toolsJar")));
+        ExperimentReport report = new ExperimentRunner(runner, Duration.ofSeconds(30))
+                .run(
+                        Path.of("src/testFixtures/resources/tla/attribution"),
+                        "AttributionFixture.tla",
+                        "AttributionFixture.cfg",
+                        temporaryDirectory.resolve("type-adopted-results"),
+                        new InvariantOracleSets(List.of("TypeOK"), List.of(), List.of("AdoptedOK")));
+
+        MutationResult target = result(report, "TargetStep");
+        JsonNode attribution = new ObjectMapper().valueToTree(target.attribution());
+
+        assertEquals("adopted-target-invariant-kill", target.verdict());
+        assertEquals("PASSED", target.attribution().typeOnlyOracleOutcome());
+        assertEquals(
+                "STATE_EXPANDING", attribution.path("typeOnlyStateRelation").asText(null));
+        assertTrue(!attribution.path("typeOnlyMutantOnlyWitness").asText("").isBlank());
+        assertEquals(null, target.attribution().legacyExecutionStatus());
     }
 
     private static MutationResult result(ExperimentReport report, String definition) {

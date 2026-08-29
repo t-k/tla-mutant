@@ -10,15 +10,52 @@ public record KillAttribution(
         String typeOnlyExecutionStatus,
         String typeOnlyOracleOutcome,
         Integer typeOnlyStateCount,
+        String typeOnlyStateRelation,
+        String typeOnlyMutantOnlyWitness,
         String legacyExecutionStatus,
         String legacyOracleOutcome,
         String legacyStateRelation,
         Integer legacyStateCount,
         String legacyMutantOnlyWitness,
         String diagnosticReason) {
+    public KillAttribution(
+            String category,
+            String typeOnlyExecutionStatus,
+            String typeOnlyOracleOutcome,
+            Integer typeOnlyStateCount,
+            String legacyExecutionStatus,
+            String legacyOracleOutcome,
+            String legacyStateRelation,
+            Integer legacyStateCount,
+            String legacyMutantOnlyWitness,
+            String diagnosticReason) {
+        this(
+                category,
+                typeOnlyExecutionStatus,
+                typeOnlyOracleOutcome,
+                typeOnlyStateCount,
+                null,
+                null,
+                legacyExecutionStatus,
+                legacyOracleOutcome,
+                legacyStateRelation,
+                legacyStateCount,
+                legacyMutantOnlyWitness,
+                diagnosticReason);
+    }
+
     public static KillAttribution classify(
             InvariantOracleSets sets,
             TlcExecution typeOnly,
+            TlcExecution legacy,
+            StateRelationAnalyzer.Analysis legacyRelation) {
+        return classify(sets, typeOnly, null, legacy, legacyRelation);
+    }
+
+    public static KillAttribution classify(
+            InvariantOracleSets sets,
+            TlcExecution typeOnly,
+            StateRelationAnalyzer.Analysis typeOnlyRelation,
             TlcExecution legacy,
             StateRelationAnalyzer.Analysis legacyRelation) {
         String category;
@@ -48,16 +85,13 @@ public record KillAttribution(
                 status(typeOnly),
                 oracle(typeOnly),
                 stateCount(typeOnly),
+                relation(typeOnlyRelation),
+                witness(typeOnlyRelation),
                 status(legacy),
                 oracle(legacy),
-                legacyRelation == null ? null : legacyRelation.relation().name(),
+                relation(legacyRelation),
                 stateCount(legacy),
-                legacyRelation == null
-                        ? null
-                        : legacyRelation
-                                .mutantOnlyWitness()
-                                .map(dev.tlamutant.state.CanonicalState::canonicalValue)
-                                .orElse(null),
+                witness(legacyRelation),
                 diagnostic);
     }
 
@@ -110,5 +144,17 @@ public record KillAttribution(
 
     private static Integer stateCount(TlcExecution execution) {
         return execution == null ? null : execution.states().size();
+    }
+
+    private static String relation(StateRelationAnalyzer.Analysis analysis) {
+        return analysis == null ? null : analysis.relation().name();
+    }
+
+    private static String witness(StateRelationAnalyzer.Analysis analysis) {
+        return analysis == null
+                ? null
+                : analysis.mutantOnlyWitness()
+                        .map(dev.tlamutant.state.CanonicalState::canonicalValue)
+                        .orElse(null);
     }
 }
