@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "profile": "gcd-stratified-v1",
+  "profile": "gcd-stratified-v2",
   "repository": "https://github.com/tlaplus/Examples",
   "commit": "ed3cc4c35f7001d7cec08a22dcd698dae7570dc3",
   "license": "MIT",
@@ -76,19 +76,18 @@
       "selection": {"cohort": "control", "gcdStratum": "control-baseline", "familyCluster": "termination-detection", "selectionRationale": "Configured-invariant kills and a state-equal GCD result make this a retained mixed control."}
     },
     {
-      "id": "lamport-mutex",
-      "domain": "distributed-mutual-exclusion",
-      "rootModule": "MCLamportMutex.tla",
-      "config": "MCLamportMutex.cfg",
+      "id": "prisoner-single-switch",
+      "domain": "coordination-puzzle",
+      "rootModule": "Prisoner.tla",
+      "config": "Prisoner.cfg",
       "files": [
-        {"path": "MCLamportMutex.tla", "repositoryPath": "specifications/lamport_mutex/MCLamportMutex.tla", "sha256": "2ebf6f863f504f76cfcb4a3bc8228aae1c5a896e7f2f8d046f8ab763656ccca8", "sizeBytes": 243},
-        {"path": "LamportMutex.tla", "repositoryPath": "specifications/lamport_mutex/LamportMutex.tla", "sha256": "dfa726da541fb0515ad482c3b5ca82c81b6f54df6626c3b9edfcebedc2a9c05a", "sizeBytes": 8922},
-        {"path": "MCLamportMutex.cfg", "repositoryPath": "specifications/lamport_mutex/MCLamportMutex.cfg", "sha256": "b91d46fb0a2f3af22fa65147c4c971d5cb9e42d141f63ad9035aa30cad51d118", "sizeBytes": 153}
+        {"path": "Prisoner.tla", "repositoryPath": "specifications/Prisoners_Single_Switch/Prisoner.tla", "sha256": "00f8885e6cc56862b7dbf349809ae4415d1eac77d7dfaa6e480316be7f0cbeea", "sizeBytes": 5995},
+        {"path": "Prisoner.cfg", "repositoryPath": "specifications/Prisoners_Single_Switch/Prisoner.cfg", "sha256": "57014b119f91c9a0ede76987c0d2f4ee9408bf618a38d00e1b26e9064b111562", "sizeBytes": 150}
       ],
       "typeInvariants": ["TypeOK"],
-      "targetInvariants": ["BoundedNetwork", "Mutex"],
+      "targetInvariants": ["VictoryOK"],
       "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
-      "selection": {"cohort": "gcd-enriched", "gcdStratum": "guarded-admission-positive-control", "familyCluster": "distributed-mutex", "selectionRationale": "Enter separates acknowledgement and ordering guards from the critical-section update."}
+      "selection": {"cohort": "gcd-enriched", "gcdStratum": "lifecycle-or-pc-ordering", "familyCluster": "prisoner-single-switch", "selectionRationale": "Counter and standard actions separate prisoner-role and switch guards from count and switch updates."}
     },
     {
       "id": "dining-philosophers",
@@ -161,48 +160,46 @@
       "selection": {"cohort": "gcd-enriched", "gcdStratum": "type-only-gap-prospect", "familyCluster": "river-crossing", "selectionRationale": "Boat-load enablement is separated from shore and boat updates; Solution is a goal predicate and is excluded from the State Invariant oracle."}
     },
     {
-      "id": "readers-writers",
-      "domain": "concurrency",
-      "rootModule": "MC.tla",
-      "config": "MC.cfg",
+      "id": "cigarette-smokers",
+      "domain": "resource-coordination",
+      "rootModule": "CigaretteSmokers.tla",
+      "config": "CigaretteSmokers.cfg",
       "files": [
-        {"path": "MC.tla", "repositoryPath": "specifications/ReadersWriters/MC.tla", "sha256": "ebaa5772aab4758cfc62d249dcae493c60008ced982f428764212feb14a33366", "sizeBytes": 287},
-        {"path": "ReadersWriters.tla", "repositoryPath": "specifications/ReadersWriters/ReadersWriters.tla", "sha256": "3b51a02efbb409271f00133e32096459e4d0db2deb196dcbbee25638d0d07c8d", "sizeBytes": 3415},
-        {"path": "MC.cfg", "repositoryPath": "specifications/ReadersWriters/MC.cfg", "sha256": "71c402125bae63c3ac0cf685d990282ab50f8b360f1cfdc8749ad9c1a33f636f", "sizeBytes": 108}
+        {"path": "CigaretteSmokers.tla", "repositoryPath": "specifications/CigaretteSmokers/CigaretteSmokers.tla", "sha256": "c0dc0ebf3fef3e95be8f7173197f6798f4c2ada5e99aa34fcadc9f71bececa51", "sizeBytes": 2942},
+        {"path": "CigaretteSmokers.cfg", "repositoryPath": "specifications/CigaretteSmokers/CigaretteSmokers.cfg", "sha256": "1d3b7af9618a5ed95a4a27562827259196706c3ec5e2976f3a171938757ac3f8", "sizeBytes": 168}
       ],
       "typeInvariants": ["TypeOK"],
-      "targetInvariants": ["Safety"],
+      "targetInvariants": ["AtMostOne"],
       "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
-      "selection": {"cohort": "gcd-enriched", "gcdStratum": "guarded-admission-positive-control", "familyCluster": "readers-writers", "selectionRationale": "Reader and writer admission guards are separated from queue and ownership updates."}
+      "selection": {"cohort": "gcd-enriched", "gcdStratum": "guarded-admission-positive-control", "familyCluster": "cigarette-smokers", "selectionRationale": "Smoking actions separate dealer and ingredient guards from smoker and dealer updates."}
     },
     {
-      "id": "slush-small",
-      "domain": "probabilistic-consensus",
-      "rootModule": "Slush.tla",
-      "config": "SlushSmall.cfg",
+      "id": "glowing-raccoon-clean",
+      "domain": "biochemical-process",
+      "rootModule": "clean.tla",
+      "config": "clean.cfg",
       "files": [
-        {"path": "Slush.tla", "repositoryPath": "specifications/SlushProtocol/Slush.tla", "sha256": "95303e105352d257abfd17feb6363948f728364a0aa47b043e43fd4118e3b16f", "sizeBytes": 15827},
-        {"path": "SlushSmall.cfg", "repositoryPath": "specifications/SlushProtocol/SlushSmall.cfg", "sha256": "61aff32a7e3d47874166d83bbdaf8216dc0f7b5692b6018696fbfb5b52104ba1", "sizeBytes": 333}
+        {"path": "clean.tla", "repositoryPath": "specifications/glowingRaccoon/clean.tla", "sha256": "48ba67d167d158f4e34238e13b135ad83cb705ea12d842c0a3506ff851990d73", "sizeBytes": 4013},
+        {"path": "clean.cfg", "repositoryPath": "specifications/glowingRaccoon/clean.cfg", "sha256": "2b7080287e3d0b68acc3c9c6ee647ab8f9d5814cb7899a88d7c5c12ead8bd3d8", "sizeBytes": 138}
       ],
-      "typeInvariants": ["TypeInvariant"],
+      "typeInvariants": ["TypeOK"],
+      "targetInvariants": ["primerPositive", "preservationInvariant"],
+      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
+      "selection": {"cohort": "gcd-enriched", "gcdStratum": "type-only-gap-prospect", "familyCluster": "polymerase-chain-reaction", "selectionRationale": "Heat, cool, anneal, and extend separate temperature guards from biochemical-state updates."}
+    },
+    {
+      "id": "cf1s-folklore",
+      "domain": "crash-fault-consensus",
+      "rootModule": "cf1s_folklore.tla",
+      "config": "cf1s_folklore.cfg",
+      "files": [
+        {"path": "cf1s_folklore.tla", "repositoryPath": "specifications/cf1s-folklore/cf1s_folklore.tla", "sha256": "50dec6842e4af32c020bf0d72dd2c7b11cc89b574218aa206c23c04ad3d1e7e2", "sizeBytes": 5267},
+        {"path": "cf1s_folklore.cfg", "repositoryPath": "specifications/cf1s-folklore/cf1s_folklore.cfg", "sha256": "7d0a10cbdee6feff4759fdbfd28f08ff3aefae05d665a03177486d787bcf8af8", "sizeBytes": 109}
+      ],
+      "typeInvariants": ["TypeOK"],
       "targetInvariants": [],
       "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
-      "selection": {"cohort": "gcd-enriched", "gcdStratum": "type-only-gap-prospect", "familyCluster": "avalanche-consensus", "selectionRationale": "Color and program-counter guards are separated from pick, message, and program-counter updates in the fixed small model."}
-    },
-    {
-      "id": "single-lane-bridge",
-      "domain": "traffic-safety",
-      "rootModule": "MC.tla",
-      "config": "MC.cfg",
-      "files": [
-        {"path": "MC.tla", "repositoryPath": "specifications/SingleLaneBridge/MC.tla", "sha256": "ffde8f33fd0c4fdf75e6e719637837397f3607550981e40516b5a56e2b70c75e", "sizeBytes": 638},
-        {"path": "SingleLaneBridge.tla", "repositoryPath": "specifications/SingleLaneBridge/SingleLaneBridge.tla", "sha256": "57315058ea10d408fd00bf6142bcd735d5848a0f835fbb6c3721a64b9e7465a5", "sizeBytes": 4695},
-        {"path": "MC.cfg", "repositoryPath": "specifications/SingleLaneBridge/MC.cfg", "sha256": "903e5e0e79daa9e074b619acf1ffabe167bc2c5b01232da2380d279726504045", "sizeBytes": 491}
-      ],
-      "typeInvariants": [],
-      "targetInvariants": ["Invariants"],
-      "limits": {"cpuSeconds": 60, "memoryBytes": 1073741824, "pids": 128, "openFiles": 256, "fileBytes": 67108864, "fileCount": 4096, "stdoutBytes": 1048576, "stderrBytes": 1048576, "states": 100000, "wallClockSeconds": 90},
-      "selection": {"cohort": "gcd-enriched", "gcdStratum": "collision-or-capacity", "familyCluster": "single-lane-bridge", "selectionRationale": "MoveInsideBridge separates membership and collision guards from location updates."}
+      "selection": {"cohort": "gcd-enriched", "gcdStratum": "collision-or-capacity", "familyCluster": "crash-fault-consensus", "selectionRationale": "Fault and decide actions separate failure, status, and quorum guards from counter and process-state updates."}
     },
     {
       "id": "bcast-folklore",

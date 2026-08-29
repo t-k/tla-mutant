@@ -19,15 +19,15 @@ final class StratifiedManifestIntegrationTest {
             "barrier",
             "token-ring",
             "asynchronous-termination-detection",
-            "lamport-mutex",
+            "prisoner-single-switch",
             "dining-philosophers",
             "simple-allocator",
             "voucher-life-cycle",
             "tcommit",
             "missionaries-and-cannibals",
-            "readers-writers",
-            "slush-small",
-            "single-lane-bridge",
+            "cigarette-smokers",
+            "glowing-raccoon-clean",
+            "cf1s-folklore",
             "bcast-folklore");
     private static final ExecutionPolicy.Limits GLOBAL = new ExecutionPolicy.Limits(
             120, 1_073_741_824, 128, 256, 67_108_864, 4096, 1_048_576, 1_048_576, 1_000_000, 180);
@@ -38,7 +38,7 @@ final class StratifiedManifestIntegrationTest {
                 .readValue(Path.of("corpus/gcd-stratified-manifest.json").toFile(), CorpusManifest.class);
 
         assertEquals(2, manifest.version());
-        assertEquals("gcd-stratified-v1", manifest.profile());
+        assertEquals("gcd-stratified-v2", manifest.profile());
         assertEquals("ed3cc4c35f7001d7cec08a22dcd698dae7570dc3", manifest.commit());
         assertEquals(
                 APPROVED_IDS,

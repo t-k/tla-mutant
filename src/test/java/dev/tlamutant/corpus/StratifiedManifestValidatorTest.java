@@ -35,6 +35,20 @@ final class StratifiedManifestValidatorTest {
     }
 
     @Test
+    void acceptsTheVersionedReselectionProfile() {
+        CorpusManifest original = manifest(5, 10);
+        CorpusManifest manifest = new CorpusManifest(
+                original.version(),
+                "gcd-stratified-v2",
+                original.repository(),
+                original.commit(),
+                original.license(),
+                original.entries());
+
+        assertSame(manifest, StratifiedManifestValidator.validate(manifest, GLOBAL));
+    }
+
+    @Test
     void rejectsWrongCohortCountsOrTooFewEnrichedStrata() {
         CorpusManifest wrongCounts = manifest(4, 11);
         CorpusManifest tooFewStrata = withSelections(manifest(5, 10).entries().stream()

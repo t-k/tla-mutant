@@ -38,7 +38,7 @@ The public-source investigation at commit `ed3cc4c35f7001d7cec08a22dcd698dae7570
 ## Specification Delta
 
 - S01: Schema-version-1 manifests and original reports remain reproducible.
-- S02: Schema-version-2 profile `gcd-stratified-v1` contains exactly five controls and ten enriched entries.
+- S02: Schema-version-2 profiles `gcd-stratified-v1` and `gcd-stratified-v2` contain exactly five controls and ten enriched entries; v2 is the versioned outcome-free reselection.
 - S03: Selection metadata is finite, bounded, allowlisted, and immutable for the run.
 - S04: Public census parsing occurs only inside rootless Podman.
 - S05: Census output contains structural attributes only and cannot contain mutation outcomes.
@@ -62,6 +62,7 @@ The public-source investigation at commit `ed3cc4c35f7001d7cec08a22dcd698dae7570
 - I08: Kills remain unattributed until Type Invariant reruns exist.
 - I09: One large or related specification family cannot silently dominate the reported rate.
 - I10: Sandbox success, failure, timeout, output truncation, interruption, and cancellation leave no run-labeled resource.
+- I11: Nonliteral configured transition actions use the same root-module GCD eligibility as literal `Next` without enabling imported-source patching.
 
 ## Partition Axes and Constraints
 

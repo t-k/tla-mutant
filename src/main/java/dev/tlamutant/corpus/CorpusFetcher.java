@@ -160,7 +160,7 @@ public final class CorpusFetcher {
     private static void validateManifest(CorpusManifest manifest) {
         Objects.requireNonNull(manifest, "manifest");
         boolean acceptedProfile = (manifest.version() == 1 && manifest.profile() == null)
-                || (manifest.version() == 2 && "gcd-stratified-v1".equals(manifest.profile()));
+                || (manifest.version() == 2 && StratifiedManifestValidator.isApprovedProfile(manifest.profile()));
         if (!acceptedProfile
                 || !REPOSITORY.equals(manifest.repository())
                 || manifest.commit() == null

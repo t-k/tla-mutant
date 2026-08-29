@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 public final class StratifiedManifestValidator {
-    private static final String PROFILE = "gcd-stratified-v1";
+    private static final Set<String> PROFILES = Set.of("gcd-stratified-v1", "gcd-stratified-v2");
     private static final String CONTROL = "control";
     private static final String ENRICHED = "gcd-enriched";
     private static final String CONTROL_STRATUM = "control-baseline";
@@ -23,7 +23,7 @@ public final class StratifiedManifestValidator {
     public static CorpusManifest validate(CorpusManifest manifest, ExecutionPolicy.Limits globalLimits) {
         Objects.requireNonNull(manifest, "manifest");
         Objects.requireNonNull(globalLimits, "globalLimits");
-        if (manifest.version() != 2 || !PROFILE.equals(manifest.profile())) {
+        if (manifest.version() != 2 || !isApprovedProfile(manifest.profile())) {
             throw new IllegalArgumentException("Expected the approved GCD-stratified manifest profile");
         }
         if (manifest.entries() == null || manifest.entries().size() != 15) {
@@ -69,6 +69,10 @@ public final class StratifiedManifestValidator {
             throw new IllegalArgumentException("The enriched cohort must cover at least three strata");
         }
         return manifest;
+    }
+
+    static boolean isApprovedProfile(String profile) {
+        return PROFILES.contains(profile);
     }
 
     private static void requireIdentifier(String value, String name) {

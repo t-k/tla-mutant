@@ -56,24 +56,26 @@ The first experiment artifacts and `corpus/manifest.json` remain unchanged. The 
 
 | ID | Domain | Stratum | Repository files | Prospective rationale |
 | --- | --- | --- | --- | --- |
-| `lamport-mutex` | distributed mutual exclusion | guarded-admission-positive-control | `specifications/lamport_mutex/MCLamportMutex.tla`, `LamportMutex.tla`, `MCLamportMutex.cfg` | `Enter` separates acknowledgement and ordering guards from the critical-section update. |
+| `prisoner-single-switch` | coordination puzzle | lifecycle-or-pc-ordering | `specifications/Prisoners_Single_Switch/Prisoner.tla`, `Prisoner.cfg` | Counter and standard actions separate prisoner-role and switch guards from count and switch updates. |
 | `dining-philosophers` | concurrency | lifecycle-or-pc-ordering | `specifications/DiningPhilosophers/DiningPhilosophers.tla`, `DiningPhilosophers.cfg` | `Think` and `Eat` separate program-counter guards from fork, hunger, and program-counter updates. |
 | `simple-allocator` | resource allocation | guarded-admission-positive-control | `specifications/allocator/SimpleAllocator.tla`, `SimpleAllocator.cfg` | `Allocate` separates availability from allocation updates. |
 | `voucher-life-cycle` | lifecycle | lifecycle-or-pc-ordering | `specifications/byihive/VoucherLifeCycle.tla`, `VoucherLifeCycle.cfg` | Lifecycle guards are separated from voucher-state updates. |
 | `tcommit` | transaction protocol | lifecycle-or-pc-ordering | `specifications/transaction_commit/TCommit.tla`, `TCommit.cfg` | `Prepare` separates the working-state guard from RM-state update. |
 | `missionaries-and-cannibals` | planning puzzle | type-only-gap-prospect | `specifications/MissionariesAndCannibals/MissionariesAndCannibals.tla`, `MissionariesAndCannibals.cfg` | Boat-load enablement is separated from shore and boat updates; `Solution` is a goal predicate, not an invariant oracle. |
-| `readers-writers` | concurrency | guarded-admission-positive-control | `specifications/ReadersWriters/MC.tla`, `ReadersWriters.tla`, `MC.cfg` | Reader/writer admission guards are separated from queue and ownership updates. |
-| `slush-small` | probabilistic consensus | type-only-gap-prospect | `specifications/SlushProtocol/Slush.tla`, `SlushSmall.cfg` | Color and program-counter guards are separated from pick, message, and program-counter updates in the fixed small model. |
-| `single-lane-bridge` | traffic safety | collision-or-capacity | `specifications/SingleLaneBridge/MC.tla`, `SingleLaneBridge.tla`, `MC.cfg` | `MoveInsideBridge` separates membership and collision guards from location updates. |
+| `cigarette-smokers` | resource coordination | guarded-admission-positive-control | `specifications/CigaretteSmokers/CigaretteSmokers.tla`, `CigaretteSmokers.cfg` | Smoking actions separate dealer and ingredient guards from smoker and dealer updates. |
+| `glowing-raccoon-clean` | biochemical process | type-only-gap-prospect | `specifications/glowingRaccoon/clean.tla`, `clean.cfg` | Heat, cool, and anneal separate temperature guards from biochemical-state updates. |
+| `cf1s-folklore` | crash-fault consensus | collision-or-capacity | `specifications/cf1s-folklore/cf1s_folklore.tla`, `cf1s_folklore.cfg` | Fault and decide actions separate failure, status, and quorum guards from counter and process-state updates. |
 | `bcast-folklore` | reliable broadcast | type-only-gap-prospect | `specifications/bcastFolklore/bcastFolklore.tla`, `bcastFolklore.cfg` | The crash-bound guard is separated from crash-state updates while the existing configuration declares only its existing state invariant. |
 
 The original source-shape shortlist included `lock`, `peterson`, and `teaching-concurrency-simple`. Before any census or mutation run, dependency inspection showed that all three import `TLAPS`, which is supplied by the separate TLAPM proof-library distribution rather than the pinned Examples revision or the pinned TLA+ Tools JAR. Adding that separate supply chain would widen the approved sandbox provenance boundary. The preregistration therefore replaces them with `lamport-mutex`, `dining-philosophers`, and `slush-small`, selected by the same outcome-free source-shape criteria. No mutation outcome was inspected when making this amendment.
+
+The first preregistered census exposed two implementation-independent cohort failures and one eligibility defect before any mutation run. Three wrapper-root entries had no root-module site, and `slush-small` contributed 14 of 54 repaired raw sites, exceeding the 25% family-cluster cap. The census also showed that transition discovery had been tied to the literal name `Next`; a local RED fixture established the same false negative for a configured action named `Advance`. The repair recognizes the root-module action subtree reached by a configured `SPECIFICATION` without adding multi-module patch routing. Two outcome-free discovery censuses then replaced only the zero-site entries and the over-cap entry. The resulting `gcd-stratified-v2` cohort has 51 raw sites, with the largest family cluster contributing 9 sites. Mutation outcomes remained unobserved throughout reselection.
 
 No family cluster may contribute more than 25% of all GCD sites. If the preregistered census violates this limit, the mutation phase must not start; a replacement cohort requires a new versioned preregistration rather than an in-place edit. The report must show both specification-weighted and site-weighted denominators so a large specification cannot silently dominate the result.
 
 ## Manifest Metadata
 
-The new manifest uses schema version 2 and profile `gcd-stratified-v1`. Existing schema-version-1 manifests remain valid and reproducible.
+The new manifest uses schema version 2 and profile `gcd-stratified-v2`. The validator also retains `gcd-stratified-v1` so its failed and repaired census artifacts remain reproducible. Existing schema-version-1 manifests remain valid and reproducible.
 
 Each version-2 entry adds one selection object:
 
@@ -125,7 +127,14 @@ The census artifact is written before the mutation report and content-addressed 
 
 ## Outcome Reporting
 
-The original artifacts remain at `docs/experiments/vertical-slice.*`. New artifacts are:
+The original artifacts remain at `docs/experiments/vertical-slice.*`. Preregistration audit artifacts are:
+
+- `docs/experiments/gcd-stratified-census-v1-failed.json`;
+- `docs/experiments/gcd-stratified-census-v1-repaired.json`;
+- `docs/experiments/gcd-stratified-census-discovery.json`;
+- `docs/experiments/gcd-stratified-census-discovery-2.json`.
+
+Final experiment artifacts are:
 
 - `docs/experiments/gcd-stratified-census.json`;
 - `docs/experiments/gcd-stratified.json`;
