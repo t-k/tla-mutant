@@ -18,12 +18,15 @@ import dev.tlamutant.experiment.ExperimentReport;
 import dev.tlamutant.experiment.ExperimentRunner;
 import dev.tlamutant.experiment.GcdStratifiedReport;
 import dev.tlamutant.experiment.InvariantOracleSets;
+import dev.tlamutant.prospective.ProspectiveAssessment;
 import dev.tlamutant.prospective.ProspectiveCensusReport;
 import dev.tlamutant.prospective.ProspectiveCensusValidator;
 import dev.tlamutant.prospective.ProspectiveDiscoveryReport;
 import dev.tlamutant.prospective.ProspectivePreflight;
 import dev.tlamutant.prospective.ProspectiveReceipt;
 import dev.tlamutant.prospective.ProspectiveReviewDossier;
+import dev.tlamutant.prospective.ProspectiveReviewLedger;
+import dev.tlamutant.prospective.ProspectiveReviewValidator;
 import dev.tlamutant.prospective.ProspectiveSemanticComparator;
 import dev.tlamutant.report.AtomicJsonWriter;
 import dev.tlamutant.report.AtomicTextWriter;
@@ -61,6 +64,7 @@ import picocli.CommandLine;
             Main.ProspectiveExperimentCommand.class,
             Main.CompareProspectiveReportsCommand.class,
             Main.ProspectiveReviewDossierCommand.class,
+            Main.ValidateProspectiveReviewCommand.class,
             Main.CorpusExperimentCommand.class,
             Main.ValidateManifestCommand.class
         })
@@ -476,6 +480,48 @@ public final class Main implements Runnable {
                     artifact(discoverySnapshot));
             new FrozenJsonWriter().writeNew(output, dossier);
             System.out.println(mapper.writeValueAsString(dossier));
+            return 0;
+        }
+    }
+
+    @CommandLine.Command(
+            name = "validate-prospective-review",
+            mixinStandardHelpOptions = true,
+            description = "Validate a complete user-delegated review and publish its assessment.")
+    static final class ValidateProspectiveReviewCommand implements Callable<Integer> {
+        @CommandLine.Option(names = "--dossier", required = true)
+        Path dossierPath;
+
+        @CommandLine.Option(names = "--review", required = true)
+        Path reviewPath;
+
+        @CommandLine.Option(names = "--assessment", required = true)
+        Path assessmentPath;
+
+        @CommandLine.Option(names = "--intervention-cap", defaultValue = "3")
+        int interventionCap;
+
+        @Override
+        public Integer call() throws Exception {
+            Path dossier = dossierPath.toAbsolutePath().normalize();
+            Path review = reviewPath.toAbsolutePath().normalize();
+            Path assessment = assessmentPath.toAbsolutePath().normalize();
+            if (dossier.equals(review)
+                    || dossier.equals(assessment)
+                    || review.equals(assessment)
+                    || Files.exists(assessment)) {
+                throw new IllegalArgumentException("Prospective review paths must be disjoint and output must be new");
+            }
+            ObjectMapper mapper = new ObjectMapper();
+            BoundedFileSnapshot dossierSnapshot = BoundedFileSnapshot.read(dossier, MAXIMUM_PROSPECTIVE_REPORT_BYTES);
+            BoundedFileSnapshot reviewSnapshot = BoundedFileSnapshot.read(review, MAXIMUM_PROSPECTIVE_REPORT_BYTES);
+            ProspectiveReviewDossier parsedDossier = dossierSnapshot.parse(mapper, ProspectiveReviewDossier.class);
+            ProspectiveReviewLedger ledger = reviewSnapshot.parse(mapper, ProspectiveReviewLedger.class);
+            ProspectiveReviewValidator.ValidatedReview validated = ProspectiveReviewValidator.validate(
+                    parsedDossier, artifact(dossierSnapshot), ledger, interventionCap);
+            ProspectiveAssessment result = ProspectiveAssessment.review(parsedDossier, validated);
+            new FrozenTextWriter().writeNew(assessment, new ProspectiveMarkdownWriter().renderReview(result));
+            System.out.println(mapper.writeValueAsString(result));
             return 0;
         }
     }
