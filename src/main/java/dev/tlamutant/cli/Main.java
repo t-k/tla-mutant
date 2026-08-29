@@ -18,6 +18,9 @@ import dev.tlamutant.experiment.ExperimentReport;
 import dev.tlamutant.experiment.ExperimentRunner;
 import dev.tlamutant.experiment.GcdStratifiedReport;
 import dev.tlamutant.experiment.InvariantOracleSets;
+import dev.tlamutant.prospective.ProspectiveCensusReport;
+import dev.tlamutant.prospective.ProspectiveCensusValidator;
+import dev.tlamutant.prospective.ProspectivePreflight;
 import dev.tlamutant.report.AtomicJsonWriter;
 import dev.tlamutant.report.AtomicTextWriter;
 import dev.tlamutant.report.CorpusMarkdownReportWriter;
@@ -48,6 +51,7 @@ import picocli.CommandLine;
             Main.CensusCommand.class,
             Main.GcdStratifiedCensusCommand.class,
             Main.GcdStratifiedExperimentCommand.class,
+            Main.ProspectiveCensusCommand.class,
             Main.CorpusExperimentCommand.class,
             Main.ValidateManifestCommand.class
         })
@@ -223,6 +227,79 @@ public final class Main implements Runnable {
     }
 
     @CommandLine.Command(
+            name = "prospective-census",
+            mixinStandardHelpOptions = true,
+            description = "Freeze the failure-preserving census for the receipt-bound prospective holdout.")
+    static final class ProspectiveCensusCommand implements Callable<Integer> {
+        @CommandLine.Option(names = "--registry", required = true)
+        Path registryPath;
+
+        @CommandLine.Option(names = "--protocol", required = true)
+        Path protocolPath;
+
+        @CommandLine.Option(names = "--manifest", required = true)
+        Path manifestPath;
+
+        @CommandLine.Option(names = "--receipt", required = true)
+        Path receiptPath;
+
+        @CommandLine.Option(names = "--policy", required = true)
+        Path policyPath;
+
+        @CommandLine.Option(names = "--tools-jar", required = true)
+        Path toolsJar;
+
+        @CommandLine.Option(names = "--cache-dir", required = true)
+        Path cacheDirectory;
+
+        @CommandLine.Option(names = "--census-report", required = true)
+        Path censusReportPath;
+
+        @CommandLine.Option(names = "--failed-census-report", required = true)
+        Path failedCensusReportPath;
+
+        @Override
+        public Integer call() throws Exception {
+            ObjectMapper mapper = new ObjectMapper();
+            Path application = applicationJar();
+            ProspectivePreflight.ValidatedDiscoveryInputs validated = new ProspectivePreflight()
+                    .validateDiscovery(new ProspectivePreflight.DiscoveryPaths(
+                            receiptPath,
+                            registryPath,
+                            protocolPath,
+                            manifestPath,
+                            policyPath,
+                            toolsJar,
+                            application,
+                            cacheDirectory,
+                            List.of(censusReportPath, failedCensusReportPath)));
+            Files.createDirectories(cacheDirectory.toAbsolutePath().normalize());
+            CensusInputIdentity inputs = prospectiveInputs(validated);
+            CorpusCensusReport census;
+            try (TemporaryFileSnapshot frozenApplication =
+                            TemporaryFileSnapshot.create(validated.snapshots().get("application"), "application.jar");
+                    TemporaryFileSnapshot frozenTools =
+                            TemporaryFileSnapshot.create(validated.snapshots().get("tools"), "tla2tools.jar")) {
+                census = new CorpusCensusRunner(
+                                frozenApplication.path(), frozenTools.path(), cacheDirectory, validated.policy())
+                        .run(validated.manifest(), inputs);
+            }
+            ProspectiveCensusReport report =
+                    new ProspectiveCensusReport(1, artifact(validated.receiptSnapshot()), census);
+            try {
+                ProspectiveCensusValidator.validate(
+                        validated.manifest().manifest(), report, artifact(validated.receiptSnapshot()), inputs);
+            } catch (RuntimeException failure) {
+                new FrozenJsonWriter().writeNew(failedCensusReportPath, report);
+                throw failure;
+            }
+            new FrozenJsonWriter().writeNew(censusReportPath, report);
+            System.out.println(mapper.writeValueAsString(report));
+            return 0;
+        }
+    }
+
+    @CommandLine.Command(
             name = "gcd-stratified-experiment",
             mixinStandardHelpOptions = true,
             description = "Run the preregistered corpus only after validating its frozen GCD census.")
@@ -306,6 +383,14 @@ public final class Main implements Runnable {
             BoundedFileSnapshot tools,
             BoundedFileSnapshot application) {
         return new CensusInputIdentity(artifact(manifest), artifact(policy), artifact(tools), artifact(application));
+    }
+
+    private static CensusInputIdentity prospectiveInputs(ProspectivePreflight.ValidatedDiscoveryInputs validated) {
+        return new CensusInputIdentity(
+                artifact(validated.snapshots().get("manifest")),
+                artifact(validated.snapshots().get("policy")),
+                artifact(validated.snapshots().get("tools")),
+                artifact(validated.snapshots().get("application")));
     }
 
     private static CensusInputIdentity.Artifact artifact(BoundedFileSnapshot snapshot) {

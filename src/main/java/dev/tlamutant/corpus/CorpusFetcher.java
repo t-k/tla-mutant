@@ -50,6 +50,24 @@ public final class CorpusFetcher {
             CorpusManifest manifest, CorpusManifest.Entry entry, ExecutionPolicy.Limits globalLimits, Path cacheRoot) {
         validateManifest(manifest);
         ManifestValidator.validateEntry(entry, globalLimits);
+        return fetchValidated(manifest, entry, cacheRoot);
+    }
+
+    public Path fetch(
+            ValidatedCorpusManifest validated,
+            CorpusManifest.Entry entry,
+            ExecutionPolicy.Limits globalLimits,
+            Path cacheRoot) {
+        Objects.requireNonNull(validated, "validated");
+        CorpusManifest manifest = validated.manifest();
+        if (!manifest.entries().contains(entry)) {
+            throw new IllegalArgumentException("Entry is not a member of the validated corpus manifest");
+        }
+        ManifestValidator.validateEntry(entry, globalLimits);
+        return fetchValidated(manifest, entry, cacheRoot);
+    }
+
+    private Path fetchValidated(CorpusManifest manifest, CorpusManifest.Entry entry, Path cacheRoot) {
         SafeRelativePath commit = SafeRelativePath.parse(manifest.commit());
         SafeRelativePath id = SafeRelativePath.parse(entry.id());
         Path root = cacheRoot.toAbsolutePath().normalize();

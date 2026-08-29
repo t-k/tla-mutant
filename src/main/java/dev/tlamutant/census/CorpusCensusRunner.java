@@ -6,6 +6,7 @@ import dev.tlamutant.config.ExecutionPolicy;
 import dev.tlamutant.corpus.CorpusFetcher;
 import dev.tlamutant.corpus.CorpusInputSnapshot;
 import dev.tlamutant.corpus.CorpusManifest;
+import dev.tlamutant.corpus.ValidatedCorpusManifest;
 import dev.tlamutant.sandbox.PodmanExecution;
 import dev.tlamutant.sandbox.PodmanRunner;
 import dev.tlamutant.security.StrictJson;
@@ -32,16 +33,29 @@ public final class CorpusCensusRunner {
     }
 
     public CorpusCensusReport run(CorpusManifest manifest, CensusInputIdentity inputs) {
+        return runEntries(manifest, null, inputs);
+    }
+
+    public CorpusCensusReport run(ValidatedCorpusManifest validated, CensusInputIdentity inputs) {
+        Objects.requireNonNull(validated, "validated");
+        return runEntries(validated.manifest(), validated, inputs);
+    }
+
+    private CorpusCensusReport runEntries(
+            CorpusManifest manifest, ValidatedCorpusManifest validated, CensusInputIdentity inputs) {
         List<CorpusCensusEntryResult> results = new ArrayList<>();
         for (CorpusManifest.Entry entry : manifest.entries()) {
-            results.add(runEntry(manifest, entry));
+            results.add(runEntry(manifest, validated, entry));
         }
         return CorpusCensusReport.create(manifest.profile(), manifest.repository(), manifest.commit(), inputs, results);
     }
 
-    private CorpusCensusEntryResult runEntry(CorpusManifest manifest, CorpusManifest.Entry entry) {
+    private CorpusCensusEntryResult runEntry(
+            CorpusManifest manifest, ValidatedCorpusManifest validated, CorpusManifest.Entry entry) {
         try {
-            Path input = fetcher.fetch(manifest, entry, policy.limits(), cacheRoot);
+            Path input = validated == null
+                    ? fetcher.fetch(manifest, entry, policy.limits(), cacheRoot)
+                    : fetcher.fetch(validated, entry, policy.limits(), cacheRoot);
             PodmanExecution execution;
             try (CorpusInputSnapshot snapshot = CorpusInputSnapshot.create(input, entry)) {
                 PodmanRunner sandbox =
