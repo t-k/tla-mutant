@@ -23,18 +23,32 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.LongSupplier;
 
 public final class ExperimentRunner {
     private static final long MAXIMUM_MODULE_BYTES = 64L * 1024 * 1024;
     private static final int MAXIMUM_FULL_PROPERTY_MUTANTS = 1024;
+    private static final Duration DEFAULT_FULL_PROPERTY_TIMEOUT = Duration.ofHours(1);
     private final TlcRunner tlcRunner;
     private final Duration timeout;
+    private final Duration fullPropertyTimeout;
+    private final LongSupplier nanoTime;
     private final SanyAnalyzer sanyAnalyzer = new SanyAnalyzer();
     private final StateRelationAnalyzer relationAnalyzer = new StateRelationAnalyzer();
 
     public ExperimentRunner(TlcRunner tlcRunner, Duration timeout) {
+        this(tlcRunner, timeout, DEFAULT_FULL_PROPERTY_TIMEOUT);
+    }
+
+    public ExperimentRunner(TlcRunner tlcRunner, Duration timeout, Duration fullPropertyTimeout) {
+        this(tlcRunner, timeout, fullPropertyTimeout, System::nanoTime);
+    }
+
+    ExperimentRunner(TlcRunner tlcRunner, Duration timeout, Duration fullPropertyTimeout, LongSupplier nanoTime) {
         this.tlcRunner = Objects.requireNonNull(tlcRunner, "tlcRunner");
         this.timeout = Objects.requireNonNull(timeout, "timeout");
+        this.fullPropertyTimeout = Objects.requireNonNull(fullPropertyTimeout, "fullPropertyTimeout");
+        this.nanoTime = Objects.requireNonNull(nanoTime, "nanoTime");
     }
 
     public ExperimentReport run(Path modelDirectory, String moduleFile, String configFile, Path resultDirectory) {
@@ -66,9 +80,11 @@ public final class ExperimentRunner {
             Path resultDirectory,
             ExperimentInputIdentity inputs) {
         Objects.requireNonNull(inputs, "inputs");
+        FullPropertyDeadline deadline = FullPropertyDeadline.start(fullPropertyTimeout, nanoTime);
         Path modelRoot = modelDirectory.toAbsolutePath().normalize();
         Path results = resultDirectory.toAbsolutePath().normalize();
         try (FullPropertyModelSnapshot frozenModel = FullPropertyModelSnapshot.create(modelRoot)) {
+            requireRemaining(deadline, "model snapshot");
             Files.createDirectories(results);
             SourceDocument source = SourceDocument.read(frozenModel.root().resolve(moduleFile));
             BoundedFileSnapshot moduleSnapshot =
@@ -77,17 +93,28 @@ public final class ExperimentRunner {
                     BoundedFileSnapshot.read(frozenModel.root().resolve(configFile), 8L * 1024 * 1024);
             validateFullPropertyInputs(inputs, moduleSnapshot, configSnapshot);
             ExperimentInputIdentity frozenInputs = inputs.withModelFiles(frozenModel.files());
+            requireRemaining(deadline, "input snapshot");
             SemanticProject project = sanyAnalyzer.analyze(frozenModel.root(), moduleFile, configFile);
+            requireRemaining(deadline, "baseline semantic analysis");
             List<MutationCandidate> candidates = boundedCandidates(project, source);
+            requireRemaining(deadline, "candidate generation");
 
             TlcExecution baseline = runFullPropertyTlc(
-                    frozenModel.root(), moduleFile, configFile, results.resolve("baseline-states.jsonl"), timeout);
+                    frozenModel.root(),
+                    moduleFile,
+                    configFile,
+                    results.resolve("baseline-states.jsonl"),
+                    remainingOrThrow(deadline, "baseline TLC"));
             requirePassingBaseline(baseline);
 
             List<MutationResult> mutationResults = new ArrayList<>();
             for (MutationCandidate candidate : candidates) {
-                mutationResults.add(runFullPropertyCandidate(
-                        frozenModel, moduleFile, configFile, results, source, baseline, candidate));
+                if (deadline.expired()) {
+                    mutationResults.add(deadlineExpiredResult(source, baseline, candidate));
+                } else {
+                    mutationResults.add(runFullPropertyCandidate(
+                            frozenModel, moduleFile, configFile, results, source, baseline, candidate, deadline));
+                }
             }
             int evaluated = (int) mutationResults.stream()
                     .filter(result -> result.executionStatus().equals(ExecutionStatus.COMPLETED.name()))
@@ -250,19 +277,36 @@ public final class ExperimentRunner {
             Path results,
             SourceDocument source,
             TlcExecution baseline,
-            MutationCandidate candidate) {
+            MutationCandidate candidate,
+            FullPropertyDeadline deadline) {
         SourceDocument patched = new SourcePatcher().apply(source, candidate);
+        if (deadline.expired()) {
+            return deadlineExpiredResult(source, patched, baseline, candidate);
+        }
         TlcExecution mutant;
         try (FullPropertyModelSnapshot.Workspace workspace = model.createWorkspace()) {
+            if (deadline.expired()) {
+                return deadlineExpiredResult(source, patched, baseline, candidate);
+            }
             workspace.replace(moduleFile, patched.content());
             workspace.seal();
+            if (deadline.expired()) {
+                return deadlineExpiredResult(source, patched, baseline, candidate);
+            }
             sanyAnalyzer.analyze(workspace.root(), moduleFile, configFile);
+            if (deadline.expired()) {
+                return deadlineExpiredResult(source, patched, baseline, candidate);
+            }
+            Duration executionTimeout = deadline.remainingCappedBy(timeout);
+            if (executionTimeout.isZero()) {
+                return deadlineExpiredResult(source, patched, baseline, candidate);
+            }
             mutant = runFullPropertyTlc(
                     workspace.root(),
                     moduleFile,
                     configFile,
                     results.resolve(candidate.id() + "-states.jsonl"),
-                    timeout);
+                    executionTimeout);
         } catch (IllegalArgumentException | IOException exception) {
             mutant = new TlcExecution(
                     ExecutionStatus.INVALID_SEMANTIC,
@@ -275,6 +319,60 @@ public final class ExperimentRunner {
                     false);
         }
         return classifyFullProperty(candidate, source, patched, baseline, mutant);
+    }
+
+    private MutationResult deadlineExpiredResult(
+            SourceDocument source, TlcExecution baseline, MutationCandidate candidate) {
+        SourceDocument patched = new SourcePatcher().apply(source, candidate);
+        return deadlineExpiredResult(source, patched, baseline, candidate);
+    }
+
+    private static MutationResult deadlineExpiredResult(
+            SourceDocument source, SourceDocument patched, TlcExecution baseline, MutationCandidate candidate) {
+        TlcExecution timeout = new TlcExecution(
+                ExecutionStatus.TIMEOUT,
+                OracleOutcome.NOT_EVALUATED,
+                -1,
+                List.of(),
+                List.of(),
+                "",
+                "experiment-deadline-exhausted",
+                false);
+        MutationEvidence evidence = MutationEvidence.create(candidate, source, patched, timeout);
+        return new MutationResult(
+                candidate.id(),
+                candidate.family().name(),
+                candidate.definition(),
+                candidate.original(),
+                candidate.replacement(),
+                ExecutionStatus.TIMEOUT.name(),
+                OracleOutcome.NOT_EVALUATED.name(),
+                "STATE_UNRESOLVED",
+                "unresolved",
+                "experiment-deadline-exhausted",
+                baseline.states().size(),
+                0,
+                null,
+                null,
+                evidence);
+    }
+
+    private Duration remainingOrThrow(FullPropertyDeadline deadline, String phase) {
+        Duration remaining = deadline.remainingCappedBy(timeout);
+        if (remaining.isZero()) {
+            throw deadlineExhausted(phase);
+        }
+        return remaining;
+    }
+
+    private static void requireRemaining(FullPropertyDeadline deadline, String phase) {
+        if (deadline.expired()) {
+            throw deadlineExhausted(phase);
+        }
+    }
+
+    private static IllegalStateException deadlineExhausted(String phase) {
+        return new IllegalStateException("Full-property experiment deadline exhausted before " + phase);
     }
 
     private TlcExecution runFullPropertyTlc(

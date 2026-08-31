@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
 import java.time.Duration;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -74,6 +75,69 @@ final class ExperimentRunnerFullPropertyTest {
         assertTrue(error.getMessage().contains("KILLED_TEMPORAL_NAMED"));
     }
 
+    @Test
+    void stopsLaunchingMutantsAfterTheAggregateDeadline() throws Exception {
+        Fixture fixture = fixture(false);
+        long expired = Duration.ofSeconds(2).toNanos();
+        ExperimentRunner runner = new ExperimentRunner(
+                fixture.tlcRunner(),
+                Duration.ofSeconds(30),
+                Duration.ofSeconds(1),
+                () -> Files.exists(fixture.launches()) ? expired : 0);
+
+        ExperimentReport report = runner.runFullProperty(
+                fixture.modelDirectory(),
+                "MutationFixture.tla",
+                "MutationFixture.cfg",
+                fixture.results(),
+                fixture.inputs());
+
+        assertEquals(1, Files.readAllLines(fixture.launches(), UTF_8).size());
+        assertTrue(report.generatedMutants() > 0);
+        assertEquals(report.generatedMutants(), report.results().size());
+        assertEquals(0, report.evaluatedMutants());
+        assertEquals(0, report.gapCandidates());
+        assertTrue(report.results().stream()
+                .allMatch(result -> result.executionStatus().equals("TIMEOUT")));
+        assertTrue(report.results().stream()
+                .allMatch(result -> result.oracleOutcome().equals("NOT_EVALUATED")));
+        assertTrue(report.results().stream()
+                .allMatch(result -> result.stateRelation().equals("STATE_UNRESOLVED")));
+        assertTrue(report.results().stream().allMatch(result -> result.verdict().equals("unresolved")));
+        assertTrue(report.results().stream()
+                .allMatch(result -> result.diagnosticReason().equals("experiment-deadline-exhausted")));
+        String originalSource = Files.readString(fixture.module(), UTF_8);
+        assertTrue(report.results().stream()
+                .allMatch(result -> result.evidence() != null
+                        && result.evidence().patch().apply(originalSource).contains(result.replacement())));
+        assertFalse(Files.exists(fixture.results().resolve("full-property-model")));
+    }
+
+    @Test
+    void rejectsAnExpiredExperimentBeforeTheBaselineLaunch() throws Exception {
+        Fixture fixture = fixture(false);
+        AtomicInteger clockReads = new AtomicInteger();
+        ExperimentRunner runner = new ExperimentRunner(
+                fixture.tlcRunner(),
+                Duration.ofSeconds(30),
+                Duration.ofSeconds(1),
+                () -> clockReads.getAndIncrement() == 0
+                        ? 0
+                        : Duration.ofSeconds(2).toNanos());
+
+        IllegalStateException error = assertThrows(
+                IllegalStateException.class,
+                () -> runner.runFullProperty(
+                        fixture.modelDirectory(),
+                        "MutationFixture.tla",
+                        "MutationFixture.cfg",
+                        fixture.results(),
+                        fixture.inputs()));
+
+        assertTrue(error.getMessage().contains("deadline"));
+        assertFalse(Files.exists(fixture.launches()));
+    }
+
     private Fixture fixture(boolean killBaseline) throws Exception {
         Path model = temporaryDirectory.resolve(killBaseline ? "baseline-kill-model" : "model");
         Path results = temporaryDirectory.resolve(killBaseline ? "baseline-kill-results" : "results");
@@ -98,12 +162,16 @@ final class ExperimentRunnerFullPropertyTest {
         Files.writeString(tools, "tools\n", UTF_8);
         Files.writeString(application, "application\n", UTF_8);
         Path java = temporaryDirectory.resolve(killBaseline ? "baseline-kill-java" : "fake-java");
+        Path launches = temporaryDirectory.resolve(killBaseline ? "baseline-kill-launches" : "launches");
         String originalModule = shellQuote(module.toAbsolutePath().toString());
         String originalConfig = shellQuote(config.toAbsolutePath().toString());
         String baselineCondition = killBaseline ? "false" : "cmp -s \"$module\" " + originalModule;
         Files.writeString(
                 java,
                 "#!/bin/sh\n"
+                        + "printf '%s\\n' launch >> "
+                        + shellQuote(launches.toAbsolutePath().toString())
+                        + "\n"
                         + "state=''\nconfig=''\nmodule=''\nprevious=''\n"
                         + "for argument in \"$@\"; do\n"
                         + "  case \"$argument\" in -Dtla.mutant.state.path=*) state=${argument#*=};; esac\n"
@@ -138,7 +206,7 @@ final class ExperimentRunnerFullPropertyTest {
                 new TlcRunner(java.toAbsolutePath(), application.toAbsolutePath(), tools.toAbsolutePath());
         ExperimentInputIdentity inputs = new ExperimentInputIdentity(
                 artifact(module), artifact(config), artifact(manifest), artifact(tools), artifact(application));
-        return new Fixture(model, module, config, results, tlcRunner, inputs);
+        return new Fixture(model, module, config, results, launches, tlcRunner, inputs);
     }
 
     private static ExperimentInputIdentity.Artifact artifact(Path path) throws Exception {
@@ -154,6 +222,7 @@ final class ExperimentRunnerFullPropertyTest {
             Path module,
             Path config,
             Path results,
+            Path launches,
             TlcRunner tlcRunner,
             ExperimentInputIdentity inputs) {}
 }
