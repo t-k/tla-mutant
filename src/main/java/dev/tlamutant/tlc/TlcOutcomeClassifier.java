@@ -16,8 +16,7 @@ final class TlcOutcomeClassifier {
             Pattern.compile("^Property ([A-Za-z_][A-Za-z0-9_]{0,127}) is violated(?: by the initial state)?\\.?$"),
             Pattern.compile("^Action property ([A-Za-z_][A-Za-z0-9_]{0,127}) is violated\\.?$"));
 
-    Classification classify(
-            boolean completed, int exitCode, List<TlcToolEvent> events, boolean completeStateFile) {
+    Classification classify(boolean completed, int exitCode, List<TlcToolEvent> events, boolean completeStateFile) {
         if (!completed) {
             return notEvaluated(ExecutionStatus.TIMEOUT);
         }
@@ -30,18 +29,14 @@ final class TlcOutcomeClassifier {
         TlcToolEvent safety = first(events, SAFETY_VIOLATION_EVENTS);
         if (safety != null) {
             return new Classification(
-                    ExecutionStatus.COMPLETED,
-                    OracleOutcome.KILLED_STATE_SAFETY,
-                    extractSafetyName(safety.body()));
+                    ExecutionStatus.COMPLETED, OracleOutcome.KILLED_STATE_SAFETY, extractSafetyName(safety.body()));
         }
         TlcToolEvent temporal = first(events, Set.of(2116));
         if (temporal != null) {
             String property = extract(TEMPORAL_NAME, temporal.body());
             return new Classification(
                     ExecutionStatus.COMPLETED,
-                    property == null
-                            ? OracleOutcome.KILLED_TEMPORAL_GENERIC
-                            : OracleOutcome.KILLED_TEMPORAL_NAMED,
+                    property == null ? OracleOutcome.KILLED_TEMPORAL_GENERIC : OracleOutcome.KILLED_TEMPORAL_NAMED,
                     property);
         }
         if (first(events, Set.of(2114)) != null) {
@@ -62,7 +57,10 @@ final class TlcOutcomeClassifier {
     }
 
     private static TlcToolEvent first(List<TlcToolEvent> events, Set<Integer> codes) {
-        return events.stream().filter(event -> codes.contains(event.code())).findFirst().orElse(null);
+        return events.stream()
+                .filter(event -> codes.contains(event.code()))
+                .findFirst()
+                .orElse(null);
     }
 
     private static String extractSafetyName(String body) {

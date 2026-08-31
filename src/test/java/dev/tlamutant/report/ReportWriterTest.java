@@ -3,6 +3,7 @@ package dev.tlamutant.report;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.tlamutant.census.CorpusCensusEntryResult;
 import dev.tlamutant.census.CorpusCensusReport;
 import dev.tlamutant.census.GcdCensusReport;
@@ -19,6 +20,32 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 final class ReportWriterTest {
+    @Test
+    void legacyJsonOmitsAdditiveFullPropertyFields() throws Exception {
+        MutationResult result = new MutationResult(
+                "gcd-1",
+                "GCD",
+                "Next",
+                "guard",
+                "TRUE",
+                "COMPLETED",
+                "PASSED",
+                "STATE_EQUAL",
+                "state-equal",
+                null,
+                1,
+                1,
+                null);
+        ExperimentReport report = new ExperimentReport(1, "Spec.tla", "Spec.cfg", "proxy", 1, 1, 0, List.of(result));
+
+        String json = new ObjectMapper().writeValueAsString(report);
+
+        assertFalse(json.contains("oracleMode"));
+        assertFalse(json.contains("inputs"));
+        assertFalse(json.contains("evidence"));
+        assertTrue(json.contains("\"diagnosticReason\":null"));
+    }
+
     @Test
     void markdownUsesBoundedCandidateTerminologyAndNeutralizesHostileText() {
         MutationResult result = new MutationResult(

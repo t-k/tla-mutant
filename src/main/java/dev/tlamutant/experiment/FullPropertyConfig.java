@@ -14,11 +14,7 @@ final class FullPropertyConfig {
     static Materialized write(Path source, Path target) throws IOException {
         BoundedFileSnapshot snapshot = BoundedFileSnapshot.read(source, MAXIMUM_CONFIG_BYTES);
         Path output = target.toAbsolutePath().normalize();
-        Files.write(
-                output,
-                snapshot.bytes(),
-                StandardOpenOption.CREATE_NEW,
-                StandardOpenOption.WRITE);
+        Files.write(output, snapshot.bytes(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
         return new Materialized(output, snapshot);
     }
 
