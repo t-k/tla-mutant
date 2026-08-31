@@ -18,6 +18,20 @@ public record CorpusExperimentReport(
         @JsonInclude(JsonInclude.Include.NON_NULL) CorpusExperimentInputIdentity inputs) {
     public CorpusExperimentReport {
         entries = List.copyOf(entries);
+        List<ExperimentReport> completed = entries.stream()
+                .filter(entry -> entry.status().equals("COMPLETED"))
+                .map(CorpusEntryResult::report)
+                .toList();
+        if (entryCount != entries.size()
+                || completedEntries != completed.size()
+                || entryCount < 0
+                || completedEntries < 0
+                || entries.stream().map(CorpusEntryResult::id).distinct().count() != entries.size()
+                || generatedMutants != total(completed, ExperimentReport::generatedMutants)
+                || evaluatedMutants != total(completed, ExperimentReport::evaluatedMutants)
+                || gapCandidates != total(completed, ExperimentReport::gapCandidates)) {
+            throw new IllegalArgumentException("Corpus report totals or entry identities are inconsistent");
+        }
         if (schemaVersion == 2 && (!OracleMode.FULL_PROPERTY.cliName().equals(oracleMode) || inputs == null)) {
             throw new IllegalArgumentException("Full-property corpus reports require mode and inputs");
         }
@@ -118,5 +132,13 @@ public record CorpusExperimentReport(
                 && report.inputs().manifest().equals(common.manifest())
                 && report.inputs().tools().equals(common.tools())
                 && report.inputs().application().equals(common.application());
+    }
+
+    private static int total(List<ExperimentReport> reports, java.util.function.ToIntFunction<ExperimentReport> value) {
+        int total = 0;
+        for (ExperimentReport report : reports) {
+            total = Math.addExact(total, value.applyAsInt(report));
+        }
+        return total;
     }
 }

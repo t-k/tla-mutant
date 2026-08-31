@@ -11,6 +11,11 @@ import tlc2.tool.ToolGlobals;
 
 public final class GcdSiteAnalyzer {
     public List<GcdSite> analyze(SemanticProject project, SourceDocument source) {
+        return analyze(project, source, Integer.MAX_VALUE);
+    }
+
+    public List<GcdSite> analyze(SemanticProject project, SourceDocument source, int maximumSites) {
+        requireNonNegative(maximumSites);
         List<GcdSite> sites = new ArrayList<>();
         for (OperatorDefinition definition : MutationSupport.nextModelDefinitions(project)) {
             if (!(definition.semanticNode().getBody() instanceof OpApplNode conjunction)
@@ -45,12 +50,21 @@ public final class GcdSiteAnalyzer {
                 }
                 boolean conforms = actionSuccessors > 0
                         && isPositiveCurrentStateGuard(project, argument, new java.util.HashSet<>());
+                if (sites.size() >= maximumSites) {
+                    throw new IllegalArgumentException("GCD candidate count exceeds its bound");
+                }
                 sites.add(new GcdSite(candidate, argument.getLevel(), remainingState, actionSuccessors, conforms));
             }
         }
         return sites.stream()
                 .sorted(Comparator.comparingInt(site -> site.candidate().range().start()))
                 .toList();
+    }
+
+    private static void requireNonNegative(int maximumSites) {
+        if (maximumSites < 0) {
+            throw new IllegalArgumentException("GCD candidate bound cannot be negative");
+        }
     }
 
     private static boolean isPositiveCurrentStateGuard(

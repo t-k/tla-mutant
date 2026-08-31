@@ -2,6 +2,7 @@ package dev.tlamutant.mutation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,6 +45,17 @@ final class MutatorIntegrationTest {
         assertFalse(gcd.stream().anyMatch(candidate -> candidate.original().equals("Shared")));
         assertFalse(brl.stream().anyMatch(candidate -> candidate.definition().equals("Safety")));
         assertFalse(uoi.stream().anyMatch(candidate -> candidate.definition().equals("UnknownUpdate")));
+    }
+
+    @Test
+    void boundedGenerationStopsEachMutationFamilyBeforeOverflow() throws IOException {
+        Path root = Path.of("src/testFixtures/resources/tla/mutations");
+        SemanticProject project = new SanyAnalyzer().analyze(root, "MutationFixture.tla", "MutationFixture.cfg");
+        SourceDocument source = SourceDocument.read(root.resolve("MutationFixture.tla"));
+
+        assertThrows(IllegalArgumentException.class, () -> new GcdMutator().generate(project, source, 1));
+        assertThrows(IllegalArgumentException.class, () -> new BrlMutator().generate(project, source, 1));
+        assertThrows(IllegalArgumentException.class, () -> new UoiMutator().generate(project, source, 1));
     }
 
     @Test

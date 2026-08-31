@@ -79,4 +79,20 @@ final class CorpusExperimentReportTest {
         assertEquals(2, report.evaluatedMutants());
         assertEquals(1, report.gapCandidates());
     }
+
+    @Test
+    void rejectsInconsistentAggregatesAndDuplicateEntryIds() {
+        ExperimentReport completed =
+                new ExperimentReport(1, "A.tla", "A.cfg", "proxy-agent-review", 3, 2, 1, List.of());
+        CorpusEntryResult entry = new CorpusEntryResult("same", "domain", "COMPLETED", null, completed);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new CorpusExperimentReport(
+                        1, "repository", "a".repeat(40), "review", 2, 1, 3, 2, 1, List.of(entry)));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new CorpusExperimentReport(
+                        1, "repository", "a".repeat(40), "review", 2, 2, 6, 4, 2, List.of(entry, entry)));
+    }
 }

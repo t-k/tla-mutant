@@ -18,6 +18,13 @@ public final class BrlMutator {
     private static final Pattern GREATER = Pattern.compile("(?<![<=>])>(?![=>])");
 
     public List<MutationCandidate> generate(SemanticProject project, SourceDocument source) {
+        return generate(project, source, Integer.MAX_VALUE);
+    }
+
+    public List<MutationCandidate> generate(SemanticProject project, SourceDocument source, int maximumCandidates) {
+        if (maximumCandidates < 0) {
+            throw new IllegalArgumentException("BRL candidate bound cannot be negative");
+        }
         List<MutationCandidate> candidates = new ArrayList<>();
         List<OperatorDefinition> definitions = MutationSupport.nextModelDefinitions(project);
         Set<OpDefNode> referencedGuards = new HashSet<>();
@@ -39,14 +46,14 @@ public final class BrlMutator {
                         referencedGuards.add(referenced);
                     }
                 } else if (argument instanceof OpApplNode comparison) {
-                    addComparison(candidates, project, definition, source, comparison);
+                    addComparison(candidates, project, definition, source, comparison, maximumCandidates);
                 }
             }
         }
         for (OperatorDefinition definition : definitions) {
             if (referencedGuards.contains(definition.semanticNode())
                     && definition.semanticNode().getBody() instanceof OpApplNode comparison) {
-                addComparison(candidates, project, definition, source, comparison);
+                addComparison(candidates, project, definition, source, comparison, maximumCandidates);
             }
         }
         return candidates.stream()
@@ -59,7 +66,8 @@ public final class BrlMutator {
             SemanticProject project,
             OperatorDefinition definition,
             SourceDocument source,
-            OpApplNode application) {
+            OpApplNode application,
+            int maximumCandidates) {
         if (application.getLevel() > 1) {
             return;
         }
@@ -76,6 +84,9 @@ public final class BrlMutator {
             return;
         }
         SourceRange range = MutationSupport.operatorTokenRange(source, application, pattern);
+        if (candidates.size() >= maximumCandidates) {
+            throw new IllegalArgumentException("BRL candidate count exceeds its bound");
+        }
         candidates.add(MutationCandidate.create(
                 MutationFamily.BRL, project.rootModule(), definition.name(), range, source.slice(range), replacement));
     }

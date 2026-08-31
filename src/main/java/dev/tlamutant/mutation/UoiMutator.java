@@ -12,6 +12,13 @@ import tlc2.tool.ToolGlobals;
 
 public final class UoiMutator {
     public List<MutationCandidate> generate(SemanticProject project, SourceDocument source) {
+        return generate(project, source, Integer.MAX_VALUE);
+    }
+
+    public List<MutationCandidate> generate(SemanticProject project, SourceDocument source, int maximumCandidates) {
+        if (maximumCandidates < 0) {
+            throw new IllegalArgumentException("UOI candidate bound cannot be negative");
+        }
         List<MutationCandidate> candidates = new ArrayList<>();
         for (OperatorDefinition definition : MutationSupport.nextModelDefinitions(project)) {
             for (OpApplNode equality :
@@ -25,13 +32,14 @@ public final class UoiMutator {
                     continue;
                 }
                 if (right instanceof NumeralNode numeral) {
-                    addLiteralCandidates(candidates, project, definition, source, numeral);
+                    addLiteralCandidates(candidates, project, definition, source, numeral, maximumCandidates);
                 } else if (right instanceof OpApplNode arithmetic
                         && arithmetic.getOperator().getName().equals(ToolGlobals.OP_plus)
                         && arithmetic.getArgs().length == 2
                         && arithmetic.getArgs()[1] instanceof NumeralNode numeral
                         && isOne(numeral)) {
                     SourceRange range = source.range(numeral.getLocation());
+                    requireCapacity(candidates, maximumCandidates);
                     candidates.add(MutationCandidate.create(
                             MutationFamily.UOI,
                             project.rootModule(),
@@ -58,12 +66,21 @@ public final class UoiMutator {
             SemanticProject project,
             OperatorDefinition definition,
             SourceDocument source,
-            NumeralNode numeral) {
+            NumeralNode numeral,
+            int maximumCandidates) {
         SourceRange range = source.range(numeral.getLocation());
         String original = source.slice(range);
+        requireCapacity(candidates, maximumCandidates);
         candidates.add(MutationCandidate.create(
                 MutationFamily.UOI, project.rootModule(), definition.name(), range, original, original + " + 1"));
+        requireCapacity(candidates, maximumCandidates);
         candidates.add(MutationCandidate.create(
                 MutationFamily.UOI, project.rootModule(), definition.name(), range, original, original + " - 1"));
+    }
+
+    private static void requireCapacity(List<MutationCandidate> candidates, int maximumCandidates) {
+        if (candidates.size() >= maximumCandidates) {
+            throw new IllegalArgumentException("UOI candidate count exceeds its bound");
+        }
     }
 }

@@ -78,10 +78,7 @@ public final class ExperimentRunner {
             validateFullPropertyInputs(inputs, moduleSnapshot, configSnapshot);
             ExperimentInputIdentity frozenInputs = inputs.withModelFiles(frozenModel.files());
             SemanticProject project = sanyAnalyzer.analyze(frozenModel.root(), moduleFile, configFile);
-            List<MutationCandidate> candidates = candidates(project, source);
-            if (candidates.size() > MAXIMUM_FULL_PROPERTY_MUTANTS) {
-                throw new IllegalArgumentException("Full-property candidate count exceeds its bound");
-            }
+            List<MutationCandidate> candidates = boundedCandidates(project, source);
 
             TlcExecution baseline = runFullPropertyTlc(
                     frozenModel.root(), moduleFile, configFile, results.resolve("baseline-states.jsonl"), timeout);
@@ -210,6 +207,19 @@ public final class ExperimentRunner {
         candidates.addAll(new UoiMutator().generate(project, source));
         candidates.sort(Comparator.comparing(MutationCandidate::id));
         return List.copyOf(candidates);
+    }
+
+    private static List<MutationCandidate> boundedCandidates(SemanticProject project, SourceDocument source) {
+        List<MutationCandidate> candidates = new ArrayList<>();
+        candidates.addAll(new GcdMutator().generate(project, source, remainingCapacity(candidates)));
+        candidates.addAll(new BrlMutator().generate(project, source, remainingCapacity(candidates)));
+        candidates.addAll(new UoiMutator().generate(project, source, remainingCapacity(candidates)));
+        candidates.sort(Comparator.comparing(MutationCandidate::id));
+        return List.copyOf(candidates);
+    }
+
+    private static int remainingCapacity(List<MutationCandidate> candidates) {
+        return MAXIMUM_FULL_PROPERTY_MUTANTS - candidates.size();
     }
 
     private static void requirePassingBaseline(TlcExecution baseline) {
