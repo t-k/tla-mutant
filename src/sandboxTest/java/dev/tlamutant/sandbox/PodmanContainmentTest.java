@@ -7,7 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.tlamutant.config.ExecutionPolicy;
+import dev.tlamutant.corpus.CorpusInputSnapshot;
 import dev.tlamutant.corpus.CorpusManifest;
+import dev.tlamutant.experiment.ExperimentInputIdentity;
+import dev.tlamutant.security.BoundedFileSnapshot;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,8 +20,48 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 final class PodmanContainmentTest {
+    @TempDir
+    Path temporaryDirectory;
+
+    @Test
+    void runsFullPropertyWithRealManifestBytesAndFrozenInputEvidence() throws Exception {
+        ExecutionPolicy.Limits limits = new ExecutionPolicy.Limits(
+                120, 1_073_741_824, 128, 256, 67_108_864, 4096, 1_048_576, 1_048_576, 1_000_000, 180);
+        PodmanRunner runner = new PodmanRunner(
+                "docker.io/library/eclipse-temurin@sha256:cc0a57a8aa0730b543dc34e56ff6679609532a43f685f459863330d64e97fbb6",
+                Path.of(System.getProperty("tla.mutant.test.appJar")),
+                Path.of(System.getProperty("tla.mutant.test.toolsJar")),
+                limits);
+        Path input = Files.createDirectory(temporaryDirectory.resolve("full-property-input"));
+        Path fixtures = Path.of("src/testFixtures/resources/tla/full-property");
+        Files.copy(fixtures.resolve("FullPropertyMutation.tla"), input.resolve("FullPropertyMutation.tla"));
+        Files.copy(fixtures.resolve("FullPropertyMutation.cfg"), input.resolve("FullPropertyMutation.cfg"));
+        Path manifest = input.resolve(CorpusInputSnapshot.FULL_PROPERTY_MANIFEST);
+        Files.writeString(manifest, "{\"schemaVersion\":1}\n", StandardCharsets.UTF_8);
+        BoundedFileSnapshot manifestSnapshot = BoundedFileSnapshot.read(manifest, 1024);
+
+        PodmanExecution execution = runner.run(
+                input,
+                "FullPropertyMutation.tla",
+                "FullPropertyMutation.cfg",
+                Duration.ofSeconds(180),
+                SandboxInput.fullProperty(ExperimentInputIdentity.Artifact.from(manifestSnapshot), List.of()));
+
+        assertEquals(0, execution.exitCode(), execution.stderr());
+        JsonNode report = new ObjectMapper().readTree(execution.stdout());
+        assertEquals(3, report.required("schemaVersion").intValue());
+        assertEquals("full-property", report.required("oracleMode").textValue());
+        assertTrue(report.toString().contains("full-property-temporal-kill"));
+        assertTrue(report.required("inputs")
+                .required("modelFiles")
+                .toString()
+                .contains(CorpusInputSnapshot.FULL_PROPERTY_MANIFEST));
+        assertResourcesRemoved(execution);
+    }
+
     @Test
     void runsTheExperimentWithoutNetworkOrWritableHostOutputAndRemovesTheContainer() throws Exception {
         ExecutionPolicy.Limits limits = new ExecutionPolicy.Limits(
