@@ -2,6 +2,8 @@ package dev.tlamutant.sandbox;
 
 import dev.tlamutant.corpus.CorpusManifest;
 import dev.tlamutant.corpus.DerivedSourceEditValidator;
+import dev.tlamutant.experiment.ExperimentInputIdentity;
+import dev.tlamutant.experiment.OracleMode;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -12,7 +14,9 @@ public record SandboxInput(
         List<String> typeInvariants,
         List<String> legacyTargetInvariants,
         List<String> adoptedTargetInvariants,
-        List<CorpusManifest.DerivedSourceEdit> derivedSourceEdits) {
+        List<CorpusManifest.DerivedSourceEdit> derivedSourceEdits,
+        OracleMode oracleMode,
+        ExperimentInputIdentity.Artifact manifestArtifact) {
     private static final int MAX_INVARIANTS = 64;
 
     public SandboxInput {
@@ -22,6 +26,7 @@ public record SandboxInput(
         adoptedTargetInvariants =
                 List.copyOf(Objects.requireNonNull(adoptedTargetInvariants, "adoptedTargetInvariants"));
         derivedSourceEdits = DerivedSourceEditValidator.validateList(derivedSourceEdits);
+        Objects.requireNonNull(oracleMode, "oracleMode");
         if (!flatStateInvariants.isEmpty()
                 && (!typeInvariants.isEmpty()
                         || !legacyTargetInvariants.isEmpty()
@@ -34,6 +39,34 @@ public record SandboxInput(
                 .flatMap(List::stream)
                 .toList();
         validateInvariantNames(categorized);
+        if (oracleMode == OracleMode.FULL_PROPERTY
+                && (manifestArtifact == null
+                        || hasInvariantArguments(
+                                flatStateInvariants,
+                                typeInvariants,
+                                legacyTargetInvariants,
+                                adoptedTargetInvariants))) {
+            throw new IllegalArgumentException("Full-property sandbox input requires a manifest and no invariants");
+        }
+        if (oracleMode == OracleMode.STATE_INVARIANTS && manifestArtifact != null) {
+            throw new IllegalArgumentException("State-invariant sandbox input cannot contain a manifest artifact");
+        }
+    }
+
+    public SandboxInput(
+            List<String> flatStateInvariants,
+            List<String> typeInvariants,
+            List<String> legacyTargetInvariants,
+            List<String> adoptedTargetInvariants,
+            List<CorpusManifest.DerivedSourceEdit> derivedSourceEdits) {
+        this(
+                flatStateInvariants,
+                typeInvariants,
+                legacyTargetInvariants,
+                adoptedTargetInvariants,
+                derivedSourceEdits,
+                OracleMode.STATE_INVARIANTS,
+                null);
     }
 
     public static SandboxInput legacy(List<String> stateInvariants) {
@@ -53,11 +86,27 @@ public record SandboxInput(
         return new SandboxInput(List.of(), List.of(), List.of(), List.of(), derivedSourceEdits);
     }
 
+    public static SandboxInput fullProperty(
+            ExperimentInputIdentity.Artifact manifestArtifact,
+            List<CorpusManifest.DerivedSourceEdit> derivedSourceEdits) {
+        return new SandboxInput(
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                derivedSourceEdits,
+                OracleMode.FULL_PROPERTY,
+                Objects.requireNonNull(manifestArtifact, "manifestArtifact"));
+    }
+
     boolean hasInvariants() {
-        return !flatStateInvariants.isEmpty()
-                || !typeInvariants.isEmpty()
-                || !legacyTargetInvariants.isEmpty()
-                || !adoptedTargetInvariants.isEmpty();
+        return hasInvariantArguments(
+                flatStateInvariants, typeInvariants, legacyTargetInvariants, adoptedTargetInvariants);
+    }
+
+    private static boolean hasInvariantArguments(
+            List<String> flat, List<String> type, List<String> legacy, List<String> adopted) {
+        return !flat.isEmpty() || !type.isEmpty() || !legacy.isEmpty() || !adopted.isEmpty();
     }
 
     private static void validateInvariantNames(List<String> invariants) {

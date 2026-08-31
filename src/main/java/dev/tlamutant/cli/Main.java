@@ -13,6 +13,7 @@ import dev.tlamutant.corpus.DerivedModelWorkspace;
 import dev.tlamutant.corpus.ManifestValidator;
 import dev.tlamutant.corpus.ProspectiveInterventionValidator;
 import dev.tlamutant.corpus.StratifiedManifestValidator;
+import dev.tlamutant.experiment.CorpusExperimentInputIdentity;
 import dev.tlamutant.experiment.CorpusExperimentReport;
 import dev.tlamutant.experiment.CorpusExperimentRunner;
 import dev.tlamutant.experiment.ExperimentInputIdentity;
@@ -118,6 +119,12 @@ public final class Main implements Runnable {
         @CommandLine.Option(names = "--markdown-report", required = true)
         Path markdownReport;
 
+        @CommandLine.Option(
+                names = "--oracle-mode",
+                defaultValue = "state-invariants",
+                converter = OracleModeConverter.class)
+        OracleMode oracleMode = OracleMode.STATE_INVARIANTS;
+
         @Override
         public Integer call() throws Exception {
             ObjectMapper mapper = new ObjectMapper();
@@ -136,11 +143,22 @@ public final class Main implements Runnable {
                     List.of(manifestPath, policyPath, toolsJar, applicationJar),
                     List.of(cacheDirectory));
             CorpusExperimentReport report;
+            CorpusExperimentInputIdentity experimentInputs = oracleMode == OracleMode.FULL_PROPERTY
+                    ? new CorpusExperimentInputIdentity(
+                            ExperimentInputIdentity.Artifact.from(manifestSnapshot),
+                            ExperimentInputIdentity.Artifact.from(toolsSnapshot),
+                            ExperimentInputIdentity.Artifact.from(applicationSnapshot))
+                    : null;
             try (TemporaryFileSnapshot frozenApplication =
                             TemporaryFileSnapshot.create(applicationSnapshot, "application.jar");
                     TemporaryFileSnapshot frozenTools = TemporaryFileSnapshot.create(toolsSnapshot, "tla2tools.jar")) {
                 report = new CorpusExperimentRunner(
-                                frozenApplication.path(), frozenTools.path(), cacheDirectory, policy)
+                                frozenApplication.path(),
+                                frozenTools.path(),
+                                cacheDirectory,
+                                policy,
+                                oracleMode,
+                                experimentInputs)
                         .run(manifest);
             }
             new AtomicJsonWriter().write(outputs.json(), report);
@@ -945,6 +963,9 @@ public final class Main implements Runnable {
         @CommandLine.Option(names = "--manifest")
         Path manifestPath;
 
+        @CommandLine.Option(names = "--manifest-artifact-json", hidden = true)
+        String manifestArtifactJson;
+
         @CommandLine.Option(names = "--state-invariant")
         List<String> stateInvariants = new ArrayList<>();
 
@@ -1010,11 +1031,19 @@ public final class Main implements Runnable {
                     || !typeInvariants.isEmpty()
                     || !legacyTargetInvariants.isEmpty()
                     || !adoptedTargetInvariants.isEmpty();
-            if (oracleMode == OracleMode.FULL_PROPERTY && manifestPath == null) {
-                throw new IllegalArgumentException("Full-property mode requires --manifest");
+            boolean hasManifestPath = manifestPath != null;
+            boolean hasManifestArtifact = manifestArtifactJson != null;
+            if (oracleMode == OracleMode.FULL_PROPERTY && hasManifestPath == hasManifestArtifact) {
+                throw new IllegalArgumentException("Full-property mode requires exactly one manifest identity source");
             }
             if (oracleMode == OracleMode.FULL_PROPERTY && hasInvariantReplacement) {
                 throw new IllegalArgumentException("Full-property mode does not accept invariant replacement options");
+            }
+            if (oracleMode == OracleMode.STATE_INVARIANTS && hasManifestArtifact) {
+                throw new IllegalArgumentException("Internal manifest identity requires full-property mode");
+            }
+            if (hasManifestArtifact) {
+                parseManifestArtifact(manifestArtifactJson);
             }
         }
 
@@ -1031,14 +1060,17 @@ public final class Main implements Runnable {
                     BoundedFileSnapshot.read(effectiveModelDirectory.resolve(module), MAXIMUM_MODULE_BYTES);
             BoundedFileSnapshot configSnapshot =
                     BoundedFileSnapshot.read(effectiveModelDirectory.resolve(config), MAXIMUM_CONFIG_BYTES);
-            BoundedFileSnapshot manifestSnapshot = BoundedFileSnapshot.read(manifestPath, MAXIMUM_MANIFEST_BYTES);
             BoundedFileSnapshot toolsSnapshot = BoundedFileSnapshot.read(toolsJar, MAXIMUM_TOOLS_BYTES);
             BoundedFileSnapshot applicationSnapshot =
                     BoundedFileSnapshot.read(currentApplication, MAXIMUM_APPLICATION_BYTES);
+            ExperimentInputIdentity.Artifact manifestArtifact = manifestArtifactJson == null
+                    ? ExperimentInputIdentity.Artifact.from(
+                            BoundedFileSnapshot.read(manifestPath, MAXIMUM_MANIFEST_BYTES))
+                    : parseManifestArtifact(manifestArtifactJson);
             ExperimentInputIdentity inputs = new ExperimentInputIdentity(
                     ExperimentInputIdentity.Artifact.from(moduleSnapshot),
                     ExperimentInputIdentity.Artifact.from(configSnapshot),
-                    ExperimentInputIdentity.Artifact.from(manifestSnapshot),
+                    manifestArtifact,
                     ExperimentInputIdentity.Artifact.from(toolsSnapshot),
                     ExperimentInputIdentity.Artifact.from(applicationSnapshot));
             try (TemporaryFileSnapshot frozenApplication =
@@ -1049,6 +1081,17 @@ public final class Main implements Runnable {
                                 frozenApplication.path(), frozenTools.path(), maximumStates, maximumStateBytes),
                         Duration.ofSeconds(timeoutSeconds));
                 return experiment.runFullProperty(effectiveModelDirectory, module, config, workDirectory, inputs);
+            }
+        }
+
+        private static ExperimentInputIdentity.Artifact parseManifestArtifact(String json) {
+            if (json == null || json.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 4096) {
+                throw new IllegalArgumentException("Manifest artifact JSON is too large");
+            }
+            try {
+                return StrictJson.parse(new ObjectMapper(), json, ExperimentInputIdentity.Artifact.class);
+            } catch (com.fasterxml.jackson.core.JsonProcessingException exception) {
+                throw new IllegalArgumentException("Manifest artifact JSON is invalid", exception);
             }
         }
     }

@@ -3,6 +3,7 @@ package dev.tlamutant.sandbox;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.tlamutant.config.ExecutionPolicy;
+import dev.tlamutant.experiment.OracleMode;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -206,13 +207,21 @@ public final class PodmanCommand {
         }
         arguments.add("experiment");
         arguments.addAll(common);
-        for (String invariant : input.flatStateInvariants()) {
-            arguments.add("--state-invariant");
-            arguments.add(invariant);
+        if (input.oracleMode() == OracleMode.FULL_PROPERTY) {
+            arguments.addAll(List.of(
+                    "--oracle-mode",
+                    OracleMode.FULL_PROPERTY.cliName(),
+                    "--manifest-artifact-json",
+                    encode(input.manifestArtifact())));
+        } else {
+            for (String invariant : input.flatStateInvariants()) {
+                arguments.add("--state-invariant");
+                arguments.add(invariant);
+            }
+            appendInvariants(arguments, "--type-invariant", input.typeInvariants());
+            appendInvariants(arguments, "--legacy-target-invariant", input.legacyTargetInvariants());
+            appendInvariants(arguments, "--adopted-target-invariant", input.adoptedTargetInvariants());
         }
-        appendInvariants(arguments, "--type-invariant", input.typeInvariants());
-        appendInvariants(arguments, "--legacy-target-invariant", input.legacyTargetInvariants());
-        appendInvariants(arguments, "--adopted-target-invariant", input.adoptedTargetInvariants());
         appendDerivedEdits(arguments, input);
         arguments.addAll(List.of(
                 "--tools-jar",
@@ -243,6 +252,14 @@ public final class PodmanCommand {
             } catch (JsonProcessingException exception) {
                 throw new IllegalArgumentException("Cannot encode derived source edit", exception);
             }
+        }
+    }
+
+    private static String encode(Object value) {
+        try {
+            return MAPPER.writeValueAsString(value);
+        } catch (JsonProcessingException exception) {
+            throw new IllegalArgumentException("Cannot encode sandbox metadata", exception);
         }
     }
 }

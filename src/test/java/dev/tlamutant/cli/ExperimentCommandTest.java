@@ -86,6 +86,14 @@ final class ExperimentCommandTest {
         assertDoesNotThrow(command(OracleMode.STATE_INVARIANTS, null)::validateOptions);
     }
 
+    @Test
+    void sandboxManifestIdentitySatisfiesTheFullPropertyProvenanceGate() {
+        Main.ExperimentCommand command = command(OracleMode.FULL_PROPERTY, null);
+        command.manifestArtifactJson = "{\"sha256\":\"" + "a".repeat(64) + "\",\"sizeBytes\":1}";
+
+        assertDoesNotThrow(command::validateOptions);
+    }
+
     private static Main.ExperimentCommand command(OracleMode mode, Path manifest) {
         Main.ExperimentCommand command = new Main.ExperimentCommand();
         command.oracleMode = mode;

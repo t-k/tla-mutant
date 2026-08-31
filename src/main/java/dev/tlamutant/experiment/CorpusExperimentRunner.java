@@ -26,14 +26,31 @@ public final class CorpusExperimentRunner {
     private final Path toolsJar;
     private final Path cacheRoot;
     private final ExecutionPolicy policy;
+    private final OracleMode oracleMode;
+    private final CorpusExperimentInputIdentity inputs;
     private final CorpusFetcher fetcher = new CorpusFetcher();
     private final ObjectMapper mapper = new ObjectMapper();
 
     public CorpusExperimentRunner(Path applicationJar, Path toolsJar, Path cacheRoot, ExecutionPolicy policy) {
+        this(applicationJar, toolsJar, cacheRoot, policy, OracleMode.STATE_INVARIANTS, null);
+    }
+
+    public CorpusExperimentRunner(
+            Path applicationJar,
+            Path toolsJar,
+            Path cacheRoot,
+            ExecutionPolicy policy,
+            OracleMode oracleMode,
+            CorpusExperimentInputIdentity inputs) {
         this.applicationJar = applicationJar.toAbsolutePath().normalize();
         this.toolsJar = toolsJar.toAbsolutePath().normalize();
         this.cacheRoot = cacheRoot.toAbsolutePath().normalize();
         this.policy = Objects.requireNonNull(policy, "policy");
+        this.oracleMode = Objects.requireNonNull(oracleMode, "oracleMode");
+        this.inputs = inputs;
+        if ((oracleMode == OracleMode.FULL_PROPERTY) != (inputs != null)) {
+            throw new IllegalArgumentException("Full-property corpus mode requires common input identities");
+        }
     }
 
     public CorpusExperimentReport run(CorpusManifest manifest) {
@@ -81,7 +98,9 @@ public final class CorpusExperimentRunner {
                 results.add(runEntry(manifest, validated, entry));
             }
         }
-        return CorpusExperimentReport.create(manifest.repository(), manifest.commit(), results);
+        return oracleMode == OracleMode.FULL_PROPERTY
+                ? CorpusExperimentReport.create(manifest.repository(), manifest.commit(), oracleMode, inputs, results)
+                : CorpusExperimentReport.create(manifest.repository(), manifest.commit(), results);
     }
 
     private CorpusEntryResult runEntry(
@@ -94,16 +113,19 @@ public final class CorpusExperimentRunner {
             try (CorpusInputSnapshot snapshot = CorpusInputSnapshot.create(input, entry)) {
                 PodmanRunner sandbox =
                         new PodmanRunner(policy.containerImage(), applicationJar, toolsJar, entry.limits());
+                SandboxInput sandboxInput = oracleMode == OracleMode.FULL_PROPERTY
+                        ? SandboxInput.fullProperty(inputs.manifest(), entry.derivedSourceEdits())
+                        : SandboxInput.attributed(
+                                entry.typeInvariants(),
+                                entry.targetInvariants(),
+                                entry.adoptedTargetInvariants(),
+                                entry.derivedSourceEdits());
                 execution = sandbox.run(
                         snapshot.root(),
                         entry.rootModule(),
                         entry.config(),
                         Duration.ofSeconds(entry.limits().wallClockSeconds()),
-                        SandboxInput.attributed(
-                                entry.typeInvariants(),
-                                entry.targetInvariants(),
-                                entry.adoptedTargetInvariants(),
-                                entry.derivedSourceEdits()));
+                        sandboxInput);
             }
             if (execution.timedOut()) {
                 return incomplete(entry, "TIMEOUT", "The bounded sandbox wall clock expired");

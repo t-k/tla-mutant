@@ -6,11 +6,44 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import dev.tlamutant.config.ExecutionPolicy;
 import dev.tlamutant.corpus.CorpusManifest;
+import dev.tlamutant.experiment.ExperimentInputIdentity;
 import java.nio.file.Path;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
 final class PodmanCommandTest {
+    @Test
+    void fullPropertyExperimentTransportsOnlyBoundedManifestIdentityMetadata() {
+        ExecutionPolicy.Limits limits =
+                new ExecutionPolicy.Limits(60, 536_870_912, 64, 128, 33_554_432, 2048, 1024, 1024, 10_000, 90);
+        ExperimentInputIdentity.Artifact manifest = new ExperimentInputIdentity.Artifact("a".repeat(64), 123);
+        SandboxInput input = SandboxInput.fullProperty(manifest, List.of());
+
+        List<String> command = PodmanCommand.create(
+                "tla-mutant-0123456789abcdef",
+                "0123456789abcdef",
+                "tla-mutant-scratch-0123456789abcdef",
+                "docker.io/library/eclipse-temurin@sha256:" + "a".repeat(64),
+                Path.of("/input"),
+                Path.of("/app.jar"),
+                Path.of("/tools.jar"),
+                "Spec.tla",
+                "Spec.cfg",
+                501,
+                20,
+                limits,
+                SandboxTask.EXPERIMENT,
+                input);
+
+        assertTrue(command.containsAll(List.of("--oracle-mode", "full-property", "--manifest-artifact-json")));
+        String encoded = command.get(command.indexOf("--manifest-artifact-json") + 1);
+        assertTrue(encoded.contains("\"sha256\":\"" + "a".repeat(64) + "\""));
+        assertTrue(encoded.contains("\"sizeBytes\":123"));
+        assertFalse(command.contains("--state-invariant"));
+        assertFalse(command.contains("--type-invariant"));
+        assertThrows(NullPointerException.class, () -> SandboxInput.fullProperty(null, List.of()));
+    }
+
     @Test
     void commandMakesEveryContainmentBoundaryExplicit() {
         ExecutionPolicy.Limits limits =
