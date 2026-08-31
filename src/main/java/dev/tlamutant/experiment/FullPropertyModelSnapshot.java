@@ -66,16 +66,16 @@ final class FullPropertyModelSnapshot implements AutoCloseable {
                 if (entries.size() >= MAXIMUM_FILES) {
                     throw new IllegalArgumentException("Full-property model exceeds its file-count bound");
                 }
-                BoundedFileSnapshot snapshot = BoundedFileSnapshot.read(file, MAXIMUM_FILE_BYTES);
-                total[0] = Math.addExact(total[0], snapshot.sizeBytes());
-                if (total[0] > MAXIMUM_TOTAL_BYTES) {
-                    throw new IllegalArgumentException("Full-property model exceeds its aggregate byte bound");
-                }
                 String relative = source.relativize(file).toString().replace(java.io.File.separatorChar, '/');
                 if (source.relativize(file).getNameCount() > MAXIMUM_DEPTH + 1
                         || relative.getBytes(java.nio.charset.StandardCharsets.UTF_8).length
                                 > MAXIMUM_RELATIVE_PATH_BYTES) {
                     throw new IllegalArgumentException("Full-property model path exceeds its bound");
+                }
+                BoundedFileSnapshot snapshot = BoundedFileSnapshot.read(file, MAXIMUM_FILE_BYTES);
+                total[0] = Math.addExact(total[0], snapshot.sizeBytes());
+                if (total[0] > MAXIMUM_TOTAL_BYTES) {
+                    throw new IllegalArgumentException("Full-property model exceeds its aggregate byte bound");
                 }
                 entries.add(new Entry(relative, snapshot));
                 return FileVisitResult.CONTINUE;
