@@ -19,6 +19,28 @@ The current reproducible application JAR identity is preregistered in `config/cu
 ./gradlew spotlessCheck test integrationTest sandboxTest verifyFrozenApplication
 ```
 
+## Run a full-property experiment
+
+The default `state-invariants` oracle preserves the historical behavior: it evaluates mutants against the configured State Invariants and is intended to discover state-expanding gap candidates. Select `full-property` when the original cfg must remain byte-for-byte unchanged and configured invariants, action properties, temporal properties, fairness conditions, state constraints, and deadlock checking must all participate in the verdict.
+
+For one local model, provide a manifest whose identity defines the experiment context:
+
+```sh
+java -jar build/libs/tla-mutant-all.jar experiment \
+  --model-dir path/to/model \
+  --module Spec.tla \
+  --config Spec.cfg \
+  --tools-jar .tools/tla2tools-1.8.0.jar \
+  --work-dir build/full-property-work \
+  --oracle-mode full-property \
+  --manifest path/to/frozen-manifest.json \
+  --json-report build/full-property-report.json
+```
+
+For a pinned corpus, add `--oracle-mode full-property` to `corpus-experiment`. The corpus runner propagates the frozen manifest, TLA+ Tools JAR, and application JAR identities into the outer report and every completed entry report.
+
+A full-property baseline must pass before any mutant is evaluated. Structured TLC safety, temporal, and deadlock violation events produce `full-property-state-safety-kill`, `full-property-temporal-kill`, and `full-property-deadlock-kill`; timeouts, out-of-memory conditions, evaluation errors, incomplete state output, and unexplained nonzero exits remain `unresolved`. Every candidate records its original and mutated source digests, UTF-16 source range, reversible patch, TLC exit code, significant structured event codes, and the violated property name when TLC reports one unambiguously. Legacy invocations that omit `--oracle-mode` retain their existing report shape and semantics.
+
 ## Reproduce the original corpus experiment
 
 ```sh
