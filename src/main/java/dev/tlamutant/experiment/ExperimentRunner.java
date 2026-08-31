@@ -47,7 +47,7 @@ public final class ExperimentRunner {
     ExperimentRunner(TlcRunner tlcRunner, Duration timeout, Duration fullPropertyTimeout, LongSupplier nanoTime) {
         this.tlcRunner = Objects.requireNonNull(tlcRunner, "tlcRunner");
         this.timeout = Objects.requireNonNull(timeout, "timeout");
-        this.fullPropertyTimeout = Objects.requireNonNull(fullPropertyTimeout, "fullPropertyTimeout");
+        this.fullPropertyTimeout = FullPropertyDeadline.requireValidTimeout(fullPropertyTimeout);
         this.nanoTime = Objects.requireNonNull(nanoTime, "nanoTime");
     }
 
@@ -307,6 +307,9 @@ public final class ExperimentRunner {
                     configFile,
                     results.resolve(candidate.id() + "-states.jsonl"),
                     executionTimeout);
+            if (deadline.expired()) {
+                return deadlineExpiredResult(source, patched, baseline, candidate);
+            }
         } catch (IllegalArgumentException | IOException exception) {
             mutant = new TlcExecution(
                     ExecutionStatus.INVALID_SEMANTIC,

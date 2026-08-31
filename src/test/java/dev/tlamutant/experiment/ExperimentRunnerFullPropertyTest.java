@@ -1,6 +1,7 @@
 package dev.tlamutant.experiment;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -138,6 +139,49 @@ final class ExperimentRunnerFullPropertyTest {
         assertFalse(Files.exists(fixture.launches()));
     }
 
+    @Test
+    void rejectsAnAggregateTimeoutAboveOneHourAtConstruction() throws Exception {
+        Fixture fixture = fixture(false);
+
+        assertDoesNotThrow(
+                () -> new ExperimentRunner(fixture.tlcRunner(), Duration.ofSeconds(30), Duration.ofHours(1)));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new ExperimentRunner(
+                        fixture.tlcRunner(),
+                        Duration.ofSeconds(30),
+                        Duration.ofHours(1).plusNanos(1)));
+    }
+
+    @Test
+    void doesNotAcceptAKillWhenTheAggregateDeadlineExpiresDuringMutantTlc() throws Exception {
+        Fixture fixture = fixture(false);
+        long expired = Duration.ofSeconds(2).toNanos();
+        ExperimentRunner runner = new ExperimentRunner(
+                fixture.tlcRunner(),
+                Duration.ofSeconds(30),
+                Duration.ofSeconds(1),
+                () -> launchCount(fixture.launches()) >= 2 ? expired : 0);
+
+        ExperimentReport report = runner.runFullProperty(
+                fixture.modelDirectory(),
+                "MutationFixture.tla",
+                "MutationFixture.cfg",
+                fixture.results(),
+                fixture.inputs());
+
+        assertEquals(2, launchCount(fixture.launches()));
+        assertEquals(report.generatedMutants(), report.results().size());
+        assertEquals(0, report.evaluatedMutants());
+        assertEquals(0, report.gapCandidates());
+        assertTrue(report.results().stream()
+                .allMatch(result -> result.executionStatus().equals("TIMEOUT")));
+        assertTrue(report.results().stream()
+                .allMatch(result -> result.oracleOutcome().equals("NOT_EVALUATED")));
+        assertTrue(report.results().stream()
+                .allMatch(result -> result.diagnosticReason().equals("experiment-deadline-exhausted")));
+    }
+
     private Fixture fixture(boolean killBaseline) throws Exception {
         Path model = temporaryDirectory.resolve(killBaseline ? "baseline-kill-model" : "model");
         Path results = temporaryDirectory.resolve(killBaseline ? "baseline-kill-results" : "results");
@@ -215,6 +259,17 @@ final class ExperimentRunnerFullPropertyTest {
 
     private static String shellQuote(String value) {
         return "'" + value.replace("'", "'\\''") + "'";
+    }
+
+    private static int launchCount(Path launches) {
+        if (Files.notExists(launches)) {
+            return 0;
+        }
+        try {
+            return Files.readAllLines(launches, UTF_8).size();
+        } catch (Exception exception) {
+            throw new IllegalStateException("Cannot count fake TLC launches", exception);
+        }
     }
 
     private record Fixture(

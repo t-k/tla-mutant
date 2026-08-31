@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.function.LongSupplier;
 
 final class FullPropertyDeadline {
+    private static final Duration MAXIMUM_TIMEOUT = Duration.ofHours(1);
     private final long startedAtNanos;
     private final long timeoutNanos;
     private final LongSupplier nanoTime;
@@ -16,9 +17,18 @@ final class FullPropertyDeadline {
     }
 
     static FullPropertyDeadline start(Duration timeout, LongSupplier nanoTime) {
-        long timeoutNanos = positiveNanos(timeout, "Full-property experiment timeout");
+        Duration validatedTimeout = requireValidTimeout(timeout);
+        long timeoutNanos = positiveNanos(validatedTimeout, "Full-property experiment timeout");
         LongSupplier clock = Objects.requireNonNull(nanoTime, "nanoTime");
         return new FullPropertyDeadline(clock.getAsLong(), timeoutNanos, clock);
+    }
+
+    static Duration requireValidTimeout(Duration timeout) {
+        positiveNanos(timeout, "Full-property experiment timeout");
+        if (timeout.compareTo(MAXIMUM_TIMEOUT) > 0) {
+            throw new IllegalArgumentException("Full-property experiment timeout cannot exceed one hour");
+        }
+        return timeout;
     }
 
     boolean expired() {
