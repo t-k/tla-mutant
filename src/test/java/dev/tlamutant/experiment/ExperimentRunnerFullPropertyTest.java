@@ -1,0 +1,156 @@
+package dev.tlamutant.experiment;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import dev.tlamutant.security.BoundedFileSnapshot;
+import dev.tlamutant.tlc.TlcRunner;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
+import java.time.Duration;
+import java.util.Set;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+final class ExperimentRunnerFullPropertyTest {
+    @TempDir
+    Path temporaryDirectory;
+
+    @Test
+    void preservesTheCfgAndRecordsTemporalKillsWithReproducibleEvidence() throws Exception {
+        Fixture fixture = fixture(false);
+        ExperimentRunner runner = new ExperimentRunner(fixture.tlcRunner(), Duration.ofSeconds(10));
+
+        ExperimentReport report = runner.runFullProperty(
+                fixture.modelDirectory(),
+                "MutationFixture.tla",
+                "MutationFixture.cfg",
+                fixture.results(),
+                fixture.inputs());
+
+        assertEquals(3, report.schemaVersion());
+        assertEquals("full-property", report.oracleMode());
+        assertEquals(fixture.inputs(), report.inputs());
+        assertTrue(report.generatedMutants() > 0);
+        assertEquals(report.generatedMutants(), report.evaluatedMutants());
+        assertEquals(0, report.gapCandidates());
+        assertTrue(
+                report.results().stream().allMatch(result -> result.verdict().equals("full-property-temporal-kill")));
+        assertTrue(report.results().stream()
+                .allMatch(result -> result.oracleOutcome().equals("KILLED_TEMPORAL_NAMED")));
+        assertTrue(report.results().stream().allMatch(result -> result.evidence() != null));
+        assertTrue(report.results().stream()
+                .allMatch(result -> result.evidence().violatedProperty().equals("EventuallyDone")));
+        String originalSource = Files.readString(fixture.module(), UTF_8);
+        assertTrue(report.results().stream()
+                .allMatch(result ->
+                        result.evidence().patch().apply(originalSource).contains(result.replacement())));
+        assertEquals(
+                Files.readAllBytes(fixture.config()).length,
+                report.inputs().config().sizeBytes());
+        assertFalse(Files.exists(fixture.results().resolve("full-property-model")));
+    }
+
+    @Test
+    void abortsWhenTheOriginalFullConfigurationDoesNotPass() throws Exception {
+        Fixture fixture = fixture(true);
+        ExperimentRunner runner = new ExperimentRunner(fixture.tlcRunner(), Duration.ofSeconds(10));
+
+        IllegalStateException error = assertThrows(
+                IllegalStateException.class,
+                () -> runner.runFullProperty(
+                        fixture.modelDirectory(),
+                        "MutationFixture.tla",
+                        "MutationFixture.cfg",
+                        fixture.results(),
+                        fixture.inputs()));
+
+        assertTrue(error.getMessage().contains("KILLED_TEMPORAL_NAMED"));
+    }
+
+    private Fixture fixture(boolean killBaseline) throws Exception {
+        Path model = temporaryDirectory.resolve(killBaseline ? "baseline-kill-model" : "model");
+        Path results = temporaryDirectory.resolve(killBaseline ? "baseline-kill-results" : "results");
+        Files.createDirectories(model);
+        String moduleText =
+                Files.readString(Path.of("src/testFixtures/resources/tla/mutations/MutationFixture.tla"), UTF_8);
+        moduleText =
+                moduleText.replace("ScopeOnly == x <= 20\n", "ScopeOnly == x <= 20\nEventuallyDone == <> (x = 3)\n");
+        Path module = model.resolve("MutationFixture.tla");
+        Path config = model.resolve("MutationFixture.cfg");
+        Files.writeString(module, moduleText, UTF_8);
+        Files.writeString(
+                config,
+                Files.readString(Path.of("src/testFixtures/resources/tla/mutations/MutationFixture.cfg"), UTF_8)
+                        + "PROPERTY EventuallyDone\n",
+                UTF_8);
+        Path manifest = temporaryDirectory.resolve(killBaseline ? "baseline-kill-manifest.json" : "manifest.json");
+        Path tools = temporaryDirectory.resolve(killBaseline ? "baseline-kill-tools.jar" : "tools.jar");
+        Path application =
+                temporaryDirectory.resolve(killBaseline ? "baseline-kill-application.jar" : "application.jar");
+        Files.writeString(manifest, "{\"schemaVersion\":1}\n", UTF_8);
+        Files.writeString(tools, "tools\n", UTF_8);
+        Files.writeString(application, "application\n", UTF_8);
+        Path java = temporaryDirectory.resolve(killBaseline ? "baseline-kill-java" : "fake-java");
+        String originalModule = shellQuote(module.toAbsolutePath().toString());
+        String originalConfig = shellQuote(config.toAbsolutePath().toString());
+        String baselineCondition = killBaseline ? "false" : "cmp -s \"$module\" " + originalModule;
+        Files.writeString(
+                java,
+                "#!/bin/sh\n"
+                        + "state=''\nconfig=''\nmodule=''\nprevious=''\n"
+                        + "for argument in \"$@\"; do\n"
+                        + "  case \"$argument\" in -Dtla.mutant.state.path=*) state=${argument#*=};; esac\n"
+                        + "  if [ \"$previous\" = '-config' ]; then config=$argument; fi\n"
+                        + "  previous=$argument\nmodule=$argument\n"
+                        + "done\n"
+                        + "cmp -s \"$config\" "
+                        + originalConfig
+                        + " || exit 90\n"
+                        + "if "
+                        + baselineCondition
+                        + "; then\n"
+                        + "  printf '%s\\n' '{\"type\":\"complete\",\"states\":0}' > \"$state\"\n"
+                        + "  printf '%s\\n' '@!@!@STARTMSG 2193:0 @!@!@' 'Model checking completed.' '@!@!@ENDMSG 2193 @!@!@'\n"
+                        + "  exit 0\n"
+                        + "fi\n"
+                        + "printf '%s\\n' '@!@!@STARTMSG 2116:1 @!@!@' 'Temporal property EventuallyDone was violated.' '@!@!@ENDMSG 2116 @!@!@'\n"
+                        + "exit 13\n",
+                UTF_8);
+        try {
+            Files.setPosixFilePermissions(
+                    java,
+                    Set.of(
+                            PosixFilePermission.OWNER_READ,
+                            PosixFilePermission.OWNER_WRITE,
+                            PosixFilePermission.OWNER_EXECUTE));
+        } catch (UnsupportedOperationException ignored) {
+            assertTrue(java.toFile().setExecutable(true));
+        }
+        TlcRunner tlcRunner =
+                new TlcRunner(java.toAbsolutePath(), application.toAbsolutePath(), tools.toAbsolutePath());
+        ExperimentInputIdentity inputs = new ExperimentInputIdentity(
+                artifact(module), artifact(config), artifact(manifest), artifact(tools), artifact(application));
+        return new Fixture(model, module, config, results, tlcRunner, inputs);
+    }
+
+    private static ExperimentInputIdentity.Artifact artifact(Path path) throws Exception {
+        return ExperimentInputIdentity.Artifact.from(BoundedFileSnapshot.read(path, 8L * 1024 * 1024));
+    }
+
+    private static String shellQuote(String value) {
+        return "'" + value.replace("'", "'\\''") + "'";
+    }
+
+    private record Fixture(
+            Path modelDirectory,
+            Path module,
+            Path config,
+            Path results,
+            TlcRunner tlcRunner,
+            ExperimentInputIdentity inputs) {}
+}

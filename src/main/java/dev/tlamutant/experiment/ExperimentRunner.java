@@ -6,6 +6,7 @@ import dev.tlamutant.mutation.MutationCandidate;
 import dev.tlamutant.mutation.SourceDocument;
 import dev.tlamutant.mutation.SourcePatcher;
 import dev.tlamutant.mutation.UoiMutator;
+import dev.tlamutant.security.BoundedFileSnapshot;
 import dev.tlamutant.semantic.SanyAnalyzer;
 import dev.tlamutant.semantic.SemanticProject;
 import dev.tlamutant.state.StateRelation;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 
 public final class ExperimentRunner {
+    private static final long MAXIMUM_MODULE_BYTES = 64L * 1024 * 1024;
     private final TlcRunner tlcRunner;
     private final Duration timeout;
     private final SanyAnalyzer sanyAnalyzer = new SanyAnalyzer();
@@ -54,6 +56,66 @@ public final class ExperimentRunner {
             Path resultDirectory,
             InvariantOracleSets oracleSets) {
         return runInternal(modelDirectory, moduleFile, configFile, resultDirectory, oracleSets.full(), oracleSets);
+    }
+
+    public ExperimentReport runFullProperty(
+            Path modelDirectory,
+            String moduleFile,
+            String configFile,
+            Path resultDirectory,
+            ExperimentInputIdentity inputs) {
+        Objects.requireNonNull(inputs, "inputs");
+        Path modelRoot = modelDirectory.toAbsolutePath().normalize();
+        Path results = resultDirectory.toAbsolutePath().normalize();
+        Path frozenModel = null;
+        try {
+            Files.createDirectories(results);
+            frozenModel = Files.createTempDirectory(results, ".full-property-model-");
+            copyModel(modelRoot, frozenModel);
+            SourceDocument source = SourceDocument.read(frozenModel.resolve(moduleFile));
+            BoundedFileSnapshot moduleSnapshot =
+                    BoundedFileSnapshot.read(frozenModel.resolve(moduleFile), MAXIMUM_MODULE_BYTES);
+            FullPropertyConfig.Materialized config =
+                    FullPropertyConfig.write(frozenModel.resolve(configFile), results.resolve("full-properties.cfg"));
+            validateFullPropertyInputs(inputs, moduleSnapshot, config.snapshot());
+            SemanticProject project = sanyAnalyzer.analyze(frozenModel, moduleFile, configFile);
+            List<MutationCandidate> candidates = candidates(project, source);
+
+            TlcExecution baseline = tlcRunner.run(
+                    frozenModel,
+                    moduleFile,
+                    config.path().toString(),
+                    results.resolve("baseline-states.jsonl"),
+                    timeout);
+            requirePassingBaseline(baseline);
+
+            List<MutationResult> mutationResults = new ArrayList<>();
+            for (MutationCandidate candidate : candidates) {
+                mutationResults.add(runFullPropertyCandidate(
+                        frozenModel, moduleFile, configFile, config.path(), results, source, baseline, candidate));
+            }
+            int evaluated = (int) mutationResults.stream()
+                    .filter(result -> result.executionStatus().equals(ExecutionStatus.COMPLETED.name()))
+                    .count();
+            int survivors = (int) mutationResults.stream()
+                    .filter(result -> result.verdict().equals("full-property-survivor"))
+                    .count();
+            return new ExperimentReport(
+                    3,
+                    moduleFile,
+                    configFile,
+                    "proxy-agent-review",
+                    candidates.size(),
+                    evaluated,
+                    survivors,
+                    mutationResults,
+                    OracleMode.FULL_PROPERTY.cliName(),
+                    inputs);
+        } catch (IOException exception) {
+            throw new IllegalStateException("Cannot create the full-property experiment inputs", exception);
+        } finally {
+            deleteTree(frozenModel);
+        }
     }
 
     private ExperimentReport runInternal(
@@ -98,11 +160,7 @@ public final class ExperimentRunner {
         } catch (IOException exception) {
             throw new IllegalStateException("Cannot create the State Invariant-only configuration", exception);
         }
-        List<MutationCandidate> candidates = new ArrayList<>();
-        candidates.addAll(new GcdMutator().generate(project, source));
-        candidates.addAll(new BrlMutator().generate(project, source));
-        candidates.addAll(new UoiMutator().generate(project, source));
-        candidates.sort(Comparator.comparing(MutationCandidate::id));
+        List<MutationCandidate> candidates = candidates(project, source);
 
         TlcExecution baseline = tlcRunner.run(
                 modelRoot,
@@ -110,16 +168,7 @@ public final class ExperimentRunner {
                 stateInvariantConfig.toString(),
                 results.resolve("baseline-states.jsonl"),
                 timeout);
-        if (baseline.status() != ExecutionStatus.COMPLETED || baseline.oracle() != OracleOutcome.PASSED) {
-            throw new IllegalStateException("Baseline did not complete successfully: "
-                    + baseline.status()
-                    + "/"
-                    + baseline.oracle()
-                    + "\nstdout:\n"
-                    + bounded(baseline.stdout())
-                    + "\nstderr:\n"
-                    + bounded(baseline.stderr()));
-        }
+        requirePassingBaseline(baseline);
 
         List<MutationResult> mutationResults = new ArrayList<>();
         for (MutationCandidate candidate : candidates) {
@@ -156,6 +205,127 @@ public final class ExperimentRunner {
     private static String bounded(String value) {
         String text = value == null ? "" : value;
         return text.substring(0, Math.min(text.length(), 4000));
+    }
+
+    private static List<MutationCandidate> candidates(SemanticProject project, SourceDocument source) {
+        List<MutationCandidate> candidates = new ArrayList<>();
+        candidates.addAll(new GcdMutator().generate(project, source));
+        candidates.addAll(new BrlMutator().generate(project, source));
+        candidates.addAll(new UoiMutator().generate(project, source));
+        candidates.sort(Comparator.comparing(MutationCandidate::id));
+        return List.copyOf(candidates);
+    }
+
+    private static void requirePassingBaseline(TlcExecution baseline) {
+        if (baseline.status() != ExecutionStatus.COMPLETED || baseline.oracle() != OracleOutcome.PASSED) {
+            throw new IllegalStateException("Baseline did not complete successfully: "
+                    + baseline.status()
+                    + "/"
+                    + baseline.oracle()
+                    + "\nstdout:\n"
+                    + bounded(baseline.stdout())
+                    + "\nstderr:\n"
+                    + bounded(baseline.stderr()));
+        }
+    }
+
+    private static void validateFullPropertyInputs(
+            ExperimentInputIdentity inputs, BoundedFileSnapshot module, BoundedFileSnapshot config) {
+        if (!inputs.module().equals(ExperimentInputIdentity.Artifact.from(module))
+                || !inputs.config().equals(ExperimentInputIdentity.Artifact.from(config))) {
+            throw new IllegalArgumentException("Full-property module or config identity does not match frozen input");
+        }
+    }
+
+    private MutationResult runFullPropertyCandidate(
+            Path modelRoot,
+            String moduleFile,
+            String configFile,
+            Path fullPropertyConfig,
+            Path results,
+            SourceDocument source,
+            TlcExecution baseline,
+            MutationCandidate candidate) {
+        Path workspace = null;
+        SourceDocument patched = new SourcePatcher().apply(source, candidate);
+        TlcExecution mutant;
+        try {
+            workspace = Files.createTempDirectory(results, ".mutant-" + candidate.id() + "-");
+            copyModel(modelRoot, workspace);
+            Files.writeString(workspace.resolve(moduleFile), patched.content());
+            sanyAnalyzer.analyze(workspace, moduleFile, configFile);
+            mutant = tlcRunner.run(
+                    workspace,
+                    moduleFile,
+                    fullPropertyConfig.toString(),
+                    results.resolve(candidate.id() + "-states.jsonl"),
+                    timeout);
+        } catch (IllegalArgumentException | IOException exception) {
+            mutant = new TlcExecution(
+                    ExecutionStatus.INVALID_SEMANTIC,
+                    OracleOutcome.NOT_EVALUATED,
+                    -1,
+                    List.of(),
+                    List.of(),
+                    "",
+                    exception.getClass().getSimpleName(),
+                    false);
+        } finally {
+            deleteTree(workspace);
+        }
+        return classifyFullProperty(candidate, source, patched, baseline, mutant);
+    }
+
+    private MutationResult classifyFullProperty(
+            MutationCandidate candidate,
+            SourceDocument source,
+            SourceDocument patched,
+            TlcExecution baseline,
+            TlcExecution mutant) {
+        String relationName = "STATE_UNRESOLVED";
+        String verdict = "unresolved";
+        String witness = null;
+        String diagnosticReason = null;
+        if (mutant.status() == ExecutionStatus.COMPLETED) {
+            switch (mutant.oracle()) {
+                case KILLED_STATE_SAFETY -> verdict = "full-property-state-safety-kill";
+                case KILLED_TEMPORAL_NAMED, KILLED_TEMPORAL_GENERIC -> verdict = "full-property-temporal-kill";
+                case KILLED_DEADLOCK -> verdict = "full-property-deadlock-kill";
+                case PASSED -> {
+                    StateRelationAnalyzer.Analysis relation =
+                            relationAnalyzer.analyze(baseline.states(), mutant.states());
+                    relationName = relation.relation().name();
+                    witness = relation.mutantOnlyWitness()
+                            .map(dev.tlamutant.state.CanonicalState::canonicalValue)
+                            .orElse(null);
+                    verdict = "full-property-survivor";
+                }
+                case NOT_EVALUATED -> {
+                    verdict = "unresolved";
+                    diagnosticReason = diagnosticReason(mutant);
+                }
+            }
+        } else {
+            verdict = "unresolved";
+            diagnosticReason = diagnosticReason(mutant);
+        }
+        MutationEvidence evidence = MutationEvidence.create(candidate, source, patched, mutant);
+        return new MutationResult(
+                candidate.id(),
+                candidate.family().name(),
+                candidate.definition(),
+                candidate.original(),
+                candidate.replacement(),
+                mutant.status().name(),
+                mutant.oracle().name(),
+                relationName,
+                verdict,
+                diagnosticReason,
+                baseline.states().size(),
+                mutant.states().size(),
+                witness,
+                null,
+                evidence);
     }
 
     private MutationResult runCandidate(
