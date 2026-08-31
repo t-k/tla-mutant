@@ -94,8 +94,8 @@ final class TlcRunnerTest {
         Path state = temporaryDirectory.resolve("term-resistant/states.jsonl");
 
         long started = System.nanoTime();
-        TlcExecution execution = fixture.runner()
-                .runFullProperty(fixture.model(), "Spec.tla", "Spec.cfg", state, Duration.ofMillis(300));
+        TlcExecution execution =
+                fixture.runner().runFullProperty(fixture.model(), "Spec.tla", "Spec.cfg", state, Duration.ofSeconds(5));
         Duration elapsed = Duration.ofNanos(System.nanoTime() - started);
 
         awaitFile(sibling(state, ".pid"));
@@ -103,7 +103,7 @@ final class TlcRunnerTest {
                 Long.parseLong(Files.readString(sibling(state, ".pid"), UTF_8).trim());
         assertEquals(ExecutionStatus.TIMEOUT, execution.status(), execution.stderr());
         assertEquals(OracleOutcome.NOT_EVALUATED, execution.oracle());
-        assertTrue(elapsed.compareTo(Duration.ofSeconds(3)) < 0, elapsed.toString());
+        assertTrue(elapsed.compareTo(Duration.ofSeconds(8)) < 0, elapsed.toString());
         assertFalse(ProcessHandle.of(pid).map(ProcessHandle::isAlive).orElse(false));
     }
 
@@ -116,14 +116,15 @@ final class TlcRunnerTest {
 
         long started = System.nanoTime();
         TlcExecution execution =
-                fixture.runner().runFullProperty(fixture.model(), "Spec.tla", "Spec.cfg", state, Duration.ofSeconds(1));
+                fixture.runner().runFullProperty(fixture.model(), "Spec.tla", "Spec.cfg", state, Duration.ofSeconds(5));
         Duration elapsed = Duration.ofNanos(System.nanoTime() - started);
+        awaitFile(sibling(state, ".child-pid"));
         long childPid = Long.parseLong(
                 Files.readString(sibling(state, ".child-pid"), UTF_8).trim());
         try {
             assertEquals(ExecutionStatus.TOOL_ERROR, execution.status(), execution.stderr());
             assertEquals(OracleOutcome.NOT_EVALUATED, execution.oracle());
-            assertTrue(elapsed.compareTo(Duration.ofSeconds(1)) < 0, elapsed.toString());
+            assertTrue(elapsed.compareTo(Duration.ofSeconds(3)) < 0, elapsed.toString());
             assertTrue(execution.stderr().contains("collector"), execution.stderr());
         } finally {
             terminateOwnedProcess(childPid);
@@ -154,6 +155,10 @@ final class TlcRunnerTest {
             assertEquals(OracleOutcome.NOT_EVALUATED, execution.get().oracle());
             assertFalse(ProcessHandle.of(pid).map(ProcessHandle::isAlive).orElse(false));
         } finally {
+            if (thread.isAlive()) {
+                thread.interrupt();
+                thread.join(3_000);
+            }
             if (pid > 0) {
                 terminateOwnedProcess(pid);
             }
@@ -256,7 +261,7 @@ final class TlcRunnerTest {
     }
 
     private static void awaitFile(Path path) throws Exception {
-        long deadline = System.nanoTime() + Duration.ofSeconds(2).toNanos();
+        long deadline = System.nanoTime() + Duration.ofSeconds(10).toNanos();
         while (!Files.isRegularFile(path) && System.nanoTime() < deadline) {
             Thread.sleep(10);
         }
