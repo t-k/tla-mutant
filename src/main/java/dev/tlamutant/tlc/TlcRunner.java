@@ -21,12 +21,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public final class TlcRunner {
     private static final int OUTPUT_LIMIT = 1024 * 1024;
+    private static final LifecycleTimeouts DEFAULT_LIFECYCLE_TIMEOUTS = new LifecycleTimeouts(
+            Duration.ofSeconds(2), Duration.ofSeconds(5), Duration.ofSeconds(5), Duration.ofSeconds(5));
     private static final Set<String> REMOVED_ENVIRONMENT = Set.of(
             "CLASSPATH",
             "TLA_LIBRARY",
@@ -47,6 +51,7 @@ public final class TlcRunner {
     private final long maximumStates;
     private final long maximumStateBytes;
     private final RunDirectoryCleaner runDirectoryCleaner;
+    private final LifecycleTimeouts lifecycleTimeouts;
     private final ObjectMapper mapper = new ObjectMapper();
     private final TlcToolEventParser eventParser = new TlcToolEventParser();
     private final TlcOutcomeClassifier outcomeClassifier = new TlcOutcomeClassifier();
@@ -67,6 +72,24 @@ public final class TlcRunner {
             long maximumStates,
             long maximumStateBytes,
             RunDirectoryCleaner runDirectoryCleaner) {
+        this(
+                javaExecutable,
+                applicationJar,
+                toolsJar,
+                maximumStates,
+                maximumStateBytes,
+                runDirectoryCleaner,
+                DEFAULT_LIFECYCLE_TIMEOUTS);
+    }
+
+    TlcRunner(
+            Path javaExecutable,
+            Path applicationJar,
+            Path toolsJar,
+            long maximumStates,
+            long maximumStateBytes,
+            RunDirectoryCleaner runDirectoryCleaner,
+            LifecycleTimeouts lifecycleTimeouts) {
         this.javaExecutable = requireRegularAbsolute(javaExecutable, "java executable");
         this.applicationJar = requireRegularAbsolute(applicationJar, "application jar");
         this.toolsJar = requireRegularAbsolute(toolsJar, "TLA+ Tools jar");
@@ -76,6 +99,7 @@ public final class TlcRunner {
         this.maximumStates = maximumStates;
         this.maximumStateBytes = maximumStateBytes;
         this.runDirectoryCleaner = java.util.Objects.requireNonNull(runDirectoryCleaner, "runDirectoryCleaner");
+        this.lifecycleTimeouts = java.util.Objects.requireNonNull(lifecycleTimeouts, "lifecycleTimeouts");
     }
 
     public static TlcRunner forCurrentJava(Path applicationJar, Path toolsJar) {
@@ -173,67 +197,226 @@ public final class TlcRunner {
         ProcessBuilder builder = new ProcessBuilder(command).directory(processDirectory.toFile());
         REMOVED_ENVIRONMENT.forEach(builder.environment()::remove);
 
-        TlcExecution execution;
-        try {
-            Process process = builder.start();
-            try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-                Future<TlcOutputCollector.Capture> stdout =
-                        executor.submit(new TlcOutputCollector(process.getInputStream(), OUTPUT_LIMIT));
-                Future<TlcOutputCollector.Capture> stderr =
-                        executor.submit(new TlcOutputCollector(process.getErrorStream(), OUTPUT_LIMIT));
-                boolean completed = process.waitFor(timeout.toMillis(), TimeUnit.MILLISECONDS);
-                if (!completed) {
-                    process.destroy();
-                    if (!process.waitFor(2, TimeUnit.SECONDS)) {
-                        process.destroyForcibly();
-                        process.waitFor(5, TimeUnit.SECONDS);
-                    }
-                }
-                TlcOutputCollector.Capture out = stdout.get();
-                TlcOutputCollector.Capture err = stderr.get();
-                int exitCode = completed ? process.exitValue() : -1;
-                TlcToolEventParser.ParseResult parsed = eventParser.parse(out.text());
-                List<TlcToolEvent> events = parsed.events();
-                StateFile stateFile = readStateFile(output);
-                TlcOutcomeClassifier.Classification classification = outcomeClassifier.classify(
-                        profile,
-                        completed,
-                        exitCode,
-                        events,
-                        stateFile.complete(),
-                        out.truncated() || err.truncated(),
-                        parsed.valid() && out.validUtf8() && err.validUtf8());
-                execution = new TlcExecution(
-                        classification.status(),
-                        classification.oracle(),
-                        exitCode,
-                        events,
-                        stateFile.states(),
-                        out.text(),
-                        err.text(),
-                        out.truncated() || err.truncated(),
-                        classification.violatedProperty());
-            }
-        } catch (IOException | InterruptedException | ExecutionException exception) {
-            if (exception instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
-            execution = new TlcExecution(
-                    ExecutionStatus.TOOL_ERROR,
-                    OracleOutcome.NOT_EVALUATED,
-                    -1,
-                    List.of(),
-                    List.of(),
-                    "",
-                    exception.getClass().getSimpleName(),
-                    false);
-        }
+        ProcessCapture capture = execute(builder, timeout);
+        TlcExecution execution =
+                capture.failure() == null ? classify(profile, output, capture) : lifecycleFailure(capture);
         try {
             runDirectoryCleaner.delete(runDirectory);
         } catch (IOException | RuntimeException cleanupFailure) {
             return cleanupFailure(execution, cleanupFailure);
         }
         return execution;
+    }
+
+    private ProcessCapture execute(ProcessBuilder builder, Duration timeout) {
+        Process process = null;
+        ExecutorService executor = null;
+        Future<TlcOutputCollector.Capture> stdout = null;
+        Future<TlcOutputCollector.Capture> stderr = null;
+        TlcOutputCollector.Capture out = TlcOutputCollector.Capture.empty();
+        TlcOutputCollector.Capture err = TlcOutputCollector.Capture.empty();
+        boolean completed = false;
+        boolean terminationAttempted = false;
+        boolean restoreInterrupt = false;
+        String failure = null;
+        int exitCode = -1;
+        try {
+            process = builder.start();
+            process.getOutputStream().close();
+            executor = Executors.newVirtualThreadPerTaskExecutor();
+            stdout = executor.submit(new TlcOutputCollector(process.getInputStream(), OUTPUT_LIMIT));
+            stderr = executor.submit(new TlcOutputCollector(process.getErrorStream(), OUTPUT_LIMIT));
+            try {
+                completed = process.waitFor(timeout.toNanos(), TimeUnit.NANOSECONDS);
+            } catch (InterruptedException exception) {
+                restoreInterrupt = true;
+                failure = appendFailure(failure, "TLC wait interrupted");
+            }
+            if (!completed) {
+                terminationAttempted = true;
+                Termination termination = terminate(process);
+                restoreInterrupt |= termination.interrupted();
+                if (!termination.reaped()) {
+                    failure = appendFailure(failure, "TLC child remained alive after forced termination");
+                }
+            }
+            long collectorDeadline =
+                    System.nanoTime() + lifecycleTimeouts.collectorDrain().toNanos();
+            CaptureResult capturedOut = capture(stdout, "stdout", collectorDeadline);
+            out = capturedOut.capture();
+            restoreInterrupt |= capturedOut.interrupted();
+            failure = appendFailure(failure, capturedOut.failure());
+            CaptureResult capturedErr = capture(stderr, "stderr", collectorDeadline);
+            err = capturedErr.capture();
+            restoreInterrupt |= capturedErr.interrupted();
+            failure = appendFailure(failure, capturedErr.failure());
+            if (completed && !process.isAlive()) {
+                exitCode = process.exitValue();
+            }
+        } catch (IOException | RuntimeException exception) {
+            failure = appendFailure(
+                    failure, "TLC process failed: " + exception.getClass().getSimpleName());
+        } finally {
+            closeProcessStreams(process);
+            cancel(stdout);
+            cancel(stderr);
+            if (executor != null) {
+                executor.shutdownNow();
+                try {
+                    if (!executor.awaitTermination(
+                            lifecycleTimeouts.executorTermination().toNanos(), TimeUnit.NANOSECONDS)) {
+                        failure = appendFailure(failure, "TLC collector executor did not terminate");
+                    }
+                } catch (InterruptedException exception) {
+                    restoreInterrupt = true;
+                    failure = appendFailure(failure, "TLC collector executor shutdown interrupted");
+                }
+            }
+            if (process != null && process.isAlive()) {
+                if (!terminationAttempted) {
+                    Termination termination = terminate(process);
+                    restoreInterrupt |= termination.interrupted();
+                    if (!termination.reaped()) {
+                        failure = appendFailure(failure, "TLC child remained alive after bounded cleanup");
+                    }
+                } else {
+                    process.destroyForcibly();
+                    failure = appendFailure(failure, "TLC child remained alive after bounded cleanup");
+                }
+            }
+            if (restoreInterrupt) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        return new ProcessCapture(completed, exitCode, out, err, failure);
+    }
+
+    private Termination terminate(Process process) {
+        boolean interrupted = false;
+        process.destroy();
+        try {
+            if (process.waitFor(lifecycleTimeouts.gracefulTermination().toNanos(), TimeUnit.NANOSECONDS)) {
+                return new Termination(true, false);
+            }
+        } catch (InterruptedException exception) {
+            interrupted = true;
+        }
+        process.destroyForcibly();
+        try {
+            return new Termination(
+                    process.waitFor(lifecycleTimeouts.forcedTermination().toNanos(), TimeUnit.NANOSECONDS),
+                    interrupted);
+        } catch (InterruptedException exception) {
+            return new Termination(false, true);
+        }
+    }
+
+    private CaptureResult capture(Future<TlcOutputCollector.Capture> future, String stream, long deadlineNanos) {
+        if (future == null) {
+            return new CaptureResult(
+                    TlcOutputCollector.Capture.empty(), "TLC " + stream + " collector was not started", false);
+        }
+        long remainingNanos = deadlineNanos - System.nanoTime();
+        if (remainingNanos <= 0 && !future.isDone()) {
+            return new CaptureResult(
+                    TlcOutputCollector.Capture.empty(), "TLC " + stream + " collector timed out", false);
+        }
+        try {
+            return new CaptureResult(future.get(Math.max(0, remainingNanos), TimeUnit.NANOSECONDS), null, false);
+        } catch (TimeoutException exception) {
+            return new CaptureResult(
+                    TlcOutputCollector.Capture.empty(), "TLC " + stream + " collector timed out", false);
+        } catch (ExecutionException exception) {
+            return new CaptureResult(
+                    TlcOutputCollector.Capture.empty(),
+                    "TLC " + stream + " collector failed: "
+                            + exception.getCause().getClass().getSimpleName(),
+                    false);
+        } catch (InterruptedException exception) {
+            return new CaptureResult(
+                    TlcOutputCollector.Capture.empty(), "TLC " + stream + " collector interrupted", true);
+        }
+    }
+
+    private TlcExecution classify(TlcOracleProfile profile, Path output, ProcessCapture capture) {
+        TlcToolEventParser.ParseResult parsed =
+                eventParser.parse(capture.stdout().text());
+        List<TlcToolEvent> events = parsed.events();
+        StateFile stateFile = readStateFile(output);
+        TlcOutcomeClassifier.Classification classification = outcomeClassifier.classify(
+                profile,
+                capture.completed(),
+                capture.exitCode(),
+                events,
+                stateFile.complete(),
+                capture.outputTruncated(),
+                parsed.valid()
+                        && capture.stdout().validUtf8()
+                        && capture.stderr().validUtf8());
+        return new TlcExecution(
+                classification.status(),
+                classification.oracle(),
+                capture.exitCode(),
+                events,
+                stateFile.states(),
+                capture.stdout().text(),
+                capture.stderr().text(),
+                capture.outputTruncated(),
+                classification.violatedProperty());
+    }
+
+    private static TlcExecution lifecycleFailure(ProcessCapture capture) {
+        String stderr = appendDiagnostic(capture.stderr().text(), capture.failure());
+        return new TlcExecution(
+                ExecutionStatus.TOOL_ERROR,
+                OracleOutcome.NOT_EVALUATED,
+                capture.exitCode(),
+                List.of(),
+                List.of(),
+                capture.stdout().text(),
+                stderr,
+                capture.outputTruncated(),
+                null);
+    }
+
+    private static void cancel(Future<?> future) {
+        if (future != null && !future.isDone()) {
+            future.cancel(true);
+        }
+    }
+
+    private static void closeProcessStreams(Process process) {
+        if (process == null) {
+            return;
+        }
+        try {
+            process.getOutputStream().close();
+        } catch (IOException ignored) {
+            // Reap, collector, executor, and run-directory checks determine lifecycle failure.
+        }
+        try {
+            process.getInputStream().close();
+        } catch (IOException ignored) {
+            // Reap, collector, executor, and run-directory checks determine lifecycle failure.
+        }
+        try {
+            process.getErrorStream().close();
+        } catch (IOException ignored) {
+            // Reap, collector, executor, and run-directory checks determine lifecycle failure.
+        }
+    }
+
+    private static String appendFailure(String current, String addition) {
+        if (addition == null || addition.isBlank()) {
+            return current;
+        }
+        return current == null ? addition : current + "; " + addition;
+    }
+
+    private static String appendDiagnostic(String stderr, String diagnostic) {
+        String separator = stderr.isEmpty() ? "" : "\n";
+        String combined = stderr + separator + diagnostic;
+        return combined.length() <= OUTPUT_LIMIT ? combined : combined.substring(combined.length() - OUTPUT_LIMIT);
     }
 
     private StateFile readStateFile(Path path) {
@@ -343,6 +526,40 @@ public final class TlcRunner {
     interface RunDirectoryCleaner {
         void delete(Path path) throws IOException;
     }
+
+    record LifecycleTimeouts(
+            Duration gracefulTermination,
+            Duration forcedTermination,
+            Duration collectorDrain,
+            Duration executorTermination) {
+        LifecycleTimeouts {
+            requirePositive(gracefulTermination, "Graceful termination timeout");
+            requirePositive(forcedTermination, "Forced termination timeout");
+            requirePositive(collectorDrain, "Collector drain timeout");
+            requirePositive(executorTermination, "Executor termination timeout");
+        }
+
+        private static void requirePositive(Duration duration, String label) {
+            if (duration == null || duration.isZero() || duration.isNegative()) {
+                throw new IllegalArgumentException(label + " must be positive");
+            }
+        }
+    }
+
+    private record ProcessCapture(
+            boolean completed,
+            int exitCode,
+            TlcOutputCollector.Capture stdout,
+            TlcOutputCollector.Capture stderr,
+            String failure) {
+        private boolean outputTruncated() {
+            return stdout.truncated() || stderr.truncated();
+        }
+    }
+
+    private record CaptureResult(TlcOutputCollector.Capture capture, String failure, boolean interrupted) {}
+
+    private record Termination(boolean reaped, boolean interrupted) {}
 
     private record StateFile(List<CanonicalState> states, boolean complete) {}
 }

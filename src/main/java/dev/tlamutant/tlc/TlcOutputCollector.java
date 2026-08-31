@@ -45,5 +45,9 @@ record TlcOutputCollector(InputStream input, int limit) implements Callable<TlcO
         }
     }
 
-    record Capture(String text, boolean truncated, boolean validUtf8) {}
+    record Capture(String text, boolean truncated, boolean validUtf8) {
+        static Capture empty() {
+            return new Capture("", false, true);
+        }
+    }
 }

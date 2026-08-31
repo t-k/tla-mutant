@@ -1,5 +1,6 @@
 package dev.tlamutant.tlc;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -98,5 +99,63 @@ final class TlcRunnerIntegrationTest {
         assertNull(liveness.violatedProperty());
         assertTrue(liveness.events().stream().anyMatch(event -> event.code() == 2116));
         assertFalse(Files.exists(modelDirectory.resolve("states")));
+    }
+
+    @Test
+    void classifiesRealNamedTemporalAndDeadlockCounterexamples() throws Exception {
+        TlcRunner runner = TlcRunner.forCurrentJava(
+                Path.of(System.getProperty("tla.mutant.test.appJar")),
+                Path.of(System.getProperty("tla.mutant.test.toolsJar")));
+        Path modelDirectory = Files.createDirectory(temporaryDirectory.resolve("named-and-deadlock"));
+        Files.writeString(
+                modelDirectory.resolve("NamedLiveness.tla"),
+                "---- MODULE NamedLiveness ----\n"
+                        + "VARIABLE x\n"
+                        + "Init == x = 0\n"
+                        + "Next == x' = x\n"
+                        + "Spec == Init /\\ [][Next]_x\n"
+                        + "EventuallyOne == <> (x = 1)\n"
+                        + "====\n",
+                UTF_8);
+        Files.writeString(
+                modelDirectory.resolve("NamedLiveness.cfg"),
+                "SPECIFICATION Spec\nPROPERTY EventuallyOne\nCHECK_DEADLOCK FALSE\n",
+                UTF_8);
+        Files.writeString(
+                modelDirectory.resolve("Deadlock.tla"),
+                "---- MODULE Deadlock ----\n"
+                        + "VARIABLE x\n"
+                        + "Init == x = 0\n"
+                        + "Next == /\\ x = 0 /\\ x' = 1\n"
+                        + "Spec == Init /\\ [][Next]_x\n"
+                        + "====\n",
+                UTF_8);
+        Files.writeString(modelDirectory.resolve("Deadlock.cfg"), "SPECIFICATION Spec\n", UTF_8);
+
+        TlcExecution namedTemporal = runner.runFullProperty(
+                modelDirectory,
+                "NamedLiveness.tla",
+                "NamedLiveness.cfg",
+                temporaryDirectory.resolve("named-liveness.jsonl"),
+                Duration.ofSeconds(30));
+        TlcExecution deadlock = runner.runFullProperty(
+                modelDirectory,
+                "Deadlock.tla",
+                "Deadlock.cfg",
+                temporaryDirectory.resolve("deadlock.jsonl"),
+                Duration.ofSeconds(30));
+
+        assertEquals(ExecutionStatus.COMPLETED, namedTemporal.status(), namedTemporal.stderr());
+        assertEquals(
+                OracleOutcome.KILLED_TEMPORAL_NAMED,
+                namedTemporal.oracle(),
+                namedTemporal.events().toString());
+        assertEquals("EventuallyOne", namedTemporal.violatedProperty());
+        assertEquals(ExecutionStatus.COMPLETED, deadlock.status(), deadlock.stderr());
+        assertEquals(
+                OracleOutcome.KILLED_DEADLOCK,
+                deadlock.oracle(),
+                deadlock.events().toString());
+        assertNull(deadlock.violatedProperty());
     }
 }
