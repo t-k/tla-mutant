@@ -12,7 +12,8 @@ public record TlcExecution(
         List<CanonicalState> states,
         String stdout,
         String stderr,
-        boolean outputTruncated) {
+        boolean outputTruncated,
+        String violatedProperty) {
     public TlcExecution {
         Objects.requireNonNull(status, "status");
         Objects.requireNonNull(oracle, "oracle");
@@ -20,5 +21,17 @@ public record TlcExecution(
         states = List.copyOf(states);
         Objects.requireNonNull(stdout, "stdout");
         Objects.requireNonNull(stderr, "stderr");
+    }
+
+    public TlcExecution(
+            ExecutionStatus status,
+            OracleOutcome oracle,
+            int exitCode,
+            List<TlcToolEvent> events,
+            List<CanonicalState> states,
+            String stdout,
+            String stderr,
+            boolean outputTruncated) {
+        this(status, oracle, exitCode, events, states, stdout, stderr, outputTruncated, null);
     }
 }

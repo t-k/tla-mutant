@@ -45,6 +45,7 @@ public final class TlcRunner {
     private final long maximumStateBytes;
     private final ObjectMapper mapper = new ObjectMapper();
     private final TlcToolEventParser eventParser = new TlcToolEventParser();
+    private final TlcOutcomeClassifier outcomeClassifier = new TlcOutcomeClassifier();
 
     public TlcRunner(Path javaExecutable, Path applicationJar, Path toolsJar) {
         this(javaExecutable, applicationJar, toolsJar, 1_000_000, 67_108_864);
@@ -144,7 +145,8 @@ public final class TlcRunner {
                 int exitCode = completed ? process.exitValue() : -1;
                 List<TlcToolEvent> events = eventParser.parse(out.text());
                 StateFile stateFile = readStateFile(output);
-                Classification classification = classify(completed, exitCode, events, stateFile.complete());
+                TlcOutcomeClassifier.Classification classification =
+                        outcomeClassifier.classify(completed, exitCode, events, stateFile.complete());
                 return new TlcExecution(
                         classification.status(),
                         classification.oracle(),
@@ -153,7 +155,8 @@ public final class TlcRunner {
                         stateFile.states(),
                         out.text(),
                         err.text(),
-                        out.truncated() || err.truncated());
+                        out.truncated() || err.truncated(),
+                        classification.violatedProperty());
             }
         } catch (IOException | InterruptedException | ExecutionException exception) {
             if (exception instanceof InterruptedException) {
@@ -171,30 +174,6 @@ public final class TlcRunner {
         } finally {
             deleteTree(runDirectory);
         }
-    }
-
-    private Classification classify(
-            boolean completed, int exitCode, List<TlcToolEvent> events, boolean completeStateFile) {
-        Set<Integer> codes = events.stream().map(TlcToolEvent::code).collect(java.util.stream.Collectors.toSet());
-        if (!completed) {
-            return new Classification(ExecutionStatus.TIMEOUT, OracleOutcome.NOT_EVALUATED);
-        }
-        if (codes.contains(1001)) {
-            return new Classification(ExecutionStatus.OUT_OF_MEMORY, OracleOutcome.NOT_EVALUATED);
-        }
-        if (codes.contains(2111)) {
-            return new Classification(ExecutionStatus.EVALUATION_ERROR, OracleOutcome.NOT_EVALUATED);
-        }
-        if (codes.contains(2107) || codes.contains(2110)) {
-            return new Classification(ExecutionStatus.COMPLETED, OracleOutcome.KILLED_STATE_SAFETY);
-        }
-        if (codes.contains(2114)) {
-            return new Classification(ExecutionStatus.COMPLETED, OracleOutcome.KILLED_DEADLOCK);
-        }
-        if (codes.contains(2193) && exitCode == 0 && completeStateFile) {
-            return new Classification(ExecutionStatus.COMPLETED, OracleOutcome.PASSED);
-        }
-        return new Classification(ExecutionStatus.TOOL_ERROR, OracleOutcome.NOT_EVALUATED);
     }
 
     private StateFile readStateFile(Path path) {
@@ -266,8 +245,6 @@ public final class TlcRunner {
             // The exact run directory is best-effort cleanup; a later inspection detects leakage.
         }
     }
-
-    private record Classification(ExecutionStatus status, OracleOutcome oracle) {}
 
     private record StateFile(List<CanonicalState> states, boolean complete) {}
 
