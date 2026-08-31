@@ -206,12 +206,10 @@ public record ExperimentReport(
     }
 
     private static String moduleName(String module) {
-        int slash = module.lastIndexOf('/');
-        String fileName = module.substring(slash + 1);
-        if (!fileName.endsWith(".tla") || fileName.length() == 4) {
+        if (module == null || !module.endsWith(".tla") || module.length() == 4) {
             throw new IllegalArgumentException("Full-property report module path is invalid");
         }
-        return fileName.substring(0, fileName.length() - 4);
+        return module.substring(0, module.length() - 4);
     }
 
     private static <T extends Enum<T>> T enumValue(Class<T> type, String value, String label) {
