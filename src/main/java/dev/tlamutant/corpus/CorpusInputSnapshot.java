@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.Set;
 
 public final class CorpusInputSnapshot implements AutoCloseable {
+    public static final String FULL_PROPERTY_MANIFEST = ".tla-mutant-manifest.json";
     private final Path root;
 
     private CorpusInputSnapshot(Path root) {
@@ -18,12 +19,21 @@ public final class CorpusInputSnapshot implements AutoCloseable {
     }
 
     public static CorpusInputSnapshot create(Path verifiedRoot, CorpusManifest.Entry entry) throws IOException {
+        return create(verifiedRoot, entry, null);
+    }
+
+    public static CorpusInputSnapshot create(
+            Path verifiedRoot, CorpusManifest.Entry entry, BoundedFileSnapshot fullPropertyManifest)
+            throws IOException {
         Path sourceRoot = verifiedRoot.toAbsolutePath().normalize();
         Path snapshotRoot = Files.createTempDirectory("tla-mutant-corpus-");
         try {
             setPermissions(snapshotRoot, directoryPermissions());
             for (CorpusManifest.SourceFile file : entry.files()) {
                 SafeRelativePath relative = SafeRelativePath.parse(file.path());
+                if (relative.value().toString().equals(FULL_PROPERTY_MANIFEST)) {
+                    throw new IllegalArgumentException("Corpus source uses the reserved manifest snapshot path");
+                }
                 Path source = relative.resolveRegularFile(sourceRoot);
                 BoundedFileSnapshot snapshot = BoundedFileSnapshot.read(source, file.sizeBytes());
                 if (snapshot.sizeBytes() != file.sizeBytes()
@@ -37,6 +47,15 @@ public final class CorpusInputSnapshot implements AutoCloseable {
                 createPrivateDirectories(snapshotRoot, destination.getParent());
                 Files.write(destination, snapshot.bytes(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
                 setPermissions(destination, Set.of(PosixFilePermission.OWNER_READ));
+            }
+            if (fullPropertyManifest != null) {
+                Path manifest = snapshotRoot.resolve(FULL_PROPERTY_MANIFEST);
+                Files.write(
+                        manifest,
+                        fullPropertyManifest.bytes(),
+                        StandardOpenOption.CREATE_NEW,
+                        StandardOpenOption.WRITE);
+                setPermissions(manifest, Set.of(PosixFilePermission.OWNER_READ));
             }
             return new CorpusInputSnapshot(snapshotRoot);
         } catch (IOException | RuntimeException failure) {

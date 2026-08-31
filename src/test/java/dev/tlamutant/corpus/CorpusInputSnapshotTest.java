@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import dev.tlamutant.config.ExecutionPolicy;
+import dev.tlamutant.security.BoundedFileSnapshot;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -49,6 +50,25 @@ final class CorpusInputSnapshotTest {
         Files.write(source.resolve("Spec.cfg"), "different".getBytes(java.nio.charset.StandardCharsets.UTF_8));
 
         assertThrows(IllegalArgumentException.class, () -> CorpusInputSnapshot.create(source, entry(model, config)));
+    }
+
+    @Test
+    void transportsTheExactManifestBytesIntoThePrivateSnapshot() throws Exception {
+        Path source = Files.createDirectory(temporaryDirectory.resolve("full-property"));
+        byte[] model = "---- MODULE Spec ----\n====\n".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        byte[] config = "SPECIFICATION Spec\n".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        byte[] manifest = "{\"schemaVersion\":1}\n".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        Files.write(source.resolve("Spec.tla"), model);
+        Files.write(source.resolve("Spec.cfg"), config);
+        Path manifestPath = temporaryDirectory.resolve("manifest.json");
+        Files.write(manifestPath, manifest);
+
+        try (CorpusInputSnapshot snapshot = CorpusInputSnapshot.create(
+                source, entry(model, config), BoundedFileSnapshot.read(manifestPath, 1024))) {
+            assertEquals(
+                    new String(manifest, java.nio.charset.StandardCharsets.UTF_8),
+                    Files.readString(snapshot.root().resolve(CorpusInputSnapshot.FULL_PROPERTY_MANIFEST)));
+        }
     }
 
     private static CorpusManifest.Entry entry(byte[] model, byte[] config) throws Exception {

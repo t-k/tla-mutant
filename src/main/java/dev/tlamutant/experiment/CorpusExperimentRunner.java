@@ -11,6 +11,7 @@ import dev.tlamutant.prospective.ProspectiveCensusReport;
 import dev.tlamutant.sandbox.PodmanExecution;
 import dev.tlamutant.sandbox.PodmanRunner;
 import dev.tlamutant.sandbox.SandboxInput;
+import dev.tlamutant.security.BoundedFileSnapshot;
 import dev.tlamutant.security.StrictJson;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -20,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 
 public final class CorpusExperimentRunner {
     private final Path applicationJar;
@@ -28,11 +30,12 @@ public final class CorpusExperimentRunner {
     private final ExecutionPolicy policy;
     private final OracleMode oracleMode;
     private final CorpusExperimentInputIdentity inputs;
+    private final BoundedFileSnapshot manifestSnapshot;
     private final CorpusFetcher fetcher = new CorpusFetcher();
     private final ObjectMapper mapper = new ObjectMapper();
 
     public CorpusExperimentRunner(Path applicationJar, Path toolsJar, Path cacheRoot, ExecutionPolicy policy) {
-        this(applicationJar, toolsJar, cacheRoot, policy, OracleMode.STATE_INVARIANTS, null);
+        this(applicationJar, toolsJar, cacheRoot, policy, OracleMode.STATE_INVARIANTS, null, null);
     }
 
     public CorpusExperimentRunner(
@@ -42,14 +45,32 @@ public final class CorpusExperimentRunner {
             ExecutionPolicy policy,
             OracleMode oracleMode,
             CorpusExperimentInputIdentity inputs) {
+        this(applicationJar, toolsJar, cacheRoot, policy, oracleMode, inputs, null);
+    }
+
+    public CorpusExperimentRunner(
+            Path applicationJar,
+            Path toolsJar,
+            Path cacheRoot,
+            ExecutionPolicy policy,
+            OracleMode oracleMode,
+            CorpusExperimentInputIdentity inputs,
+            BoundedFileSnapshot manifestSnapshot) {
         this.applicationJar = applicationJar.toAbsolutePath().normalize();
         this.toolsJar = toolsJar.toAbsolutePath().normalize();
         this.cacheRoot = cacheRoot.toAbsolutePath().normalize();
         this.policy = Objects.requireNonNull(policy, "policy");
         this.oracleMode = Objects.requireNonNull(oracleMode, "oracleMode");
         this.inputs = inputs;
-        if ((oracleMode == OracleMode.FULL_PROPERTY) != (inputs != null)) {
-            throw new IllegalArgumentException("Full-property corpus mode requires common input identities");
+        this.manifestSnapshot = manifestSnapshot;
+        if (oracleMode == OracleMode.FULL_PROPERTY
+                && (inputs == null
+                        || manifestSnapshot == null
+                        || !inputs.manifest().equals(ExperimentInputIdentity.Artifact.from(manifestSnapshot)))) {
+            throw new IllegalArgumentException("Full-property corpus mode requires matching manifest bytes");
+        }
+        if (oracleMode == OracleMode.STATE_INVARIANTS && (inputs != null || manifestSnapshot != null)) {
+            throw new IllegalArgumentException("State-invariant corpus mode cannot contain full-property inputs");
         }
     }
 
@@ -110,7 +131,9 @@ public final class CorpusExperimentRunner {
                     ? fetcher.fetch(manifest, entry, policy.limits(), cacheRoot)
                     : fetcher.fetch(validated, entry, policy.limits(), cacheRoot);
             PodmanExecution execution;
-            try (CorpusInputSnapshot snapshot = CorpusInputSnapshot.create(input, entry)) {
+            try (CorpusInputSnapshot snapshot = oracleMode == OracleMode.FULL_PROPERTY
+                    ? CorpusInputSnapshot.create(input, entry, manifestSnapshot)
+                    : CorpusInputSnapshot.create(input, entry)) {
                 PodmanRunner sandbox =
                         new PodmanRunner(policy.containerImage(), applicationJar, toolsJar, entry.limits());
                 SandboxInput sandboxInput = oracleMode == OracleMode.FULL_PROPERTY
@@ -138,6 +161,9 @@ public final class CorpusExperimentRunner {
             }
             try {
                 ExperimentReport report = StrictJson.parse(mapper, execution.stdout(), ExperimentReport.class);
+                if (oracleMode == OracleMode.FULL_PROPERTY && !matchesEntry(entry, report)) {
+                    return incomplete(entry, "INVALID_REPORT", "Sandbox report does not match the corpus entry");
+                }
                 return new CorpusEntryResult(entry.id(), entry.domain(), "COMPLETED", null, report);
             } catch (JsonProcessingException exception) {
                 return incomplete(entry, "INVALID_REPORT", "Sandbox output was not an experiment report");
@@ -146,6 +172,31 @@ public final class CorpusExperimentRunner {
             return incomplete(
                     entry, "FETCH_OR_SANDBOX_ERROR", exception.getClass().getSimpleName());
         }
+    }
+
+    private boolean matchesEntry(CorpusManifest.Entry entry, ExperimentReport report) {
+        if (!entry.rootModule().equals(report.module())
+                || !entry.config().equals(report.config())
+                || report.inputs() == null
+                || !report.inputs().manifest().equals(inputs.manifest())
+                || !report.inputs().tools().equals(inputs.tools())
+                || !report.inputs().application().equals(inputs.application())) {
+            return false;
+        }
+        TreeMap<String, ExperimentInputIdentity.Artifact> expected = new TreeMap<>();
+        for (CorpusManifest.SourceFile file : entry.files()) {
+            expected.put(file.path(), new ExperimentInputIdentity.Artifact(file.sha256(), file.sizeBytes()));
+        }
+        for (CorpusManifest.DerivedSourceEdit edit : entry.derivedSourceEdits()) {
+            expected.put(
+                    edit.path(), new ExperimentInputIdentity.Artifact(edit.derivedSha256(), edit.derivedSizeBytes()));
+        }
+        expected.put(CorpusInputSnapshot.FULL_PROPERTY_MANIFEST, inputs.manifest());
+        TreeMap<String, ExperimentInputIdentity.Artifact> actual = new TreeMap<>();
+        report.inputs().modelFiles().forEach(file -> actual.put(file.path(), file.identity()));
+        return expected.equals(actual)
+                && report.inputs().module().equals(expected.get(entry.rootModule()))
+                && report.inputs().config().equals(expected.get(entry.config()));
     }
 
     private static CorpusEntryResult incomplete(CorpusManifest.Entry entry, String status, String diagnostic) {

@@ -87,17 +87,28 @@ final class ExperimentCommandTest {
     }
 
     @Test
-    void sandboxManifestIdentitySatisfiesTheFullPropertyProvenanceGate() {
-        Main.ExperimentCommand command = command(OracleMode.FULL_PROPERTY, null);
-        command.manifestArtifactJson = "{\"sha256\":\"" + "a".repeat(64) + "\",\"sizeBytes\":1}";
+    void syntheticManifestIdentityIsNotARecognizedCommandOption() {
+        assertThrows(CommandLine.ParameterException.class, () -> new CommandLine(new Main())
+                .parseArgs("experiment", "--manifest-artifact-json", "{}"));
+    }
 
-        assertDoesNotThrow(command::validateOptions);
+    @Test
+    void fullPropertyModeRejectsUnboundedDirectExecutionLimits() {
+        Main.ExperimentCommand command = command(OracleMode.FULL_PROPERTY, Path.of("manifest.json"));
+        command.timeoutSeconds = 601;
+        command.maximumStates = 1_000_000;
+        command.maximumStateBytes = 67_108_864;
+
+        assertThrows(IllegalArgumentException.class, command::validateOptions);
     }
 
     private static Main.ExperimentCommand command(OracleMode mode, Path manifest) {
         Main.ExperimentCommand command = new Main.ExperimentCommand();
         command.oracleMode = mode;
         command.manifestPath = manifest;
+        command.timeoutSeconds = 180;
+        command.maximumStates = 1_000_000;
+        command.maximumStateBytes = 67_108_864;
         return command;
     }
 }

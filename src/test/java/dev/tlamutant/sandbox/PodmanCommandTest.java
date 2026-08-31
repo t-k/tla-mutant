@@ -35,10 +35,9 @@ final class PodmanCommandTest {
                 SandboxTask.EXPERIMENT,
                 input);
 
-        assertTrue(command.containsAll(List.of("--oracle-mode", "full-property", "--manifest-artifact-json")));
-        String encoded = command.get(command.indexOf("--manifest-artifact-json") + 1);
-        assertTrue(encoded.contains("\"sha256\":\"" + "a".repeat(64) + "\""));
-        assertTrue(encoded.contains("\"sizeBytes\":123"));
+        assertTrue(command.containsAll(
+                List.of("--oracle-mode", "full-property", "--manifest", "/input/.tla-mutant-manifest.json")));
+        assertFalse(command.contains("--manifest-artifact-json"));
         assertFalse(command.contains("--state-invariant"));
         assertFalse(command.contains("--type-invariant"));
         assertThrows(NullPointerException.class, () -> SandboxInput.fullProperty(null, List.of()));

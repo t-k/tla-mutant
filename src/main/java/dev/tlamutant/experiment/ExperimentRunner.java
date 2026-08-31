@@ -26,6 +26,7 @@ import java.util.Objects;
 
 public final class ExperimentRunner {
     private static final long MAXIMUM_MODULE_BYTES = 64L * 1024 * 1024;
+    private static final int MAXIMUM_FULL_PROPERTY_MUTANTS = 1024;
     private final TlcRunner tlcRunner;
     private final Duration timeout;
     private final SanyAnalyzer sanyAnalyzer = new SanyAnalyzer();
@@ -67,32 +68,29 @@ public final class ExperimentRunner {
         Objects.requireNonNull(inputs, "inputs");
         Path modelRoot = modelDirectory.toAbsolutePath().normalize();
         Path results = resultDirectory.toAbsolutePath().normalize();
-        Path frozenModel = null;
-        try {
+        try (FullPropertyModelSnapshot frozenModel = FullPropertyModelSnapshot.create(modelRoot)) {
             Files.createDirectories(results);
-            frozenModel = Files.createTempDirectory(results, ".full-property-model-");
-            copyModel(modelRoot, frozenModel);
-            SourceDocument source = SourceDocument.read(frozenModel.resolve(moduleFile));
+            SourceDocument source = SourceDocument.read(frozenModel.root().resolve(moduleFile));
             BoundedFileSnapshot moduleSnapshot =
-                    BoundedFileSnapshot.read(frozenModel.resolve(moduleFile), MAXIMUM_MODULE_BYTES);
-            FullPropertyConfig.Materialized config =
-                    FullPropertyConfig.write(frozenModel.resolve(configFile), results.resolve("full-properties.cfg"));
-            validateFullPropertyInputs(inputs, moduleSnapshot, config.snapshot());
-            SemanticProject project = sanyAnalyzer.analyze(frozenModel, moduleFile, configFile);
+                    BoundedFileSnapshot.read(frozenModel.root().resolve(moduleFile), MAXIMUM_MODULE_BYTES);
+            BoundedFileSnapshot configSnapshot =
+                    BoundedFileSnapshot.read(frozenModel.root().resolve(configFile), 8L * 1024 * 1024);
+            validateFullPropertyInputs(inputs, moduleSnapshot, configSnapshot);
+            ExperimentInputIdentity frozenInputs = inputs.withModelFiles(frozenModel.files());
+            SemanticProject project = sanyAnalyzer.analyze(frozenModel.root(), moduleFile, configFile);
             List<MutationCandidate> candidates = candidates(project, source);
+            if (candidates.size() > MAXIMUM_FULL_PROPERTY_MUTANTS) {
+                throw new IllegalArgumentException("Full-property candidate count exceeds its bound");
+            }
 
-            TlcExecution baseline = tlcRunner.runFullProperty(
-                    frozenModel,
-                    moduleFile,
-                    config.path().toString(),
-                    results.resolve("baseline-states.jsonl"),
-                    timeout);
+            TlcExecution baseline = runFullPropertyTlc(
+                    frozenModel.root(), moduleFile, configFile, results.resolve("baseline-states.jsonl"), timeout);
             requirePassingBaseline(baseline);
 
             List<MutationResult> mutationResults = new ArrayList<>();
             for (MutationCandidate candidate : candidates) {
                 mutationResults.add(runFullPropertyCandidate(
-                        frozenModel, moduleFile, configFile, config.path(), results, source, baseline, candidate));
+                        frozenModel, moduleFile, configFile, results, source, baseline, candidate));
             }
             int evaluated = (int) mutationResults.stream()
                     .filter(result -> result.executionStatus().equals(ExecutionStatus.COMPLETED.name()))
@@ -110,11 +108,9 @@ public final class ExperimentRunner {
                     survivors,
                     mutationResults,
                     OracleMode.FULL_PROPERTY.cliName(),
-                    inputs);
+                    frozenInputs);
         } catch (IOException exception) {
             throw new IllegalStateException("Cannot create the full-property experiment inputs", exception);
-        } finally {
-            deleteTree(frozenModel);
         }
     }
 
@@ -238,26 +234,23 @@ public final class ExperimentRunner {
     }
 
     private MutationResult runFullPropertyCandidate(
-            Path modelRoot,
+            FullPropertyModelSnapshot model,
             String moduleFile,
             String configFile,
-            Path fullPropertyConfig,
             Path results,
             SourceDocument source,
             TlcExecution baseline,
             MutationCandidate candidate) {
-        Path workspace = null;
         SourceDocument patched = new SourcePatcher().apply(source, candidate);
         TlcExecution mutant;
-        try {
-            workspace = Files.createTempDirectory(results, ".mutant-" + candidate.id() + "-");
-            copyModel(modelRoot, workspace);
-            Files.writeString(workspace.resolve(moduleFile), patched.content());
-            sanyAnalyzer.analyze(workspace, moduleFile, configFile);
-            mutant = tlcRunner.runFullProperty(
-                    workspace,
+        try (FullPropertyModelSnapshot.Workspace workspace = model.createWorkspace()) {
+            workspace.replace(moduleFile, patched.content());
+            workspace.seal();
+            sanyAnalyzer.analyze(workspace.root(), moduleFile, configFile);
+            mutant = runFullPropertyTlc(
+                    workspace.root(),
                     moduleFile,
-                    fullPropertyConfig.toString(),
+                    configFile,
                     results.resolve(candidate.id() + "-states.jsonl"),
                     timeout);
         } catch (IllegalArgumentException | IOException exception) {
@@ -270,10 +263,18 @@ public final class ExperimentRunner {
                     "",
                     exception.getClass().getSimpleName(),
                     false);
-        } finally {
-            deleteTree(workspace);
         }
         return classifyFullProperty(candidate, source, patched, baseline, mutant);
+    }
+
+    private TlcExecution runFullPropertyTlc(
+            Path modelRoot, String moduleFile, String configFile, Path stateOutput, Duration executionTimeout)
+            throws IOException {
+        try {
+            return tlcRunner.runFullProperty(modelRoot, moduleFile, configFile, stateOutput, executionTimeout);
+        } finally {
+            Files.deleteIfExists(stateOutput);
+        }
     }
 
     private MutationResult classifyFullProperty(

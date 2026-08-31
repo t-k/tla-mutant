@@ -34,7 +34,9 @@ final class ExperimentRunnerFullPropertyTest {
 
         assertEquals(3, report.schemaVersion());
         assertEquals("full-property", report.oracleMode());
-        assertEquals(fixture.inputs(), report.inputs());
+        assertEquals(fixture.inputs().module(), report.inputs().module());
+        assertEquals(fixture.inputs().config(), report.inputs().config());
+        assertFalse(report.inputs().modelFiles().isEmpty());
         assertTrue(report.generatedMutants() > 0);
         assertEquals(report.generatedMutants(), report.evaluatedMutants());
         assertEquals(0, report.gapCandidates());

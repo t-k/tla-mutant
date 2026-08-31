@@ -3,7 +3,11 @@ package dev.tlamutant.sandbox;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.tlamutant.config.ExecutionPolicy;
+import dev.tlamutant.corpus.CorpusInputSnapshot;
 import dev.tlamutant.corpus.CorpusManifest;
+import dev.tlamutant.experiment.ExperimentInputIdentity;
+import dev.tlamutant.experiment.OracleMode;
+import dev.tlamutant.security.BoundedFileSnapshot;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -87,6 +91,9 @@ public final class PodmanRunner {
         if (timeout == null || timeout.isNegative() || timeout.isZero()) {
             throw new IllegalArgumentException("Sandbox timeout must be positive");
         }
+        if (sandboxInput.oracleMode() == OracleMode.FULL_PROPERTY) {
+            verifyManifestSnapshot(input, sandboxInput.manifestArtifact());
+        }
         Duration effectiveTimeout = timeout;
         Duration policyTimeout = Duration.ofSeconds(Math.min(limits.cpuSeconds(), limits.wallClockSeconds()));
         if (effectiveTimeout.compareTo(policyTimeout) > 0) {
@@ -145,6 +152,18 @@ public final class PodmanRunner {
                     Thread.currentThread().interrupt();
                 }
             }
+        }
+    }
+
+    private static void verifyManifestSnapshot(Path input, ExperimentInputIdentity.Artifact expected) {
+        try {
+            BoundedFileSnapshot actual = BoundedFileSnapshot.read(
+                    input.resolve(CorpusInputSnapshot.FULL_PROPERTY_MANIFEST), expected.sizeBytes());
+            if (!expected.equals(ExperimentInputIdentity.Artifact.from(actual))) {
+                throw new IllegalArgumentException("Sandbox manifest bytes do not match the recorded identity");
+            }
+        } catch (IOException exception) {
+            throw new IllegalArgumentException("Cannot verify sandbox manifest bytes", exception);
         }
     }
 

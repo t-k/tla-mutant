@@ -49,6 +49,7 @@ import dev.tlamutant.report.ProspectiveMarkdownWriter;
 import dev.tlamutant.sandbox.SandboxInput;
 import dev.tlamutant.security.BoundedFileSnapshot;
 import dev.tlamutant.security.ExperimentOutputValidator;
+import dev.tlamutant.security.LoadedArtifactVerifier;
 import dev.tlamutant.security.StrictJson;
 import dev.tlamutant.security.TemporaryFileSnapshot;
 import dev.tlamutant.tlc.TlcRunner;
@@ -158,7 +159,8 @@ public final class Main implements Runnable {
                                 cacheDirectory,
                                 policy,
                                 oracleMode,
-                                experimentInputs)
+                                experimentInputs,
+                                oracleMode == OracleMode.FULL_PROPERTY ? manifestSnapshot : null)
                         .run(manifest);
             }
             new AtomicJsonWriter().write(outputs.json(), report);
@@ -963,9 +965,6 @@ public final class Main implements Runnable {
         @CommandLine.Option(names = "--manifest")
         Path manifestPath;
 
-        @CommandLine.Option(names = "--manifest-artifact-json", hidden = true)
-        String manifestArtifactJson;
-
         @CommandLine.Option(names = "--state-invariant")
         List<String> stateInvariants = new ArrayList<>();
 
@@ -1031,19 +1030,20 @@ public final class Main implements Runnable {
                     || !typeInvariants.isEmpty()
                     || !legacyTargetInvariants.isEmpty()
                     || !adoptedTargetInvariants.isEmpty();
-            boolean hasManifestPath = manifestPath != null;
-            boolean hasManifestArtifact = manifestArtifactJson != null;
-            if (oracleMode == OracleMode.FULL_PROPERTY && hasManifestPath == hasManifestArtifact) {
-                throw new IllegalArgumentException("Full-property mode requires exactly one manifest identity source");
+            if (oracleMode == OracleMode.FULL_PROPERTY && manifestPath == null) {
+                throw new IllegalArgumentException("Full-property mode requires a manifest file");
             }
             if (oracleMode == OracleMode.FULL_PROPERTY && hasInvariantReplacement) {
                 throw new IllegalArgumentException("Full-property mode does not accept invariant replacement options");
             }
-            if (oracleMode == OracleMode.STATE_INVARIANTS && hasManifestArtifact) {
-                throw new IllegalArgumentException("Internal manifest identity requires full-property mode");
-            }
-            if (hasManifestArtifact) {
-                parseManifestArtifact(manifestArtifactJson);
+            if (oracleMode == OracleMode.FULL_PROPERTY
+                    && (timeoutSeconds <= 0
+                            || timeoutSeconds > 600
+                            || maximumStates <= 0
+                            || maximumStates > 1_000_000
+                            || maximumStateBytes <= 0
+                            || maximumStateBytes > 67_108_864)) {
+                throw new IllegalArgumentException("Full-property direct execution limits exceed the safe bounds");
             }
         }
 
@@ -1063,10 +1063,14 @@ public final class Main implements Runnable {
             BoundedFileSnapshot toolsSnapshot = BoundedFileSnapshot.read(toolsJar, MAXIMUM_TOOLS_BYTES);
             BoundedFileSnapshot applicationSnapshot =
                     BoundedFileSnapshot.read(currentApplication, MAXIMUM_APPLICATION_BYTES);
-            ExperimentInputIdentity.Artifact manifestArtifact = manifestArtifactJson == null
-                    ? ExperimentInputIdentity.Artifact.from(
-                            BoundedFileSnapshot.read(manifestPath, MAXIMUM_MANIFEST_BYTES))
-                    : parseManifestArtifact(manifestArtifactJson);
+            LoadedArtifactVerifier.verify(
+                    toolsSnapshot,
+                    tla2sany.drivers.SANY.class,
+                    tla2sany.semantic.SemanticNode.class,
+                    tlc2.TLC.class,
+                    util.ToolIO.class);
+            ExperimentInputIdentity.Artifact manifestArtifact = ExperimentInputIdentity.Artifact.from(
+                    BoundedFileSnapshot.read(manifestPath, MAXIMUM_MANIFEST_BYTES));
             ExperimentInputIdentity inputs = new ExperimentInputIdentity(
                     ExperimentInputIdentity.Artifact.from(moduleSnapshot),
                     ExperimentInputIdentity.Artifact.from(configSnapshot),
@@ -1081,17 +1085,6 @@ public final class Main implements Runnable {
                                 frozenApplication.path(), frozenTools.path(), maximumStates, maximumStateBytes),
                         Duration.ofSeconds(timeoutSeconds));
                 return experiment.runFullProperty(effectiveModelDirectory, module, config, workDirectory, inputs);
-            }
-        }
-
-        private static ExperimentInputIdentity.Artifact parseManifestArtifact(String json) {
-            if (json == null || json.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 4096) {
-                throw new IllegalArgumentException("Manifest artifact JSON is too large");
-            }
-            try {
-                return StrictJson.parse(new ObjectMapper(), json, ExperimentInputIdentity.Artifact.class);
-            } catch (com.fasterxml.jackson.core.JsonProcessingException exception) {
-                throw new IllegalArgumentException("Manifest artifact JSON is invalid", exception);
             }
         }
     }

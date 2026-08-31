@@ -3,9 +3,13 @@ package dev.tlamutant.tlc;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.tlamutant.security.BoundedFileSnapshot;
 import dev.tlamutant.state.CanonicalState;
 import dev.tlamutant.state.CanonicalValue;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -196,15 +200,21 @@ public final class TlcRunner {
         if (!Files.isRegularFile(path)) {
             return new StateFile(List.of(), false);
         }
-        try {
-            List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
+        try (BufferedReader lines = new BufferedReader(new InputStreamReader(
+                new ByteArrayInputStream(
+                        BoundedFileSnapshot.read(path, maximumStateBytes).bytes()),
+                StandardCharsets.UTF_8))) {
             List<CanonicalState> states = new ArrayList<>();
             boolean complete = false;
             int declaredCount = -1;
-            for (String line : lines) {
+            String line;
+            while ((line = lines.readLine()) != null) {
                 JsonNode node = mapper.readTree(line);
                 String type = node.required("type").textValue();
                 if (type.equals("state")) {
+                    if (complete || states.size() >= maximumStates) {
+                        return new StateFile(List.of(), false);
+                    }
                     TreeMap<String, CanonicalValue> variables = mapper.convertValue(
                             node.required("variables"), new TypeReference<TreeMap<String, CanonicalValue>>() {});
                     String identity = stateIdentity(variables);
@@ -214,6 +224,9 @@ public final class TlcRunner {
                     }
                     states.add(state);
                 } else if (type.equals("complete")) {
+                    if (complete) {
+                        return new StateFile(List.of(), false);
+                    }
                     complete = true;
                     declaredCount = node.required("states").intValue();
                 } else {

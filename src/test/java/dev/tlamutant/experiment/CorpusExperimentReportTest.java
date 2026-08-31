@@ -34,7 +34,12 @@ final class CorpusExperimentReportTest {
                 new ExperimentInputIdentity.Artifact("e".repeat(64), 50),
                 new ExperimentInputIdentity.Artifact("f".repeat(64), 60),
                 tools,
-                application);
+                application,
+                List.of(
+                        new ExperimentInputIdentity.ModelFile(
+                                "A.cfg", new ExperimentInputIdentity.Artifact("e".repeat(64), 50)),
+                        new ExperimentInputIdentity.ModelFile(
+                                "A.tla", new ExperimentInputIdentity.Artifact("d".repeat(64), 40))));
         ExperimentReport wrongManifest = new ExperimentReport(
                 3, "A.tla", "A.cfg", "proxy-agent-review", 0, 0, 0, List.of(), "full-property", mismatched);
 

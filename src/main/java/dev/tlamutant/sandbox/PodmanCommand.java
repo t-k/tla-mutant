@@ -3,6 +3,7 @@ package dev.tlamutant.sandbox;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.tlamutant.config.ExecutionPolicy;
+import dev.tlamutant.corpus.CorpusInputSnapshot;
 import dev.tlamutant.experiment.OracleMode;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -211,8 +212,8 @@ public final class PodmanCommand {
             arguments.addAll(List.of(
                     "--oracle-mode",
                     OracleMode.FULL_PROPERTY.cliName(),
-                    "--manifest-artifact-json",
-                    encode(input.manifestArtifact())));
+                    "--manifest",
+                    "/input/" + CorpusInputSnapshot.FULL_PROPERTY_MANIFEST));
         } else {
             for (String invariant : input.flatStateInvariants()) {
                 arguments.add("--state-invariant");
@@ -252,14 +253,6 @@ public final class PodmanCommand {
             } catch (JsonProcessingException exception) {
                 throw new IllegalArgumentException("Cannot encode derived source edit", exception);
             }
-        }
-    }
-
-    private static String encode(Object value) {
-        try {
-            return MAPPER.writeValueAsString(value);
-        } catch (JsonProcessingException exception) {
-            throw new IllegalArgumentException("Cannot encode sandbox metadata", exception);
         }
     }
 }
