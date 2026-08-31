@@ -106,6 +106,7 @@ public final class ExperimentRunner {
                     results.resolve("baseline-states.jsonl"),
                     remainingOrThrow(deadline, "baseline TLC"));
             requirePassingBaseline(baseline);
+            requireRemaining(deadline, "baseline completion");
 
             List<MutationResult> mutationResults = new ArrayList<>();
             for (MutationCandidate candidate : candidates) {

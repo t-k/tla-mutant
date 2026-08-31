@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
 import java.time.Duration;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -77,14 +78,40 @@ final class ExperimentRunnerFullPropertyTest {
     }
 
     @Test
-    void stopsLaunchingMutantsAfterTheAggregateDeadline() throws Exception {
+    void rejectsWhenTheAggregateDeadlineExpiresDuringBaselineTlc() throws Exception {
         Fixture fixture = fixture(false);
-        long expired = Duration.ofSeconds(2).toNanos();
+        long expired = Duration.ofSeconds(31).toNanos();
         ExperimentRunner runner = new ExperimentRunner(
                 fixture.tlcRunner(),
                 Duration.ofSeconds(30),
-                Duration.ofSeconds(1),
+                Duration.ofSeconds(30),
                 () -> Files.exists(fixture.launches()) ? expired : 0);
+
+        IllegalStateException error = assertThrows(
+                IllegalStateException.class,
+                () -> runner.runFullProperty(
+                        fixture.modelDirectory(),
+                        "MutationFixture.tla",
+                        "MutationFixture.cfg",
+                        fixture.results(),
+                        fixture.inputs()));
+
+        assertTrue(error.getMessage().contains("deadline"));
+        assertEquals(1, launchCount(fixture.launches()));
+    }
+
+    @Test
+    void stopsLaunchingMutantsWhenTheDeadlineExpiresAfterPassingBaseline() throws Exception {
+        Fixture fixture = fixture(false);
+        long expired = Duration.ofSeconds(31).toNanos();
+        AtomicBoolean baselineCompletionObserved = new AtomicBoolean();
+        ExperimentRunner runner = new ExperimentRunner(
+                fixture.tlcRunner(),
+                Duration.ofSeconds(30),
+                Duration.ofSeconds(30),
+                () -> launchCount(fixture.launches()) == 0 || baselineCompletionObserved.compareAndSet(false, true)
+                        ? 0
+                        : expired);
 
         ExperimentReport report = runner.runFullProperty(
                 fixture.modelDirectory(),
@@ -93,7 +120,7 @@ final class ExperimentRunnerFullPropertyTest {
                 fixture.results(),
                 fixture.inputs());
 
-        assertEquals(1, Files.readAllLines(fixture.launches(), UTF_8).size());
+        assertEquals(1, launchCount(fixture.launches()));
         assertTrue(report.generatedMutants() > 0);
         assertEquals(report.generatedMutants(), report.results().size());
         assertEquals(0, report.evaluatedMutants());
@@ -121,10 +148,10 @@ final class ExperimentRunnerFullPropertyTest {
         ExperimentRunner runner = new ExperimentRunner(
                 fixture.tlcRunner(),
                 Duration.ofSeconds(30),
-                Duration.ofSeconds(1),
+                Duration.ofSeconds(30),
                 () -> clockReads.getAndIncrement() == 0
                         ? 0
-                        : Duration.ofSeconds(2).toNanos());
+                        : Duration.ofSeconds(31).toNanos());
 
         IllegalStateException error = assertThrows(
                 IllegalStateException.class,
@@ -156,11 +183,11 @@ final class ExperimentRunnerFullPropertyTest {
     @Test
     void doesNotAcceptAKillWhenTheAggregateDeadlineExpiresDuringMutantTlc() throws Exception {
         Fixture fixture = fixture(false);
-        long expired = Duration.ofSeconds(2).toNanos();
+        long expired = Duration.ofSeconds(31).toNanos();
         ExperimentRunner runner = new ExperimentRunner(
                 fixture.tlcRunner(),
                 Duration.ofSeconds(30),
-                Duration.ofSeconds(1),
+                Duration.ofSeconds(30),
                 () -> launchCount(fixture.launches()) >= 2 ? expired : 0);
 
         ExperimentReport report = runner.runFullProperty(
