@@ -12,6 +12,7 @@ The first pinned 10-specification experiment produced no witness-bearing state-e
 
 The Gradle build downloads the pinned TLA+ Tools artifact and verifies its size and SHA-256 digest.
 The current reproducible application JAR identity is preregistered in `config/current-application.json`. Historical v8 application identity remains part of the frozen v8 census and is reproduced from the corresponding historical commit rather than compared to a changed HEAD.
+The application JAR intentionally does not embed TLA+ Tools. Invoke the CLI with both separately verified JARs on the classpath as shown below; `--tools-jar` additionally supplies the exact Tools JAR to child TLC processes.
 
 ## Verify
 
@@ -26,7 +27,7 @@ The default `state-invariants` oracle preserves the historical behavior: it eval
 For one local model, provide a manifest whose identity defines the experiment context:
 
 ```sh
-java -jar build/libs/tla-mutant-all.jar experiment \
+java -cp build/libs/tla-mutant-all.jar:.tools/tla2tools-1.8.0.jar dev.tlamutant.cli.Main experiment \
   --model-dir path/to/model \
   --module Spec.tla \
   --config Spec.cfg \
@@ -45,7 +46,7 @@ A full-property baseline must pass before any mutant is evaluated. Structured TL
 
 ```sh
 ./gradlew fatJar
-java -jar build/libs/tla-mutant-all.jar corpus-experiment \
+java -cp build/libs/tla-mutant-all.jar:.tools/tla2tools-1.8.0.jar dev.tlamutant.cli.Main corpus-experiment \
   --manifest corpus/manifest.json \
   --policy config/execution-policy.json \
   --tools-jar .tools/tla2tools-1.8.0.jar \
@@ -61,7 +62,7 @@ Public specification contents are fetched as individually pinned blobs and are p
 Freeze the outcome-free census before running mutants:
 
 ```sh
-java -jar build/libs/tla-mutant-all.jar gcd-stratified-census \
+java -cp build/libs/tla-mutant-all.jar:.tools/tla2tools-1.8.0.jar dev.tlamutant.cli.Main gcd-stratified-census \
   --manifest corpus/gcd-stratified-manifest.json \
   --policy config/execution-policy.json \
   --tools-jar .tools/tla2tools-1.8.0.jar \
@@ -73,7 +74,7 @@ java -jar build/libs/tla-mutant-all.jar gcd-stratified-census \
 Then consume that exact census:
 
 ```sh
-java -jar build/libs/tla-mutant-all.jar gcd-stratified-experiment \
+java -cp build/libs/tla-mutant-all.jar:.tools/tla2tools-1.8.0.jar dev.tlamutant.cli.Main gcd-stratified-experiment \
   --manifest corpus/gcd-stratified-manifest.json \
   --census-report docs/experiments/gcd-stratified-census.json \
   --expected-census-sha256 6de7c400622557a545a82c3db0d29b20f304ab2e0c47ec29eddfea2e9a72df95 \
@@ -91,7 +92,7 @@ The expected census digest must come from the reviewed frozen-census commit, not
 v9 leaves every v8 artifact unchanged. It applies one base-and-derived-digest-pinned insertion to a private sandbox copy of SimpleAllocator, registers `NoRequestAllocationOverlap` as the adopted target invariant, and preserves type, legacy-target, and adopted-target oracle identity. The census must be frozen and committed before the mutation command is run.
 
 ```sh
-java -jar build/libs/tla-mutant-all.jar gcd-stratified-census \
+java -cp build/libs/tla-mutant-all.jar:.tools/tla2tools-1.8.0.jar dev.tlamutant.cli.Main gcd-stratified-census \
   --manifest corpus/gcd-stratified-manifest-v9.json \
   --policy config/execution-policy.json \
   --tools-jar .tools/tla2tools-1.8.0.jar \
@@ -103,7 +104,7 @@ java -jar build/libs/tla-mutant-all.jar gcd-stratified-census \
 The reviewed v9 census is committed with SHA-256 `cd714aecfec926c3250922ec52e9dc6caef944c1300ff2cafaf9911c2f7a66cb`:
 
 ```sh
-java -jar build/libs/tla-mutant-all.jar gcd-stratified-experiment \
+java -cp build/libs/tla-mutant-all.jar:.tools/tla2tools-1.8.0.jar dev.tlamutant.cli.Main gcd-stratified-experiment \
   --manifest corpus/gcd-stratified-manifest-v9.json \
   --census-report docs/experiments/gcd-stratified-census-v9.json \
   --expected-census-sha256 cd714aecfec926c3250922ec52e9dc6caef944c1300ff2cafaf9911c2f7a66cb \
@@ -125,7 +126,7 @@ v10 freezes eight previously unevaluated specifications before inspecting their 
 Freeze the failure-preserving census only from the commit containing all outcome-free inputs:
 
 ```sh
-java -jar build/libs/tla-mutant-all.jar prospective-census \
+java -cp build/libs/tla-mutant-all.jar:.tools/tla2tools-1.8.0.jar dev.tlamutant.cli.Main prospective-census \
   --registry corpus/historical-source-registry-v10.json \
   --protocol config/prospective-protocol-v10.json \
   --manifest corpus/gcd-prospective-manifest-v10.json \
