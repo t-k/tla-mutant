@@ -2,6 +2,8 @@ package dev.tlamutant.tlc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
 import java.time.Duration;
@@ -54,5 +56,34 @@ final class TlcRunnerIntegrationTest {
 
         assertEquals(ExecutionStatus.TIMEOUT, timedOut.status());
         assertEquals(OracleOutcome.NOT_EVALUATED, timedOut.oracle());
+    }
+
+    @Test
+    void classifiesRealPropertySafetyAndLivenessCounterexamples() {
+        TlcRunner runner = TlcRunner.forCurrentJava(
+                Path.of(System.getProperty("tla.mutant.test.appJar")),
+                Path.of(System.getProperty("tla.mutant.test.toolsJar")));
+
+        TlcExecution temporalSafety = runner.run(
+                Path.of("src/testFixtures/resources/tla/full-property"),
+                "NamedTemporal.tla",
+                "NamedTemporal.cfg",
+                temporaryDirectory.resolve("named-temporal.jsonl"),
+                Duration.ofSeconds(30));
+        TlcExecution liveness = runner.run(
+                Path.of("src/testFixtures/resources/tla/full-property"),
+                "GenericLiveness.tla",
+                "GenericLiveness.cfg",
+                temporaryDirectory.resolve("generic-liveness.jsonl"),
+                Duration.ofSeconds(30));
+
+        assertEquals(ExecutionStatus.COMPLETED, temporalSafety.status());
+        assertEquals(OracleOutcome.KILLED_STATE_SAFETY, temporalSafety.oracle());
+        assertEquals("AlwaysZero", temporalSafety.violatedProperty());
+        assertTrue(temporalSafety.events().stream().anyMatch(event -> event.code() == 2110));
+        assertEquals(ExecutionStatus.COMPLETED, liveness.status());
+        assertEquals(OracleOutcome.KILLED_TEMPORAL_GENERIC, liveness.oracle());
+        assertNull(liveness.violatedProperty());
+        assertTrue(liveness.events().stream().anyMatch(event -> event.code() == 2116));
     }
 }
