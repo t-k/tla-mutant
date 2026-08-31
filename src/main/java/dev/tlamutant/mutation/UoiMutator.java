@@ -16,39 +16,55 @@ public final class UoiMutator {
     }
 
     public List<MutationCandidate> generate(SemanticProject project, SourceDocument source, int maximumCandidates) {
+        return generate(
+                project,
+                source,
+                maximumCandidates,
+                MutationSupport.MAXIMUM_VISITED_SEMANTIC_NODES,
+                MutationSupport.MAXIMUM_SEMANTIC_DEPTH);
+    }
+
+    List<MutationCandidate> generate(
+            SemanticProject project,
+            SourceDocument source,
+            int maximumCandidates,
+            int maximumVisitedNodes,
+            int maximumDepth) {
         if (maximumCandidates < 0) {
             throw new IllegalArgumentException("UOI candidate bound cannot be negative");
         }
         List<MutationCandidate> candidates = new ArrayList<>();
+        int remainingVisitedNodes = maximumVisitedNodes;
         for (OperatorDefinition definition : MutationSupport.nextModelDefinitions(project)) {
-            for (OpApplNode equality :
-                    MutationSupport.applications(definition.semanticNode().getBody())) {
-                if (!equality.hasOpcode(ToolGlobals.OPCODE_eq) || equality.getArgs().length != 2) {
-                    continue;
-                }
-                ExprOrOpArgNode left = equality.getArgs()[0];
-                ExprOrOpArgNode right = equality.getArgs()[1];
-                if (!(left instanceof OpApplNode prime) || !prime.hasOpcode(ToolGlobals.OPCODE_prime)) {
-                    continue;
-                }
-                if (right instanceof NumeralNode numeral) {
-                    addLiteralCandidates(candidates, project, definition, source, numeral, maximumCandidates);
-                } else if (right instanceof OpApplNode arithmetic
-                        && arithmetic.getOperator().getName().equals(ToolGlobals.OP_plus)
-                        && arithmetic.getArgs().length == 2
-                        && arithmetic.getArgs()[1] instanceof NumeralNode numeral
-                        && isOne(numeral)) {
-                    SourceRange range = source.range(numeral.getLocation());
-                    requireCapacity(candidates, maximumCandidates);
-                    candidates.add(MutationCandidate.create(
-                            MutationFamily.UOI,
-                            project.rootModule(),
-                            definition.name(),
-                            range,
-                            source.slice(range),
-                            "2"));
-                }
-            }
+            int visitedNodes = MutationSupport.visitApplications(
+                    definition.semanticNode().getBody(), remainingVisitedNodes, maximumDepth, equality -> {
+                        if (!equality.hasOpcode(ToolGlobals.OPCODE_eq) || equality.getArgs().length != 2) {
+                            return;
+                        }
+                        ExprOrOpArgNode left = equality.getArgs()[0];
+                        ExprOrOpArgNode right = equality.getArgs()[1];
+                        if (!(left instanceof OpApplNode prime) || !prime.hasOpcode(ToolGlobals.OPCODE_prime)) {
+                            return;
+                        }
+                        if (right instanceof NumeralNode numeral) {
+                            addLiteralCandidates(candidates, project, definition, source, numeral, maximumCandidates);
+                        } else if (right instanceof OpApplNode arithmetic
+                                && arithmetic.getOperator().getName().equals(ToolGlobals.OP_plus)
+                                && arithmetic.getArgs().length == 2
+                                && arithmetic.getArgs()[1] instanceof NumeralNode numeral
+                                && isOne(numeral)) {
+                            SourceRange range = source.range(numeral.getLocation());
+                            requireCapacity(candidates, maximumCandidates);
+                            candidates.add(MutationCandidate.create(
+                                    MutationFamily.UOI,
+                                    project.rootModule(),
+                                    definition.name(),
+                                    range,
+                                    source.slice(range),
+                                    "2"));
+                        }
+                    });
+            remainingVisitedNodes -= visitedNodes;
         }
         return candidates.stream()
                 .sorted(Comparator.comparingInt((MutationCandidate candidate) ->

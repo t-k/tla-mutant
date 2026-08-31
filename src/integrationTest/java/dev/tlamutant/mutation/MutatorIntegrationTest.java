@@ -42,6 +42,9 @@ final class MutatorIntegrationTest {
         assertEquals(
                 List.of("2", "0 + 1", "0 - 1"),
                 uoi.stream().map(MutationCandidate::replacement).toList());
+        assertEquals(
+                List.of("uoi-6cc95d93c95470b5c9c8", "uoi-5daf63d8be79cb550ea4", "uoi-fe77c8e2105f51bf8257"),
+                uoi.stream().map(MutationCandidate::id).toList());
         assertFalse(gcd.stream().anyMatch(candidate -> candidate.original().equals("Shared")));
         assertFalse(brl.stream().anyMatch(candidate -> candidate.definition().equals("Safety")));
         assertFalse(uoi.stream().anyMatch(candidate -> candidate.definition().equals("UnknownUpdate")));
@@ -56,6 +59,17 @@ final class MutatorIntegrationTest {
         assertThrows(IllegalArgumentException.class, () -> new GcdMutator().generate(project, source, 1));
         assertThrows(IllegalArgumentException.class, () -> new BrlMutator().generate(project, source, 1));
         assertThrows(IllegalArgumentException.class, () -> new UoiMutator().generate(project, source, 1));
+    }
+
+    @Test
+    void rejectsUoiTraversalBeyondNodeAndDepthBudgets() throws IOException {
+        Path root = Path.of("src/testFixtures/resources/tla/mutations");
+        SemanticProject project = new SanyAnalyzer().analyze(root, "MutationFixture.tla", "MutationFixture.cfg");
+        SourceDocument source = SourceDocument.read(root.resolve("MutationFixture.tla"));
+
+        assertThrows(IllegalArgumentException.class, () -> new UoiMutator().generate(project, source, 1024, 1, 4096));
+        assertThrows(
+                IllegalArgumentException.class, () -> new UoiMutator().generate(project, source, 1024, 1_000_000, 1));
     }
 
     @Test

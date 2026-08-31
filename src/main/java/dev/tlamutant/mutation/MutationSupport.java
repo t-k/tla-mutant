@@ -2,9 +2,11 @@ package dev.tlamutant.mutation;
 
 import dev.tlamutant.semantic.OperatorDefinition;
 import dev.tlamutant.semantic.SemanticProject;
-import java.util.ArrayList;
+import java.util.ArrayDeque;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import tla2sany.semantic.OpApplNode;
@@ -12,6 +14,9 @@ import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
 
 final class MutationSupport {
+    static final int MAXIMUM_VISITED_SEMANTIC_NODES = 1_000_000;
+    static final int MAXIMUM_SEMANTIC_DEPTH = 4_096;
+
     private MutationSupport() {}
 
     static List<OperatorDefinition> nextModelDefinitions(SemanticProject project) {
@@ -30,26 +35,87 @@ final class MutationSupport {
         return referenced == null || referenced.eligibleForModelMutation();
     }
 
-    static List<OpApplNode> applications(SemanticNode root) {
-        List<OpApplNode> result = new ArrayList<>();
-        collect(root, Set.of(), result);
-        return List.copyOf(result);
+    static int visitApplications(SemanticNode root, Consumer<OpApplNode> visitor) {
+        return visitApplications(root, MAXIMUM_VISITED_SEMANTIC_NODES, MAXIMUM_SEMANTIC_DEPTH, visitor);
     }
 
-    private static void collect(SemanticNode node, Set<Integer> ancestors, List<OpApplNode> result) {
-        if (node == null || ancestors.contains(node.getUid())) {
-            return;
+    static int visitApplications(
+            SemanticNode root, int maximumVisitedNodes, int maximumDepth, Consumer<OpApplNode> visitor) {
+        if (maximumVisitedNodes <= 0 || maximumDepth <= 0) {
+            throw new IllegalArgumentException("Semantic traversal limits must be positive");
         }
-        Set<Integer> nextAncestors = new java.util.HashSet<>(ancestors);
-        nextAncestors.add(node.getUid());
-        if (node instanceof OpApplNode application) {
-            result.add(application);
+        java.util.Objects.requireNonNull(visitor, "visitor");
+        if (root == null) {
+            return 0;
         }
-        SemanticNode[] children = node.getChildren();
-        if (children != null) {
-            for (SemanticNode child : children) {
-                collect(child, nextAncestors, result);
+
+        ArrayDeque<TraversalFrame> frames = new ArrayDeque<>();
+        Set<Integer> activePath = new HashSet<>();
+        int visitedNodes = 0;
+        visitedNodes = push(root, maximumVisitedNodes, maximumDepth, visitedNodes, frames, activePath, visitor);
+        while (!frames.isEmpty()) {
+            TraversalFrame frame = frames.peek();
+            if (frame.hasNextChild()) {
+                SemanticNode child = frame.nextChild();
+                if (child == null) {
+                    continue;
+                }
+                if (!activePath.contains(child.getUid())) {
+                    visitedNodes =
+                            push(child, maximumVisitedNodes, maximumDepth, visitedNodes, frames, activePath, visitor);
+                }
+            } else {
+                TraversalFrame completed = frames.pop();
+                activePath.remove(completed.node().getUid());
             }
+        }
+        return visitedNodes;
+    }
+
+    private static int push(
+            SemanticNode node,
+            int maximumVisitedNodes,
+            int maximumDepth,
+            int visitedNodes,
+            ArrayDeque<TraversalFrame> frames,
+            Set<Integer> activePath,
+            Consumer<OpApplNode> visitor) {
+        if (visitedNodes >= maximumVisitedNodes) {
+            throw new IllegalArgumentException("Semantic traversal node count exceeds its bound");
+        }
+        if (frames.size() >= maximumDepth) {
+            throw new IllegalArgumentException("Semantic traversal depth exceeds its bound");
+        }
+        activePath.add(node.getUid());
+        frames.push(new TraversalFrame(node));
+        if (node instanceof OpApplNode application) {
+            visitor.accept(application);
+        }
+        return visitedNodes + 1;
+    }
+
+    private static final class TraversalFrame {
+        private static final SemanticNode[] NO_CHILDREN = new SemanticNode[0];
+        private final SemanticNode node;
+        private final SemanticNode[] children;
+        private int nextChild;
+
+        private TraversalFrame(SemanticNode node) {
+            this.node = node;
+            SemanticNode[] discovered = node.getChildren();
+            this.children = discovered == null ? NO_CHILDREN : discovered;
+        }
+
+        private SemanticNode node() {
+            return node;
+        }
+
+        private boolean hasNextChild() {
+            return nextChild < children.length;
+        }
+
+        private SemanticNode nextChild() {
+            return children[nextChild++];
         }
     }
 
