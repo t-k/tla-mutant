@@ -47,15 +47,15 @@ Classification uses structured `-tool` events, not the Java process exit code by
 The ordered classification is:
 
 1. A wall-clock expiry is `TIMEOUT` and `NOT_EVALUATED`.
-2. TLC out-of-memory events are `OUT_OF_MEMORY` and `NOT_EVALUATED`.
-3. TLC evaluation failures are `EVALUATION_ERROR` and `NOT_EVALUATED`.
-4. Invariant violation events are `COMPLETED` and `KILLED_STATE_SAFETY`.
+2. TLC out-of-memory events `1001`, `1002`, and `1003` are `OUT_OF_MEMORY` and `NOT_EVALUATED`.
+3. TLC invariant or action-property evaluation failures `2111` and `2113` are `EVALUATION_ERROR` and `NOT_EVALUATED`.
+4. Initial-state invariant/property and behavior invariant/action-property violation events `2107`, `2108`, `2110`, and `2112` are `COMPLETED` and `KILLED_STATE_SAFETY`.
 5. Temporal property violation event `2116` is `COMPLETED` and either `KILLED_TEMPORAL_NAMED` or `KILLED_TEMPORAL_GENERIC`.
 6. Deadlock is `COMPLETED` and `KILLED_DEADLOCK`.
 7. TLC success event `2193`, exit code zero, and a complete canonical state file are `COMPLETED` and `PASSED`.
 8. Every other combination is `TOOL_ERROR` and `NOT_EVALUATED`.
 
-A non-zero exit code such as the observed value 13 is recorded as a diagnostic but cannot independently create a kill. Temporal property names are extracted only from the bounded structured event body. If the event does not contain a safe, unambiguous name, the result remains a generic temporal kill.
+A non-zero exit code such as the observed value 13 is recorded as a diagnostic but cannot independently create a kill. Invariant, action-property, and temporal property names are extracted only from bounded structured event bodies. If a temporal event does not contain a safe, unambiguous name, the result remains a generic temporal kill.
 
 ## Result Model
 
@@ -113,7 +113,7 @@ For corpus execution, the outer report binds the manifest, tools, and applicatio
 |---|---|---|---|
 | FP-01 Original cfg bytes are preserved | A property is silently removed or rewritten | Unit test compares source and materialized cfg bytes | Planned |
 | FP-02 State-invariant mode remains unchanged | Existing prospective evidence changes meaning | Existing config and experiment tests plus compatibility assertions | Planned |
-| FP-03 Event 2116 is a temporal kill | Useful temporal counterexamples remain unresolved | Unit classification test and real TLC integration fixture | Planned |
+| FP-03 Events 2107/2108/2110/2112 and 2116 are genuine kills | Configured safety or temporal counterexamples remain unresolved | Unit classification table and real TLC integration fixtures | Planned |
 | FP-04 Named and generic violations are distinct | Property attribution is misleading | Parser tests for valid name, ambiguous body, and missing name | Planned |
 | FP-05 Exit code alone cannot kill | Java/TLC startup failures become false kills | Unit test with exit 13 and no structured violation event | Planned |
 | FP-06 Timeout, OOM, evaluation failure, and tool error are not kills | Mutation score is inflated by infrastructure failures | Classification table tests | Planned |
