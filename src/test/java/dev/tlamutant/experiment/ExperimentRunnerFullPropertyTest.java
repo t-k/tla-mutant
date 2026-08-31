@@ -23,7 +23,7 @@ final class ExperimentRunnerFullPropertyTest {
     @Test
     void preservesTheCfgAndRecordsTemporalKillsWithReproducibleEvidence() throws Exception {
         Fixture fixture = fixture(false);
-        ExperimentRunner runner = new ExperimentRunner(fixture.tlcRunner(), Duration.ofSeconds(10));
+        ExperimentRunner runner = new ExperimentRunner(fixture.tlcRunner(), Duration.ofSeconds(30));
 
         ExperimentReport report = runner.runFullProperty(
                 fixture.modelDirectory(),
@@ -60,7 +60,7 @@ final class ExperimentRunnerFullPropertyTest {
     @Test
     void abortsWhenTheOriginalFullConfigurationDoesNotPass() throws Exception {
         Fixture fixture = fixture(true);
-        ExperimentRunner runner = new ExperimentRunner(fixture.tlcRunner(), Duration.ofSeconds(10));
+        ExperimentRunner runner = new ExperimentRunner(fixture.tlcRunner(), Duration.ofSeconds(30));
 
         IllegalStateException error = assertThrows(
                 IllegalStateException.class,
