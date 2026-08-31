@@ -17,6 +17,9 @@ import java.util.Set;
 
 final class FullPropertyModelSnapshot implements AutoCloseable {
     private static final int MAXIMUM_FILES = 256;
+    private static final int MAXIMUM_DIRECTORIES = 256;
+    private static final int MAXIMUM_DEPTH = 16;
+    private static final int MAXIMUM_RELATIVE_PATH_BYTES = 240;
     private static final long MAXIMUM_FILE_BYTES = 64L * 1024 * 1024;
     private static final long MAXIMUM_TOTAL_BYTES = 128L * 1024 * 1024;
 
@@ -37,11 +40,20 @@ final class FullPropertyModelSnapshot implements AutoCloseable {
         }
         List<Entry> entries = new ArrayList<>();
         long[] total = {0};
+        int[] directories = {0};
         Files.walkFileTree(source, new SimpleFileVisitor<>() {
             @Override
             public FileVisitResult preVisitDirectory(Path directory, BasicFileAttributes attributes) {
                 if (Files.isSymbolicLink(directory)) {
                     throw new IllegalArgumentException("Full-property model cannot contain symbolic links");
+                }
+                directories[0]++;
+                Path relative = source.relativize(directory);
+                if (directories[0] > MAXIMUM_DIRECTORIES
+                        || relative.getNameCount() > MAXIMUM_DEPTH
+                        || relative.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8).length
+                                > MAXIMUM_RELATIVE_PATH_BYTES) {
+                    throw new IllegalArgumentException("Full-property model directory structure exceeds its bound");
                 }
                 return FileVisitResult.CONTINUE;
             }
@@ -60,6 +72,11 @@ final class FullPropertyModelSnapshot implements AutoCloseable {
                     throw new IllegalArgumentException("Full-property model exceeds its aggregate byte bound");
                 }
                 String relative = source.relativize(file).toString().replace(java.io.File.separatorChar, '/');
+                if (source.relativize(file).getNameCount() > MAXIMUM_DEPTH + 1
+                        || relative.getBytes(java.nio.charset.StandardCharsets.UTF_8).length
+                                > MAXIMUM_RELATIVE_PATH_BYTES) {
+                    throw new IllegalArgumentException("Full-property model path exceeds its bound");
+                }
                 entries.add(new Entry(relative, snapshot));
                 return FileVisitResult.CONTINUE;
             }

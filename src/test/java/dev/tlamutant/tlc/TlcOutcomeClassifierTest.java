@@ -12,9 +12,9 @@ final class TlcOutcomeClassifierTest {
     @Test
     void classifiesNamedAndGenericTemporalViolationsFromStructuredEvents() {
         TlcOutcomeClassifier.Classification named = classifier.classify(
-                true, 13, List.of(new TlcToolEvent(2116, 1, "Temporal property Safe was violated.")), false);
+                true, 13, List.of(new TlcToolEvent(2116, 1, "Temporal property Safe was violated.")), true);
         TlcOutcomeClassifier.Classification generic = classifier.classify(
-                true, 12, List.of(new TlcToolEvent(2116, 1, "Temporal properties were violated.")), false);
+                true, 12, List.of(new TlcToolEvent(2116, 1, "Temporal properties were violated.")), true);
 
         assertEquals(ExecutionStatus.COMPLETED, named.status());
         assertEquals(OracleOutcome.KILLED_TEMPORAL_NAMED, named.oracle());
@@ -32,7 +32,7 @@ final class TlcOutcomeClassifierTest {
                 "Temporal property Safe was violated. trailing",
                 "Temporal property " + "x".repeat(129) + " was violated.")) {
             TlcOutcomeClassifier.Classification classification =
-                    classifier.classify(true, 13, List.of(new TlcToolEvent(2116, 1, body)), false);
+                    classifier.classify(true, 13, List.of(new TlcToolEvent(2116, 1, body)), true);
 
             assertEquals(OracleOutcome.KILLED_TEMPORAL_GENERIC, classification.oracle());
             assertNull(classification.violatedProperty());
@@ -48,8 +48,8 @@ final class TlcOutcomeClassifierTest {
                 new Case(2112, "Action property LegalStep is violated.", "LegalStep"));
 
         for (Case testCase : cases) {
-            TlcOutcomeClassifier.Classification classification = classifier.classify(
-                    true, 12, List.of(new TlcToolEvent(testCase.code(), 1, testCase.body())), false);
+            TlcOutcomeClassifier.Classification classification =
+                    classifier.classify(true, 12, List.of(new TlcToolEvent(testCase.code(), 1, testCase.body())), true);
 
             assertEquals(ExecutionStatus.COMPLETED, classification.status());
             assertEquals(OracleOutcome.KILLED_STATE_SAFETY, classification.oracle());
@@ -91,7 +91,7 @@ final class TlcOutcomeClassifierTest {
     @Test
     void recognizesDeadlockAndRequiresAllSuccessSignalsForPass() {
         TlcOutcomeClassifier.Classification deadlock =
-                classifier.classify(true, 12, List.of(new TlcToolEvent(2114, 1, "Deadlock reached.")), false);
+                classifier.classify(true, 12, List.of(new TlcToolEvent(2114, 1, "Deadlock reached.")), true);
         TlcOutcomeClassifier.Classification passed =
                 classifier.classify(true, 0, List.of(new TlcToolEvent(2193, 0, "Model checking completed.")), true);
         TlcOutcomeClassifier.Classification incompleteStateFile =
@@ -113,7 +113,7 @@ final class TlcOutcomeClassifierTest {
 
         assertEquals(
                 OracleOutcome.NOT_EVALUATED,
-                classifier.classify(true, 13, List.of(temporal), false, true).oracle());
+                classifier.classify(true, 13, List.of(temporal), true, true).oracle());
         assertEquals(
                 OracleOutcome.NOT_EVALUATED,
                 classifier
@@ -122,13 +122,41 @@ final class TlcOutcomeClassifierTest {
         assertEquals(
                 OracleOutcome.NOT_EVALUATED,
                 classifier
+                        .classify(TlcOracleProfile.FULL_PROPERTY, true, 13, List.of(temporal), true, false, false)
+                        .oracle());
+        assertEquals(
+                OracleOutcome.NOT_EVALUATED,
+                classifier
+                        .classify(
+                                true, 13, List.of(temporal, new TlcToolEvent(2161, 1, "Disk I/O failed.")), true, false)
+                        .oracle());
+        assertEquals(
+                OracleOutcome.NOT_EVALUATED,
+                classifier
                         .classify(
                                 true,
                                 13,
-                                List.of(temporal, new TlcToolEvent(2161, 1, "Disk I/O failed.")),
-                                false,
+                                List.of(
+                                        new TlcToolEvent(2110, 1, "Invariant Safe is violated."),
+                                        temporal,
+                                        new TlcToolEvent(2193, 0, "Model checking completed.")),
+                                true,
                                 false)
                         .oracle());
+    }
+
+    @Test
+    void incompleteStateOutputCannotBecomeAnyFullPropertyKill() {
+        for (TlcToolEvent terminal : List.of(
+                new TlcToolEvent(2110, 1, "Invariant Safe is violated."),
+                new TlcToolEvent(2116, 1, "Temporal property Live was violated."),
+                new TlcToolEvent(2114, 1, "Deadlock reached."))) {
+            TlcOutcomeClassifier.Classification classification =
+                    classifier.classify(true, 13, List.of(terminal), false);
+
+            assertEquals(ExecutionStatus.TOOL_ERROR, classification.status());
+            assertEquals(OracleOutcome.NOT_EVALUATED, classification.oracle());
+        }
     }
 
     @Test

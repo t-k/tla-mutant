@@ -3,6 +3,8 @@ package dev.tlamutant.tlc;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.concurrent.Callable;
@@ -29,8 +31,19 @@ record TlcOutputCollector(InputStream input, int limit) implements Callable<TlcO
             retained.write(buffer, 0, keep);
             total += count;
         }
-        return new Capture(retained.toString(StandardCharsets.UTF_8), total > limit);
+        byte[] bytes = retained.toByteArray();
+        try {
+            String text = StandardCharsets.UTF_8
+                    .newDecoder()
+                    .onMalformedInput(CodingErrorAction.REPORT)
+                    .onUnmappableCharacter(CodingErrorAction.REPORT)
+                    .decode(java.nio.ByteBuffer.wrap(bytes))
+                    .toString();
+            return new Capture(text, total > limit, true);
+        } catch (CharacterCodingException exception) {
+            return new Capture(new String(bytes, StandardCharsets.UTF_8), total > limit, false);
+        }
     }
 
-    record Capture(String text, boolean truncated) {}
+    record Capture(String text, boolean truncated, boolean validUtf8) {}
 }

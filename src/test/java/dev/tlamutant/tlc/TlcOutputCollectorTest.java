@@ -19,7 +19,17 @@ final class TlcOutputCollectorTest {
 
         assertEquals("012345", bounded.text());
         assertTrue(bounded.truncated());
+        assertTrue(bounded.validUtf8());
         assertEquals("0123456789", exact.text());
         assertFalse(exact.truncated());
+        assertTrue(exact.validUtf8());
+    }
+
+    @Test
+    void reportsMalformedUtf8WithoutSilentlyRepairingIt() throws Exception {
+        TlcOutputCollector.Capture capture =
+                new TlcOutputCollector(new ByteArrayInputStream(new byte[] {(byte) 0xc3, 0x28}), 8).call();
+
+        assertFalse(capture.validUtf8());
     }
 }

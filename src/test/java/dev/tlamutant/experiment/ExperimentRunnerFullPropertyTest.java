@@ -120,6 +120,7 @@ final class ExperimentRunnerFullPropertyTest {
                         + "  printf '%s\\n' '@!@!@STARTMSG 2193:0 @!@!@' 'Model checking completed.' '@!@!@ENDMSG 2193 @!@!@'\n"
                         + "  exit 0\n"
                         + "fi\n"
+                        + "printf '%s\\n' '{\"type\":\"complete\",\"states\":0}' > \"$state\"\n"
                         + "printf '%s\\n' '@!@!@STARTMSG 2116:1 @!@!@' 'Temporal property EventuallyDone was violated.' '@!@!@ENDMSG 2116 @!@!@'\n"
                         + "exit 13\n",
                 UTF_8);

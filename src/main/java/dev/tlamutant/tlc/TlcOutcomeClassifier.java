@@ -44,6 +44,17 @@ final class TlcOutcomeClassifier {
             List<TlcToolEvent> events,
             boolean completeStateFile,
             boolean outputTruncated) {
+        return classify(profile, completed, exitCode, events, completeStateFile, outputTruncated, true);
+    }
+
+    Classification classify(
+            TlcOracleProfile profile,
+            boolean completed,
+            int exitCode,
+            List<TlcToolEvent> events,
+            boolean completeStateFile,
+            boolean outputTruncated,
+            boolean structuredOutputValid) {
         if (!completed) {
             return notEvaluated(ExecutionStatus.TIMEOUT);
         }
@@ -51,35 +62,54 @@ final class TlcOutcomeClassifier {
             return classifyLegacy(exitCode, events, completeStateFile);
         }
         if (outputTruncated
+                || !structuredOutputValid
                 || events.stream()
                         .anyMatch(event ->
                                 event.severity() > 0 && !FULL_PROPERTY_POSITIVE_EVENTS.contains(event.code()))) {
             return notEvaluated(ExecutionStatus.TOOL_ERROR);
         }
-        if (containsAnyError(events, OUT_OF_MEMORY_EVENTS)) {
+        List<TlcToolEvent> terminalEvents = events.stream()
+                .filter(event -> OUT_OF_MEMORY_EVENTS.contains(event.code())
+                        || EVALUATION_ERROR_EVENTS.contains(event.code())
+                        || SAFETY_VIOLATION_EVENTS.contains(event.code())
+                        || event.code() == 2114
+                        || event.code() == 2116
+                        || event.code() == 2193)
+                .toList();
+        if (terminalEvents.size() != 1) {
+            return notEvaluated(ExecutionStatus.TOOL_ERROR);
+        }
+        TlcToolEvent terminal = terminalEvents.getFirst();
+        if (terminal.code() == 2193) {
+            return terminal.severity() == 0 && exitCode == 0 && completeStateFile
+                    ? new Classification(ExecutionStatus.COMPLETED, OracleOutcome.PASSED, null)
+                    : notEvaluated(ExecutionStatus.TOOL_ERROR);
+        }
+        if (terminal.severity() <= 0) {
+            return notEvaluated(ExecutionStatus.TOOL_ERROR);
+        }
+        if (OUT_OF_MEMORY_EVENTS.contains(terminal.code())) {
             return notEvaluated(ExecutionStatus.OUT_OF_MEMORY);
         }
-        if (containsAnyError(events, EVALUATION_ERROR_EVENTS)) {
+        if (EVALUATION_ERROR_EVENTS.contains(terminal.code())) {
             return notEvaluated(ExecutionStatus.EVALUATION_ERROR);
         }
-        TlcToolEvent safety = firstError(events, SAFETY_VIOLATION_EVENTS);
-        if (safety != null) {
-            return new Classification(
-                    ExecutionStatus.COMPLETED, OracleOutcome.KILLED_STATE_SAFETY, extractSafetyName(safety.body()));
+        if (!completeStateFile) {
+            return notEvaluated(ExecutionStatus.TOOL_ERROR);
         }
-        TlcToolEvent temporal = firstError(events, Set.of(2116));
-        if (temporal != null) {
-            String property = extract(TEMPORAL_NAME, temporal.body());
+        if (SAFETY_VIOLATION_EVENTS.contains(terminal.code())) {
+            return new Classification(
+                    ExecutionStatus.COMPLETED, OracleOutcome.KILLED_STATE_SAFETY, extractSafetyName(terminal.body()));
+        }
+        if (terminal.code() == 2116) {
+            String property = extract(TEMPORAL_NAME, terminal.body());
             return new Classification(
                     ExecutionStatus.COMPLETED,
                     property == null ? OracleOutcome.KILLED_TEMPORAL_GENERIC : OracleOutcome.KILLED_TEMPORAL_NAMED,
                     property);
         }
-        if (firstError(events, Set.of(2114)) != null) {
+        if (terminal.code() == 2114) {
             return new Classification(ExecutionStatus.COMPLETED, OracleOutcome.KILLED_DEADLOCK, null);
-        }
-        if (first(events, Set.of(2193)) != null && exitCode == 0 && completeStateFile) {
-            return new Classification(ExecutionStatus.COMPLETED, OracleOutcome.PASSED, null);
         }
         return notEvaluated(ExecutionStatus.TOOL_ERROR);
     }
@@ -107,10 +137,6 @@ final class TlcOutcomeClassifier {
 
     private static Classification notEvaluated(ExecutionStatus status) {
         return new Classification(status, OracleOutcome.NOT_EVALUATED, null);
-    }
-
-    private static boolean containsAnyError(List<TlcToolEvent> events, Set<Integer> codes) {
-        return firstError(events, codes) != null;
     }
 
     private static TlcToolEvent firstError(List<TlcToolEvent> events, Set<Integer> codes) {

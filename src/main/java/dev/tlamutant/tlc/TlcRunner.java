@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.tlamutant.security.BoundedFileSnapshot;
+import dev.tlamutant.security.SafeRelativePath;
 import dev.tlamutant.state.CanonicalState;
 import dev.tlamutant.state.CanonicalValue;
 import java.io.BufferedReader;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -44,6 +46,7 @@ public final class TlcRunner {
     private final Path toolsJar;
     private final long maximumStates;
     private final long maximumStateBytes;
+    private final RunDirectoryCleaner runDirectoryCleaner;
     private final ObjectMapper mapper = new ObjectMapper();
     private final TlcToolEventParser eventParser = new TlcToolEventParser();
     private final TlcOutcomeClassifier outcomeClassifier = new TlcOutcomeClassifier();
@@ -54,6 +57,16 @@ public final class TlcRunner {
 
     public TlcRunner(
             Path javaExecutable, Path applicationJar, Path toolsJar, long maximumStates, long maximumStateBytes) {
+        this(javaExecutable, applicationJar, toolsJar, maximumStates, maximumStateBytes, TlcRunner::deleteRunDirectory);
+    }
+
+    TlcRunner(
+            Path javaExecutable,
+            Path applicationJar,
+            Path toolsJar,
+            long maximumStates,
+            long maximumStateBytes,
+            RunDirectoryCleaner runDirectoryCleaner) {
         this.javaExecutable = requireRegularAbsolute(javaExecutable, "java executable");
         this.applicationJar = requireRegularAbsolute(applicationJar, "application jar");
         this.toolsJar = requireRegularAbsolute(toolsJar, "TLA+ Tools jar");
@@ -62,6 +75,7 @@ public final class TlcRunner {
         }
         this.maximumStates = maximumStates;
         this.maximumStateBytes = maximumStateBytes;
+        this.runDirectoryCleaner = java.util.Objects.requireNonNull(runDirectoryCleaner, "runDirectoryCleaner");
     }
 
     public static TlcRunner forCurrentJava(Path applicationJar, Path toolsJar) {
@@ -102,8 +116,21 @@ public final class TlcRunner {
             throw new IllegalArgumentException("TLC timeout must be positive");
         }
         Path modelRoot = modelDirectory.toAbsolutePath().normalize();
-        Path module = modelRoot.resolve(moduleFile).normalize();
-        Path config = modelRoot.resolve(configFile).normalize();
+        String moduleArgument = moduleFile;
+        String configArgument = configFile;
+        if (profile == TlcOracleProfile.FULL_PROPERTY) {
+            try {
+                moduleArgument = SafeRelativePath.parse(moduleFile)
+                        .resolveRegularFile(modelRoot)
+                        .toString();
+                configArgument = SafeRelativePath.parse(configFile)
+                        .resolveRegularFile(modelRoot)
+                        .toString();
+            } catch (IOException exception) {
+                throw new IllegalArgumentException(
+                        "Full-property module or config cannot be resolved safely", exception);
+            }
+        }
         Path output = stateOutput.toAbsolutePath().normalize();
         Path runDirectory;
         try {
@@ -117,7 +144,7 @@ public final class TlcRunner {
         try {
             Files.createDirectory(temporary);
         } catch (IOException exception) {
-            deleteTree(runDirectory);
+            cleanupAfterFailure(runDirectory, exception);
             throw new IllegalStateException("Cannot create TLC temporary directory", exception);
         }
         List<String> command = List.of(
@@ -138,13 +165,15 @@ public final class TlcRunner {
                 "-metadir",
                 metadata.toString(),
                 "-config",
-                config.toString(),
+                configArgument,
                 "-dump",
                 "class,dev.tlamutant.state.CanonicalStateWriter",
-                module.toString());
-        ProcessBuilder builder = new ProcessBuilder(command).directory(runDirectory.toFile());
+                moduleArgument);
+        Path processDirectory = profile == TlcOracleProfile.LEGACY ? modelRoot : runDirectory;
+        ProcessBuilder builder = new ProcessBuilder(command).directory(processDirectory.toFile());
         REMOVED_ENVIRONMENT.forEach(builder.environment()::remove);
 
+        TlcExecution execution;
         try {
             Process process = builder.start();
             try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
@@ -163,11 +192,18 @@ public final class TlcRunner {
                 TlcOutputCollector.Capture out = stdout.get();
                 TlcOutputCollector.Capture err = stderr.get();
                 int exitCode = completed ? process.exitValue() : -1;
-                List<TlcToolEvent> events = eventParser.parse(out.text());
+                TlcToolEventParser.ParseResult parsed = eventParser.parse(out.text());
+                List<TlcToolEvent> events = parsed.events();
                 StateFile stateFile = readStateFile(output);
                 TlcOutcomeClassifier.Classification classification = outcomeClassifier.classify(
-                        profile, completed, exitCode, events, stateFile.complete(), out.truncated() || err.truncated());
-                return new TlcExecution(
+                        profile,
+                        completed,
+                        exitCode,
+                        events,
+                        stateFile.complete(),
+                        out.truncated() || err.truncated(),
+                        parsed.valid() && out.validUtf8() && err.validUtf8());
+                execution = new TlcExecution(
                         classification.status(),
                         classification.oracle(),
                         exitCode,
@@ -182,7 +218,7 @@ public final class TlcRunner {
             if (exception instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            return new TlcExecution(
+            execution = new TlcExecution(
                     ExecutionStatus.TOOL_ERROR,
                     OracleOutcome.NOT_EVALUATED,
                     -1,
@@ -191,9 +227,13 @@ public final class TlcRunner {
                     "",
                     exception.getClass().getSimpleName(),
                     false);
-        } finally {
-            deleteTree(runDirectory);
         }
+        try {
+            runDirectoryCleaner.delete(runDirectory);
+        } catch (IOException | RuntimeException cleanupFailure) {
+            return cleanupFailure(execution, cleanupFailure);
+        }
+        return execution;
     }
 
     private StateFile readStateFile(Path path) {
@@ -258,21 +298,50 @@ public final class TlcRunner {
         return normalized;
     }
 
-    private static void deleteTree(Path root) {
-        if (root == null || !Files.exists(root)) {
+    static void deleteRunDirectory(Path root) throws IOException {
+        if (root == null || Files.notExists(root, LinkOption.NOFOLLOW_LINKS)) {
             return;
         }
         try (var paths = Files.walk(root)) {
-            paths.sorted(java.util.Comparator.reverseOrder()).forEach(path -> {
-                try {
-                    Files.deleteIfExists(path);
-                } catch (IOException ignored) {
-                    // The exact run directory is best-effort cleanup; a later inspection detects leakage.
-                }
-            });
-        } catch (IOException ignored) {
-            // The exact run directory is best-effort cleanup; a later inspection detects leakage.
+            for (Path path : paths.sorted(java.util.Comparator.reverseOrder()).toList()) {
+                Files.delete(path);
+            }
         }
+        if (Files.exists(root, LinkOption.NOFOLLOW_LINKS)) {
+            throw new IOException("TLC run directory remained after cleanup");
+        }
+    }
+
+    private void cleanupAfterFailure(Path runDirectory, Exception primary) {
+        try {
+            runDirectoryCleaner.delete(runDirectory);
+        } catch (IOException | RuntimeException cleanupFailure) {
+            primary.addSuppressed(cleanupFailure);
+        }
+    }
+
+    private static TlcExecution cleanupFailure(TlcExecution execution, Exception failure) {
+        String suffix = "TLC run cleanup failed: " + failure.getClass().getSimpleName();
+        String separator = execution.stderr().isEmpty() ? "" : "\n";
+        String stderr = execution.stderr() + separator + suffix;
+        if (stderr.length() > OUTPUT_LIMIT) {
+            stderr = stderr.substring(stderr.length() - OUTPUT_LIMIT);
+        }
+        return new TlcExecution(
+                ExecutionStatus.TOOL_ERROR,
+                OracleOutcome.NOT_EVALUATED,
+                execution.exitCode(),
+                execution.events(),
+                execution.states(),
+                execution.stdout(),
+                stderr,
+                execution.outputTruncated(),
+                null);
+    }
+
+    @FunctionalInterface
+    interface RunDirectoryCleaner {
+        void delete(Path path) throws IOException;
     }
 
     private record StateFile(List<CanonicalState> states, boolean complete) {}
