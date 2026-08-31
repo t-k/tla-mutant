@@ -35,12 +35,14 @@ java -cp build/libs/tla-mutant-all.jar:.tools/tla2tools-1.8.0.jar dev.tlamutant.
   --work-dir build/full-property-work \
   --oracle-mode full-property \
   --manifest path/to/frozen-manifest.json \
+  --timeout-seconds 180 \
+  --experiment-timeout-seconds 3600 \
   --json-report build/full-property-report.json
 ```
 
 For a pinned corpus, add `--oracle-mode full-property` to `corpus-experiment`. The corpus runner propagates the frozen manifest, TLA+ Tools JAR, and application JAR identities into the outer report and every completed entry report.
 
-A full-property baseline must pass before any mutant is evaluated. Structured TLC safety, temporal, and deadlock violation events produce `full-property-state-safety-kill`, `full-property-temporal-kill`, and `full-property-deadlock-kill`; timeouts, out-of-memory conditions, evaluation errors, incomplete state output, and unexplained nonzero exits remain `unresolved`. Every candidate records its original and mutated source digests, UTF-16 source range, reversible patch, TLC exit code, significant structured event codes, and the violated property name when TLC reports one unambiguously. Legacy invocations that omit `--oracle-mode` retain their existing report shape and semantics.
+A full-property baseline must pass before any mutant is evaluated. `--timeout-seconds` limits one TLC invocation and retains its 180-second default and 600-second maximum. `--experiment-timeout-seconds` limits the complete direct full-property run, including snapshots, SANY analysis, candidate generation, the baseline, and mutants; its default and maximum are 3,600 seconds. If that aggregate deadline expires after a passing baseline, no more mutant workspaces or TLC processes are started, but every admitted candidate remains in the report as `TIMEOUT/NOT_EVALUATED` with reproducible mutation evidence. Structured TLC safety, temporal, and deadlock violation events produce `full-property-state-safety-kill`, `full-property-temporal-kill`, and `full-property-deadlock-kill`; timeouts, out-of-memory conditions, evaluation errors, incomplete state output, and unexplained nonzero exits remain `unresolved`. Every candidate records its original and mutated source digests, UTF-16 source range, reversible patch, TLC exit code, significant structured event codes, and the violated property name when TLC reports one unambiguously. Legacy invocations that omit `--oracle-mode` retain their existing report shape and semantics.
 
 Full-property execution fails closed. It rejects malformed UTF-8, incomplete or mismatched TLC tool frames, mixed terminal outcomes, truncated output, escaped module/config paths, and run-directory cleanup failures. Direct runs snapshot the complete model tree into private read-only inputs, bind every copied file identity into the report, and enforce file-count, directory-count, depth, path-length, per-file, aggregate-byte, state-output, candidate-count, and wall-clock bounds. Corpus runs retain the existing rootless Podman boundary in addition to these checks.
 
