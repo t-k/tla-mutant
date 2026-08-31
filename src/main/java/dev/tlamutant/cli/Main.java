@@ -15,10 +15,12 @@ import dev.tlamutant.corpus.ProspectiveInterventionValidator;
 import dev.tlamutant.corpus.StratifiedManifestValidator;
 import dev.tlamutant.experiment.CorpusExperimentReport;
 import dev.tlamutant.experiment.CorpusExperimentRunner;
+import dev.tlamutant.experiment.ExperimentInputIdentity;
 import dev.tlamutant.experiment.ExperimentReport;
 import dev.tlamutant.experiment.ExperimentRunner;
 import dev.tlamutant.experiment.GcdStratifiedReport;
 import dev.tlamutant.experiment.InvariantOracleSets;
+import dev.tlamutant.experiment.OracleMode;
 import dev.tlamutant.prospective.ProspectiveAssessment;
 import dev.tlamutant.prospective.ProspectiveCensusReport;
 import dev.tlamutant.prospective.ProspectiveCensusValidator;
@@ -84,6 +86,8 @@ public final class Main implements Runnable {
     private static final long MAXIMUM_POLICY_BYTES = 1024L * 1024;
     private static final long MAXIMUM_APPLICATION_BYTES = 128L * 1024 * 1024;
     private static final long MAXIMUM_TOOLS_BYTES = 128L * 1024 * 1024;
+    private static final long MAXIMUM_MODULE_BYTES = 64L * 1024 * 1024;
+    private static final long MAXIMUM_CONFIG_BYTES = 8L * 1024 * 1024;
     private static final long MAXIMUM_PROSPECTIVE_REPORT_BYTES = 256L * 1024 * 1024;
     private static final long MAXIMUM_PROTOCOL_BYTES = 2L * 1024 * 1024;
 
@@ -915,7 +919,7 @@ public final class Main implements Runnable {
     @CommandLine.Command(
             name = "experiment",
             mixinStandardHelpOptions = true,
-            description = "Run the three-family state-invariant experiment.")
+            description = "Run the three-family mutation experiment.")
     static final class ExperimentCommand implements Callable<Integer> {
         @CommandLine.Option(names = "--model-dir", required = true)
         Path modelDirectory;
@@ -931,6 +935,15 @@ public final class Main implements Runnable {
 
         @CommandLine.Option(names = "--work-dir", required = true)
         Path workDirectory;
+
+        @CommandLine.Option(
+                names = "--oracle-mode",
+                defaultValue = "state-invariants",
+                converter = OracleModeConverter.class)
+        OracleMode oracleMode = OracleMode.STATE_INVARIANTS;
+
+        @CommandLine.Option(names = "--manifest")
+        Path manifestPath;
 
         @CommandLine.Option(names = "--state-invariant")
         List<String> stateInvariants = new ArrayList<>();
@@ -964,25 +977,18 @@ public final class Main implements Runnable {
 
         @Override
         public Integer call() throws Exception {
-            Path applicationJar = Path.of(Main.class
-                    .getProtectionDomain()
-                    .getCodeSource()
-                    .getLocation()
-                    .toURI());
-            ExperimentRunner experiment = new ExperimentRunner(
-                    TlcRunner.forCurrentJava(applicationJar, toolsJar, maximumStates, maximumStateBytes),
-                    Duration.ofSeconds(timeoutSeconds));
+            validateOptions();
             List<CorpusManifest.DerivedSourceEdit> edits = parseDerivedSourceEdits(derivedSourceEditJson);
             SandboxInput input = new SandboxInput(
                     stateInvariants, typeInvariants, legacyTargetInvariants, adoptedTargetInvariants, edits);
             Files.createDirectories(workDirectory);
             ExperimentReport report;
             if (edits.isEmpty()) {
-                report = runExperiment(experiment, modelDirectory, module, config, workDirectory, input);
+                report = runSelectedExperiment(modelDirectory, input);
             } else {
                 try (DerivedModelWorkspace workspace =
                         DerivedModelWorkspace.create(modelDirectory, workDirectory.resolve("derived-model"), edits)) {
-                    report = runExperiment(experiment, workspace.root(), module, config, workDirectory, input);
+                    report = runSelectedExperiment(workspace.root(), input);
                 }
             }
             if (jsonReport != null) {
@@ -994,6 +1000,63 @@ public final class Main implements Runnable {
             }
             System.out.println(new ObjectMapper().writeValueAsString(report));
             return 0;
+        }
+
+        void validateOptions() {
+            if (oracleMode == null) {
+                throw new IllegalArgumentException("Oracle mode is required");
+            }
+            boolean hasInvariantReplacement = !stateInvariants.isEmpty()
+                    || !typeInvariants.isEmpty()
+                    || !legacyTargetInvariants.isEmpty()
+                    || !adoptedTargetInvariants.isEmpty();
+            if (oracleMode == OracleMode.FULL_PROPERTY && manifestPath == null) {
+                throw new IllegalArgumentException("Full-property mode requires --manifest");
+            }
+            if (oracleMode == OracleMode.FULL_PROPERTY && hasInvariantReplacement) {
+                throw new IllegalArgumentException("Full-property mode does not accept invariant replacement options");
+            }
+        }
+
+        private ExperimentReport runSelectedExperiment(Path effectiveModelDirectory, SandboxInput input)
+                throws Exception {
+            Path currentApplication = applicationJar();
+            if (oracleMode == OracleMode.STATE_INVARIANTS) {
+                ExperimentRunner experiment = new ExperimentRunner(
+                        TlcRunner.forCurrentJava(currentApplication, toolsJar, maximumStates, maximumStateBytes),
+                        Duration.ofSeconds(timeoutSeconds));
+                return runExperiment(experiment, effectiveModelDirectory, module, config, workDirectory, input);
+            }
+            BoundedFileSnapshot moduleSnapshot =
+                    BoundedFileSnapshot.read(effectiveModelDirectory.resolve(module), MAXIMUM_MODULE_BYTES);
+            BoundedFileSnapshot configSnapshot =
+                    BoundedFileSnapshot.read(effectiveModelDirectory.resolve(config), MAXIMUM_CONFIG_BYTES);
+            BoundedFileSnapshot manifestSnapshot = BoundedFileSnapshot.read(manifestPath, MAXIMUM_MANIFEST_BYTES);
+            BoundedFileSnapshot toolsSnapshot = BoundedFileSnapshot.read(toolsJar, MAXIMUM_TOOLS_BYTES);
+            BoundedFileSnapshot applicationSnapshot =
+                    BoundedFileSnapshot.read(currentApplication, MAXIMUM_APPLICATION_BYTES);
+            ExperimentInputIdentity inputs = new ExperimentInputIdentity(
+                    ExperimentInputIdentity.Artifact.from(moduleSnapshot),
+                    ExperimentInputIdentity.Artifact.from(configSnapshot),
+                    ExperimentInputIdentity.Artifact.from(manifestSnapshot),
+                    ExperimentInputIdentity.Artifact.from(toolsSnapshot),
+                    ExperimentInputIdentity.Artifact.from(applicationSnapshot));
+            try (TemporaryFileSnapshot frozenApplication =
+                            TemporaryFileSnapshot.create(applicationSnapshot, "application.jar");
+                    TemporaryFileSnapshot frozenTools = TemporaryFileSnapshot.create(toolsSnapshot, "tla2tools.jar")) {
+                ExperimentRunner experiment = new ExperimentRunner(
+                        TlcRunner.forCurrentJava(
+                                frozenApplication.path(), frozenTools.path(), maximumStates, maximumStateBytes),
+                        Duration.ofSeconds(timeoutSeconds));
+                return experiment.runFullProperty(effectiveModelDirectory, module, config, workDirectory, inputs);
+            }
+        }
+    }
+
+    static final class OracleModeConverter implements CommandLine.ITypeConverter<OracleMode> {
+        @Override
+        public OracleMode convert(String value) {
+            return OracleMode.parse(value);
         }
     }
 
