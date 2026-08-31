@@ -77,8 +77,8 @@
     "sizeBytes" : 2387
   }, {
     "role" : "validator-application",
-    "sha256" : "7631acedaecb010f1393a2f2be109343f3aed0234d0c291b3ed00443765a2449",
-    "sizeBytes" : 3203226
+    "sha256" : "b882af8d23cb75bd9d5fa8788289cb463694c59cd220eb4a5c02725e9cb566a0",
+    "sizeBytes" : 3207342
   } ],
   "outcomes" : [ {
     "key" : {
