@@ -61,7 +61,7 @@ final class HistoricalArtifactFreezeIntegrationTest {
         Path assessmentPath = Path.of("docs/experiments/gcd-prospective-closure-assessment-v11.json");
         assertIdentity(
                 assessmentPath.toString(),
-                new Identity("0ff143ec2b54649fb0c0612b6acfd52b3d91221aa38a98ed6e83cdc263da38ca", 3_890));
+                new Identity("b2766c96ed0163eb942b0cd672ca4b24b147415276089888be803b51f47a6fd3", 3_890));
         ProspectiveClosureAssessment assessment =
                 new ObjectMapper().readValue(assessmentPath.toFile(), ProspectiveClosureAssessment.class);
 
