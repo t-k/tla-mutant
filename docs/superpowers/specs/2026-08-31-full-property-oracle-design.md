@@ -112,19 +112,19 @@ For corpus execution, the outer report binds the manifest, tools, and applicatio
 | Obligation | Risk | Verification | Status |
 |---|---|---|---|
 | FP-01 Original cfg bytes are preserved | A property is silently removed or rewritten | `FullPropertyConfigTest`, `ExperimentRunnerFullPropertyTest` | Covered |
-| FP-02 State-invariant mode remains unchanged | Existing prospective evidence changes meaning | `ReportWriterTest`, `ExperimentCommandTest`, `ExperimentIntegrationTest` | Covered |
-| FP-03 Events 2107/2108/2110/2112 and 2116 are genuine kills | Configured safety or temporal counterexamples remain unresolved | `TlcOutcomeClassifierTest`, `TlcRunnerIntegrationTest` | Covered with unit and real-TLC overlap |
+| FP-02 State-invariant mode remains unchanged | Existing prospective evidence changes meaning | `ReportWriterTest`, `ExperimentCommandTest`, `ExperimentIntegrationTest`, `TlcRunnerTest` | Covered |
+| FP-03 Events 2107/2108/2110/2112 and 2116 are genuine kills only with complete state output and one coherent terminal event | Configured counterexamples remain unresolved, or malformed output inflates the kill count | `TlcOutcomeClassifierTest`, `TlcToolEventParserTest`, `TlcRunnerIntegrationTest` | Covered with unit and real-TLC overlap |
 | FP-04 Named and generic violations are distinct | Property attribution is misleading | `TlcOutcomeClassifierTest`, `TlcRunnerIntegrationTest` | Covered with unit and real-TLC overlap |
 | FP-05 Exit code alone cannot kill | Java/TLC startup failures become false kills | `TlcOutcomeClassifierTest` | Covered |
-| FP-06 Timeout, OOM, evaluation failure, and tool error are not kills | Mutation score is inflated by infrastructure failures | `TlcOutcomeClassifierTest`, `TlcRunnerIntegrationTest` | Covered |
+| FP-06 Timeout, OOM, evaluation failure, malformed UTF-8/framing, mixed outcomes, cleanup failure, and tool error are not kills | Mutation score is inflated by infrastructure failures | `TlcOutcomeClassifierTest`, `TlcOutputCollectorTest`, `TlcToolEventParserTest`, `TlcRunnerTest`, `TlcRunnerIntegrationTest` | Covered |
 | FP-07 Baseline temporal failure aborts | Invalid specification is reported as mutant evidence | `ExperimentRunnerFullPropertyTest` | Covered |
 | FP-08 Full-property mutation is reproducible | Candidate cannot be inspected outside the run | `MutationEvidenceTest`, `FullPropertyExperimentIntegrationTest` | Covered with unit and real-TLC overlap |
-| FP-09 Required input identities are complete | Old evidence survives input changes undetected | `MutationEvidenceTest`, `CorpusExperimentReportTest`, `ExperimentCommandTest` | Covered |
+| FP-09 Required input identities are complete | Old evidence survives input changes undetected | `MutationEvidenceTest`, `FullPropertyModelSnapshotTest`, `LoadedArtifactVerifierTest`, `CorpusExperimentReportTest`, `ExperimentCommandTest` | Covered |
 | FP-10 Direct full-property mode requires a manifest | Provenance chain is incomplete | `ExperimentCommandTest` | Covered |
-| FP-11 Corpus mode propagates common identities | Sandbox result cannot be tied to frozen inputs | `CorpusExperimentReportTest`, `PodmanCommandTest` | Covered with report-boundary and command-transport overlap |
+| FP-11 Corpus mode propagates common identities and validates aggregate entry evidence | Sandbox result cannot be tied to frozen inputs | `CorpusInputSnapshotTest`, `CorpusExperimentReportTest`, `PodmanCommandTest`, `PodmanContainmentTest` | Covered with report-boundary, command-transport, and sandbox overlap |
 | FP-12 A real temporal-only mutant is killed | Unit classification works but end-to-end behavior does not | `FullPropertyExperimentIntegrationTest` | Covered by real TLC |
 | FP-13 Generic liveness counterexample is killed | Only safety-like temporal formulas work | `TlcRunnerIntegrationTest` | Covered by real TLC |
-| FP-14 Output and names remain bounded | Tool output creates oversized or unsafe evidence | `TlcOutcomeClassifierTest`, `TlcOutputCollectorTest` | Covered |
+| FP-14 Model traversal, candidate generation, state output, tool output, and names remain bounded | Host work or evidence exceeds its resource contract | `FullPropertyModelSnapshotTest`, `MutatorIntegrationTest`, `TlcOutcomeClassifierTest`, `TlcOutputCollectorTest` | Covered |
 
 FP-03, FP-05, FP-06, FP-09, and FP-12 are high-risk obligations and receive both focused and integration-level checks where feasible. The current ledger covers the approved five requirements; full fairness-mutation generation remains explicitly out of scope.
 

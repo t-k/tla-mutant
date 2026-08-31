@@ -42,6 +42,8 @@ For a pinned corpus, add `--oracle-mode full-property` to `corpus-experiment`. T
 
 A full-property baseline must pass before any mutant is evaluated. Structured TLC safety, temporal, and deadlock violation events produce `full-property-state-safety-kill`, `full-property-temporal-kill`, and `full-property-deadlock-kill`; timeouts, out-of-memory conditions, evaluation errors, incomplete state output, and unexplained nonzero exits remain `unresolved`. Every candidate records its original and mutated source digests, UTF-16 source range, reversible patch, TLC exit code, significant structured event codes, and the violated property name when TLC reports one unambiguously. Legacy invocations that omit `--oracle-mode` retain their existing report shape and semantics.
 
+Full-property execution fails closed. It rejects malformed UTF-8, incomplete or mismatched TLC tool frames, mixed terminal outcomes, truncated output, escaped module/config paths, and run-directory cleanup failures. Direct runs snapshot the complete model tree into private read-only inputs, bind every copied file identity into the report, and enforce file-count, directory-count, depth, path-length, per-file, aggregate-byte, state-output, candidate-count, and wall-clock bounds. Corpus runs retain the existing rootless Podman boundary in addition to these checks.
+
 ## Reproduce the original corpus experiment
 
 ```sh
