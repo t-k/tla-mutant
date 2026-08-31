@@ -107,5 +107,55 @@ final class TlcOutcomeClassifierTest {
         assertEquals(OracleOutcome.NOT_EVALUATED, nonzeroExit.oracle());
     }
 
+    @Test
+    void fullPropertyFailsClosedOnTruncatedInvalidOrMixedErrorOutput() {
+        TlcToolEvent temporal = new TlcToolEvent(2116, 1, "Temporal properties were violated.");
+
+        assertEquals(
+                OracleOutcome.NOT_EVALUATED,
+                classifier.classify(true, 13, List.of(temporal), false, true).oracle());
+        assertEquals(
+                OracleOutcome.NOT_EVALUATED,
+                classifier
+                        .classify(true, 13, List.of(new TlcToolEvent(2116, 0, temporal.body())), false, false)
+                        .oracle());
+        assertEquals(
+                OracleOutcome.NOT_EVALUATED,
+                classifier
+                        .classify(
+                                true,
+                                13,
+                                List.of(temporal, new TlcToolEvent(2161, 1, "Disk I/O failed.")),
+                                false,
+                                false)
+                        .oracle());
+    }
+
+    @Test
+    void legacyProfilePreservesTheHistoricalEventMapping() {
+        assertEquals(
+                ExecutionStatus.TOOL_ERROR,
+                classifier
+                        .classify(
+                                TlcOracleProfile.LEGACY,
+                                true,
+                                13,
+                                List.of(new TlcToolEvent(1002, 1, "Heap exhausted.")),
+                                false,
+                                false)
+                        .status());
+        assertEquals(
+                OracleOutcome.NOT_EVALUATED,
+                classifier
+                        .classify(
+                                TlcOracleProfile.LEGACY,
+                                true,
+                                13,
+                                List.of(new TlcToolEvent(2116, 1, "Temporal properties were violated.")),
+                                false,
+                                false)
+                        .oracle());
+    }
+
     private record Case(int code, String body, String property) {}
 }

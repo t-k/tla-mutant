@@ -79,10 +79,27 @@ public final class TlcRunner {
 
     public TlcExecution run(
             Path modelDirectory, String moduleFile, String configFile, Path stateOutput, Duration timeout) {
+        return run(modelDirectory, moduleFile, configFile, stateOutput, timeout, TlcOracleProfile.LEGACY);
+    }
+
+    public TlcExecution runFullProperty(
+            Path modelDirectory, String moduleFile, String configFile, Path stateOutput, Duration timeout) {
+        return run(modelDirectory, moduleFile, configFile, stateOutput, timeout, TlcOracleProfile.FULL_PROPERTY);
+    }
+
+    private TlcExecution run(
+            Path modelDirectory,
+            String moduleFile,
+            String configFile,
+            Path stateOutput,
+            Duration timeout,
+            TlcOracleProfile profile) {
         if (timeout == null || timeout.isZero() || timeout.isNegative()) {
             throw new IllegalArgumentException("TLC timeout must be positive");
         }
         Path modelRoot = modelDirectory.toAbsolutePath().normalize();
+        Path module = modelRoot.resolve(moduleFile).normalize();
+        Path config = modelRoot.resolve(configFile).normalize();
         Path output = stateOutput.toAbsolutePath().normalize();
         Path runDirectory;
         try {
@@ -117,11 +134,11 @@ public final class TlcRunner {
                 "-metadir",
                 metadata.toString(),
                 "-config",
-                configFile,
+                config.toString(),
                 "-dump",
                 "class,dev.tlamutant.state.CanonicalStateWriter",
-                moduleFile);
-        ProcessBuilder builder = new ProcessBuilder(command).directory(modelRoot.toFile());
+                module.toString());
+        ProcessBuilder builder = new ProcessBuilder(command).directory(runDirectory.toFile());
         REMOVED_ENVIRONMENT.forEach(builder.environment()::remove);
 
         try {
@@ -144,8 +161,8 @@ public final class TlcRunner {
                 int exitCode = completed ? process.exitValue() : -1;
                 List<TlcToolEvent> events = eventParser.parse(out.text());
                 StateFile stateFile = readStateFile(output);
-                TlcOutcomeClassifier.Classification classification =
-                        outcomeClassifier.classify(completed, exitCode, events, stateFile.complete());
+                TlcOutcomeClassifier.Classification classification = outcomeClassifier.classify(
+                        profile, completed, exitCode, events, stateFile.complete(), out.truncated() || err.truncated());
                 return new TlcExecution(
                         classification.status(),
                         classification.oracle(),

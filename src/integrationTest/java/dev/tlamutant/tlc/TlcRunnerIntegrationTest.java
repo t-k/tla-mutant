@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
@@ -59,31 +60,43 @@ final class TlcRunnerIntegrationTest {
     }
 
     @Test
-    void classifiesRealPropertySafetyAndLivenessCounterexamples() {
+    void classifiesRealPropertySafetyAndLivenessCounterexamplesWithoutPollutingTheModelDirectory() throws Exception {
         TlcRunner runner = TlcRunner.forCurrentJava(
                 Path.of(System.getProperty("tla.mutant.test.appJar")),
                 Path.of(System.getProperty("tla.mutant.test.toolsJar")));
+        Path sourceDirectory = Path.of("src/testFixtures/resources/tla/full-property");
+        Path modelDirectory = temporaryDirectory.resolve("full-property-model");
+        Files.createDirectory(modelDirectory);
+        for (String fixture :
+                new String[] {"NamedTemporal.tla", "NamedTemporal.cfg", "GenericLiveness.tla", "GenericLiveness.cfg"}) {
+            Files.copy(sourceDirectory.resolve(fixture), modelDirectory.resolve(fixture));
+        }
 
-        TlcExecution temporalSafety = runner.run(
-                Path.of("src/testFixtures/resources/tla/full-property"),
+        TlcExecution temporalSafety = runner.runFullProperty(
+                modelDirectory,
                 "NamedTemporal.tla",
                 "NamedTemporal.cfg",
                 temporaryDirectory.resolve("named-temporal.jsonl"),
                 Duration.ofSeconds(30));
-        TlcExecution liveness = runner.run(
-                Path.of("src/testFixtures/resources/tla/full-property"),
+        TlcExecution liveness = runner.runFullProperty(
+                modelDirectory,
                 "GenericLiveness.tla",
                 "GenericLiveness.cfg",
                 temporaryDirectory.resolve("generic-liveness.jsonl"),
                 Duration.ofSeconds(30));
 
-        assertEquals(ExecutionStatus.COMPLETED, temporalSafety.status());
+        assertEquals(
+                ExecutionStatus.COMPLETED,
+                temporalSafety.status(),
+                temporalSafety.events().toString());
         assertEquals(OracleOutcome.KILLED_STATE_SAFETY, temporalSafety.oracle());
         assertEquals("AlwaysZero", temporalSafety.violatedProperty());
         assertTrue(temporalSafety.events().stream().anyMatch(event -> event.code() == 2110));
-        assertEquals(ExecutionStatus.COMPLETED, liveness.status());
+        assertEquals(
+                ExecutionStatus.COMPLETED, liveness.status(), liveness.events().toString());
         assertEquals(OracleOutcome.KILLED_TEMPORAL_GENERIC, liveness.oracle());
         assertNull(liveness.violatedProperty());
         assertTrue(liveness.events().stream().anyMatch(event -> event.code() == 2116));
+        assertFalse(Files.exists(modelDirectory.resolve("states")));
     }
 }

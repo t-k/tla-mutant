@@ -81,7 +81,7 @@ public final class ExperimentRunner {
             SemanticProject project = sanyAnalyzer.analyze(frozenModel, moduleFile, configFile);
             List<MutationCandidate> candidates = candidates(project, source);
 
-            TlcExecution baseline = tlcRunner.run(
+            TlcExecution baseline = tlcRunner.runFullProperty(
                     frozenModel,
                     moduleFile,
                     config.path().toString(),
@@ -254,7 +254,7 @@ public final class ExperimentRunner {
             copyModel(modelRoot, workspace);
             Files.writeString(workspace.resolve(moduleFile), patched.content());
             sanyAnalyzer.analyze(workspace, moduleFile, configFile);
-            mutant = tlcRunner.run(
+            mutant = tlcRunner.runFullProperty(
                     workspace,
                     moduleFile,
                     fullPropertyConfig.toString(),
