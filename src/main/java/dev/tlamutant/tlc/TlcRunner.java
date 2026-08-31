@@ -5,9 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.tlamutant.state.CanonicalState;
 import dev.tlamutant.state.CanonicalValue;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -130,8 +127,10 @@ public final class TlcRunner {
         try {
             Process process = builder.start();
             try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-                Future<OutputCapture> stdout = executor.submit(new Collector(process.getInputStream(), OUTPUT_LIMIT));
-                Future<OutputCapture> stderr = executor.submit(new Collector(process.getErrorStream(), OUTPUT_LIMIT));
+                Future<TlcOutputCollector.Capture> stdout =
+                        executor.submit(new TlcOutputCollector(process.getInputStream(), OUTPUT_LIMIT));
+                Future<TlcOutputCollector.Capture> stderr =
+                        executor.submit(new TlcOutputCollector(process.getErrorStream(), OUTPUT_LIMIT));
                 boolean completed = process.waitFor(timeout.toMillis(), TimeUnit.MILLISECONDS);
                 if (!completed) {
                     process.destroy();
@@ -140,8 +139,8 @@ public final class TlcRunner {
                         process.waitFor(5, TimeUnit.SECONDS);
                     }
                 }
-                OutputCapture out = stdout.get();
-                OutputCapture err = stderr.get();
+                TlcOutputCollector.Capture out = stdout.get();
+                TlcOutputCollector.Capture err = stderr.get();
                 int exitCode = completed ? process.exitValue() : -1;
                 List<TlcToolEvent> events = eventParser.parse(out.text());
                 StateFile stateFile = readStateFile(output);
@@ -247,25 +246,4 @@ public final class TlcRunner {
     }
 
     private record StateFile(List<CanonicalState> states, boolean complete) {}
-
-    private record OutputCapture(String text, boolean truncated) {}
-
-    private record Collector(InputStream input, int limit) implements Callable<OutputCapture> {
-        @Override
-        public OutputCapture call() throws IOException {
-            ByteArrayOutputStream retained = new ByteArrayOutputStream();
-            byte[] buffer = new byte[16 * 1024];
-            long total = 0;
-            while (true) {
-                int count = input.read(buffer);
-                if (count < 0) {
-                    break;
-                }
-                int keep = (int) Math.min(count, Math.max(0, limit - retained.size()));
-                retained.write(buffer, 0, keep);
-                total += count;
-            }
-            return new OutputCapture(retained.toString(StandardCharsets.UTF_8), total > limit);
-        }
-    }
 }
