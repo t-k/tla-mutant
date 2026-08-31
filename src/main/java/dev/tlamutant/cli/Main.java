@@ -989,6 +989,9 @@ public final class Main implements Runnable {
         @CommandLine.Option(names = "--timeout-seconds", defaultValue = "180")
         long timeoutSeconds;
 
+        @CommandLine.Option(names = "--experiment-timeout-seconds", defaultValue = "3600")
+        long experimentTimeoutSeconds;
+
         @CommandLine.Option(names = "--max-states", defaultValue = "1000000")
         long maximumStates;
 
@@ -1039,6 +1042,8 @@ public final class Main implements Runnable {
             if (oracleMode == OracleMode.FULL_PROPERTY
                     && (timeoutSeconds <= 0
                             || timeoutSeconds > 600
+                            || experimentTimeoutSeconds <= 0
+                            || experimentTimeoutSeconds > 3_600
                             || maximumStates <= 0
                             || maximumStates > 1_000_000
                             || maximumStateBytes <= 0
@@ -1083,7 +1088,8 @@ public final class Main implements Runnable {
                 ExperimentRunner experiment = new ExperimentRunner(
                         TlcRunner.forCurrentJava(
                                 frozenApplication.path(), frozenTools.path(), maximumStates, maximumStateBytes),
-                        Duration.ofSeconds(timeoutSeconds));
+                        Duration.ofSeconds(timeoutSeconds),
+                        Duration.ofSeconds(experimentTimeoutSeconds));
                 return experiment.runFullProperty(effectiveModelDirectory, module, config, workDirectory, inputs);
             }
         }
