@@ -13,10 +13,13 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.security.MessageDigest;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -155,6 +158,21 @@ final class VendoredTlaToolsProvisioningIntegrationTest {
         assertFalse(Files.exists(escapedDirectory.resolve("tla2tools-1.8.0.jar")));
     }
 
+    @Test
+    void removesTemporaryArtifactWhenAtomicMoveFails() throws Exception {
+        Path checkout = createCheckout("atomic-move-failure");
+        Path destination = checkout.resolve(CACHED_PATH);
+        Files.createDirectories(destination);
+
+        GradleResult result = runGradle(checkout, "provisionTlaTools");
+
+        assertNotEquals(0, result.exitCode(), result.output());
+        assertTrue(Files.isDirectory(destination));
+        try (Stream<Path> files = Files.list(destination.getParent())) {
+            assertFalse(files.anyMatch(path -> path.getFileName().toString().startsWith(".tla2tools-")));
+        }
+    }
+
     private Path createCheckout(String name) throws IOException {
         Path checkout = temporaryDirectory.resolve(name);
         Files.createDirectories(checkout);
@@ -206,15 +224,43 @@ final class VendoredTlaToolsProvisioningIntegrationTest {
                 .start();
         boolean finished = process.waitFor(PROCESS_TIMEOUT.toSeconds(), TimeUnit.SECONDS);
         if (!finished) {
-            process.destroy();
-            if (!process.waitFor(5, TimeUnit.SECONDS)) {
-                process.destroyForcibly();
-                process.waitFor(5, TimeUnit.SECONDS);
-            }
+            terminateProcessTree(process);
             throw new AssertionError("Gradle process exceeded " + PROCESS_TIMEOUT);
         }
         String output = Files.readString(outputFile, StandardCharsets.UTF_8);
         return new GradleResult(process.exitValue(), output);
+    }
+
+    private static void terminateProcessTree(Process process) throws Exception {
+        List<ProcessHandle> handles =
+                new ArrayList<>(process.toHandle().descendants().toList());
+        handles.add(process.toHandle());
+        for (ProcessHandle handle : handles.reversed()) {
+            handle.destroy();
+        }
+        if (!awaitExit(handles, 5)) {
+            for (ProcessHandle handle : handles.reversed()) {
+                if (handle.isAlive()) {
+                    handle.destroyForcibly();
+                }
+            }
+            if (!awaitExit(handles, 5)) {
+                throw new AssertionError("Timed-out Gradle process tree did not terminate");
+            }
+        }
+    }
+
+    private static boolean awaitExit(List<ProcessHandle> handles, long timeoutSeconds) throws Exception {
+        CompletableFuture<?>[] exits = handles.stream()
+                .filter(ProcessHandle::isAlive)
+                .map(ProcessHandle::onExit)
+                .toArray(CompletableFuture[]::new);
+        try {
+            CompletableFuture.allOf(exits).get(timeoutSeconds, TimeUnit.SECONDS);
+            return true;
+        } catch (TimeoutException exception) {
+            return false;
+        }
     }
 
     private static void replaceVendorPath(Path checkout, String replacement) throws IOException {

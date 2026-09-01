@@ -141,6 +141,8 @@ reviewed digest in tracked lock
 
 There is no network edge in this chain. A repository writer who can change both the lock and vendored binary can still propose a different toolchain, so normal code review, branch protection, and the signed archive tag remain necessary.
 
+Provisioning rejects static source and destination symlinks and verifies real-path containment, but it does not attempt to defend against another process running as the same user and concurrently rewriting the checkout between validation and replacement. Verification must run in a checkout without a concurrent writer. A directory-handle-based implementation would be required to include that attacker in the threat model.
+
 The old JAR is unsigned. Its equality with the artifact used by this project's historical receipts is strong evidence of continuity within this repository, but it is not cryptographic proof that upstream produced it. This limitation must remain visible in the provenance and security review documents.
 
 ## Test design

@@ -33,3 +33,7 @@ The upstream v1.8.0 prerelease asset is rolling. On 2026-09-01, the same URL beg
 The two archives contain the same 2,223 entries. Their extracted contents differ in the manifest and 14 class files. The changed classes have identical instructions, APIs, constants, exception tables, local-variable tables, and stack-map tables; their differences are limited to source line numbers after upstream comment and Javadoc changes. The new build is therefore execution-logic equivalent under this comparison, but it is not the same artifact and cannot satisfy the historical byte-bound receipts.
 
 `tla-mutant` stores the reviewed binary as a normal Git object so a complete checkout can provision the historical toolchain without reading the mutable prerelease URL. Git history and the project archive tag attest which bytes this project preserved. They do not constitute an upstream signature or independent cryptographic proof that upstream produced the original unsigned JAR.
+
+## Trust boundary
+
+Provisioning rejects source and destination symlinks, verifies path containment, uses an owner-only temporary file, verifies the copied bytes, and atomically replaces the runtime copy. It does not defend against another process running as the same user and concurrently rewriting the checkout during provisioning. Run verification in a checkout that is not being modified by another writer. Repository writers remain governed by code review, branch protection, and the signed project archive tag.
