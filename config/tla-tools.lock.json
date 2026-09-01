@@ -1,6 +1,8 @@
 {
   "version": "1.8.0",
-  "url": "https://github.com/tlaplus/tlaplus/releases/download/v1.8.0/tla2tools.jar",
+  "vendorPath": "vendor/tla-tools/1.8.0-9787e65/tla2tools.jar",
+  "upstreamUrl": "https://github.com/tlaplus/tlaplus/releases/download/v1.8.0/tla2tools.jar",
+  "upstreamRevision": "9787e65714c37d94eebab40774bff401bd9f616d",
   "sizeBytes": 4487757,
   "sha256": "eabd140a70f49eb9305a3bd3f3df944eddf87e5a90d329789085f8953a80533a"
 }

@@ -1,9 +1,7 @@
 import org.gradle.api.tasks.bundling.AbstractArchiveTask
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 import java.nio.file.Files
+import java.nio.file.LinkOption
+import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.nio.file.attribute.PosixFilePermission
 import java.security.MessageDigest
@@ -89,7 +87,9 @@ application {
 
 data class TlaToolsLock(
     val version: String,
-    val url: String,
+    val vendorPath: String,
+    val upstreamUrl: String,
+    val upstreamRevision: String,
     val sizeBytes: Long,
     val sha256: String,
 )
@@ -105,76 +105,74 @@ val tlaToolsLock =
         }.map {
             TlaToolsLock(
                 version = it["version"] as String,
-                url = it["url"] as String,
+                vendorPath = it["vendorPath"] as String,
+                upstreamUrl = it["upstreamUrl"] as String,
+                upstreamRevision = it["upstreamRevision"] as String,
                 sizeBytes = (it["sizeBytes"] as Number).toLong(),
                 sha256 = it["sha256"] as String,
             )
         }
+val vendoredToolsJar = layout.projectDirectory.file(tlaToolsLock.map { it.vendorPath })
 
 fun ByteArray.hex(): String = joinToString("") { "%02x".format(it) }
 
-val fetchTlaTools by tasks.registering {
+fun verifyTlaToolsArtifact(
+    path: Path,
+    lock: TlaToolsLock,
+    label: String,
+) {
+    val size = Files.size(path)
+    require(size == lock.sizeBytes) { "$label size mismatch: $size" }
+    val digest = MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(path)).hex()
+    require(digest == lock.sha256) { "$label SHA-256 mismatch" }
+}
+
+fun resolveVendoredArtifact(
+    projectRoot: Path,
+    lock: TlaToolsLock,
+): Path {
+    val configured = Path.of(lock.vendorPath)
+    require(!configured.isAbsolute) { "Vendored TLA+ Tools path must be relative" }
+    val source = projectRoot.resolve(configured).normalize()
+    require(source.startsWith(projectRoot)) { "Vendored TLA+ Tools path escapes the project" }
+    var current = projectRoot
+    projectRoot.relativize(source).forEach { component ->
+        current = current.resolve(component)
+        require(!Files.isSymbolicLink(current)) { "Vendored TLA+ Tools path must not contain symbolic links" }
+    }
+    require(Files.isRegularFile(source, LinkOption.NOFOLLOW_LINKS)) {
+        "Vendored TLA+ Tools artifact must be a regular file"
+    }
+    return source
+}
+
+val provisionTlaTools by tasks.registering {
     inputs.file(lockFile)
+    inputs.file(vendoredToolsJar)
     outputs.file(toolsJar)
     doLast {
         val lock = tlaToolsLock.get()
+        val projectRoot =
+            layout.projectDirectory.asFile
+                .toPath()
+                .toAbsolutePath()
+                .normalize()
+        val source = resolveVendoredArtifact(projectRoot, lock)
+        verifyTlaToolsArtifact(source, lock, "Vendored TLA+ Tools")
         val destination = toolsJar.asFile.toPath()
         Files.createDirectories(destination.parent)
         val temporary = Files.createTempFile(destination.parent, ".tla2tools-", ".part")
         try {
-            val client =
-                HttpClient
-                    .newBuilder()
-                    .followRedirects(HttpClient.Redirect.NEVER)
-                    .build()
-            var uri = URI.create(lock.url)
-            var redirects = 0
-            while (true) {
-                require(uri.scheme == "https") { "TLA+ Tools URL must use HTTPS" }
-                require(uri.host in setOf("github.com", "release-assets.githubusercontent.com")) {
-                    "TLA+ Tools redirect origin is not allowed: ${uri.host}"
-                }
-                val response =
-                    client.send(
-                        HttpRequest.newBuilder(uri).GET().build(),
-                        HttpResponse.BodyHandlers.ofInputStream(),
-                    )
-                if (response.statusCode() in 300..399) {
-                    require(++redirects <= 5) { "Too many TLA+ Tools redirects" }
-                    val location = response.headers().firstValue("location").orElseThrow()
-                    uri = uri.resolve(location)
-                    response.body().close()
-                    continue
-                }
-                require(response.statusCode() == 200) { "TLA+ Tools download failed: ${response.statusCode()}" }
-                response.body().use { input ->
-                    Files.newOutputStream(temporary).use { output ->
-                        val buffer = ByteArray(64 * 1024)
-                        var total = 0L
-                        while (true) {
-                            val count = input.read(buffer)
-                            if (count < 0) break
-                            total += count
-                            require(total <= lock.sizeBytes) { "TLA+ Tools download exceeded expected size" }
-                            output.write(buffer, 0, count)
-                        }
-                        require(total == lock.sizeBytes) { "TLA+ Tools size mismatch: $total" }
-                    }
-                }
-                break
-            }
-            val digest =
-                MessageDigest
-                    .getInstance("SHA-256")
-                    .digest(Files.readAllBytes(temporary))
-                    .hex()
-            require(digest == lock.sha256) { "TLA+ Tools SHA-256 mismatch" }
             runCatching {
                 Files.setPosixFilePermissions(
                     temporary,
                     setOf(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE),
                 )
             }
+            Files.newInputStream(source, LinkOption.NOFOLLOW_LINKS).use { input ->
+                Files.newOutputStream(temporary).use { output -> input.copyTo(output) }
+            }
+            verifyTlaToolsArtifact(temporary, lock, "Temporary TLA+ Tools")
             Files.move(
                 temporary,
                 destination,
@@ -187,16 +185,19 @@ val fetchTlaTools by tasks.registering {
     }
 }
 
+val fetchTlaTools by tasks.registering {
+    description = "Compatibility alias for network-free vendored TLA+ Tools provisioning."
+    dependsOn(provisionTlaTools)
+}
+
 val verifyTlaTools by tasks.registering {
-    dependsOn(fetchTlaTools)
+    dependsOn(provisionTlaTools)
     inputs.file(toolsJar)
     inputs.file(lockFile)
     doLast {
         val lock = tlaToolsLock.get()
         val jar = toolsJar.asFile.toPath()
-        require(Files.size(jar) == lock.sizeBytes) { "Cached TLA+ Tools size mismatch" }
-        val digest = MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(jar)).hex()
-        require(digest == lock.sha256) { "Cached TLA+ Tools SHA-256 mismatch" }
+        verifyTlaToolsArtifact(jar, lock, "Cached TLA+ Tools")
     }
 }
 
