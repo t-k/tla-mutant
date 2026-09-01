@@ -82,6 +82,9 @@ final class ToolchainLockTest {
         assertTrue(script.contains("provisionTlaTools"));
         assertTrue(script.contains("NOFOLLOW_LINKS"));
         assertTrue(script.contains("ATOMIC_MOVE"));
+        assertTrue(script.contains("val vendoredToolsRoot"));
+        assertTrue(script.contains("inputs.dir(vendoredToolsRoot)"));
+        assertFalse(script.contains("inputs.file(vendoredToolsJar)"));
         assertTrue(script.contains("dependsOn(provisionTlaTools)"));
         assertFalse(script.contains("java.net.URI"));
         assertFalse(script.contains("java.net.http.HttpClient"));

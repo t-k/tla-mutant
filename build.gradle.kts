@@ -112,7 +112,7 @@ val tlaToolsLock =
                 sha256 = it["sha256"] as String,
             )
         }
-val vendoredToolsJar = layout.projectDirectory.file(tlaToolsLock.map { it.vendorPath })
+val vendoredToolsRoot = layout.projectDirectory.dir("vendor/tla-tools")
 
 fun ByteArray.hex(): String = joinToString("") { "%02x".format(it) }
 
@@ -148,7 +148,7 @@ fun resolveVendoredArtifact(
 
 val provisionTlaTools by tasks.registering {
     inputs.file(lockFile)
-    inputs.file(vendoredToolsJar)
+    inputs.dir(vendoredToolsRoot)
     outputs.file(toolsJar)
     doLast {
         val lock = tlaToolsLock.get()
