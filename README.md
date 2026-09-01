@@ -20,6 +20,19 @@ The application JAR intentionally does not embed TLA+ Tools. Invoke the CLI with
 ./gradlew spotlessCheck test integrationTest sandboxTest verifyFrozenApplication
 ```
 
+## Run a trusted local census
+
+The direct `census` command parses the model with SANY in the host JVM, so use it only for trusted local input. Put the separately verified application and TLA+ Tools JARs on the JVM classpath:
+
+```sh
+java -cp build/libs/tla-mutant-all.jar:.tools/tla2tools-1.8.0.jar dev.tlamutant.cli.Main census \
+  --model-dir path/to/model \
+  --module Spec.tla \
+  --config Spec.cfg
+```
+
+Use the corpus census commands for public or otherwise untrusted specifications; those commands retain the rootless Podman boundary.
+
 ## Run a full-property experiment
 
 The default `state-invariants` oracle preserves the historical behavior: it evaluates mutants against the configured State Invariants and is intended to discover state-expanding gap candidates. Select `full-property` when the original cfg must remain byte-for-byte unchanged and configured invariants, action properties, temporal properties, fairness conditions, state constraints, and deadlock checking must all participate in the verdict.
