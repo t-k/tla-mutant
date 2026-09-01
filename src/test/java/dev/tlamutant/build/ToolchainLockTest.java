@@ -85,6 +85,11 @@ final class ToolchainLockTest {
         assertTrue(script.contains("val vendoredToolsRoot"));
         assertTrue(script.contains("inputs.dir(vendoredToolsRoot)"));
         assertFalse(script.contains("inputs.file(vendoredToolsJar)"));
+        assertTrue(script.contains("getPosixFilePermissions"));
+        assertFalse(script.contains("runCatching"));
+        assertTrue(script.contains("$label path must not contain symbolic links"));
+        assertTrue(script.contains(
+                "requireNoSymbolicLinkComponents(projectRoot, destination, \"Destination TLA+ Tools\")"));
         assertTrue(script.contains("dependsOn(provisionTlaTools)"));
         assertFalse(script.contains("java.net.URI"));
         assertFalse(script.contains("java.net.http.HttpClient"));

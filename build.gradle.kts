@@ -135,15 +135,23 @@ fun resolveVendoredArtifact(
     require(!configured.isAbsolute) { "Vendored TLA+ Tools path must be relative" }
     val source = projectRoot.resolve(configured).normalize()
     require(source.startsWith(projectRoot)) { "Vendored TLA+ Tools path escapes the project" }
-    var current = projectRoot
-    projectRoot.relativize(source).forEach { component ->
-        current = current.resolve(component)
-        require(!Files.isSymbolicLink(current)) { "Vendored TLA+ Tools path must not contain symbolic links" }
-    }
+    requireNoSymbolicLinkComponents(projectRoot, source, "Vendored TLA+ Tools")
     require(Files.isRegularFile(source, LinkOption.NOFOLLOW_LINKS)) {
         "Vendored TLA+ Tools artifact must be a regular file"
     }
     return source
+}
+
+fun requireNoSymbolicLinkComponents(
+    root: Path,
+    path: Path,
+    label: String,
+) {
+    var current = root
+    root.relativize(path).forEach { component ->
+        current = current.resolve(component)
+        require(!Files.isSymbolicLink(current)) { "$label path must not contain symbolic links" }
+    }
 }
 
 val provisionTlaTools by tasks.registering {
@@ -159,15 +167,30 @@ val provisionTlaTools by tasks.registering {
                 .normalize()
         val source = resolveVendoredArtifact(projectRoot, lock)
         verifyTlaToolsArtifact(source, lock, "Vendored TLA+ Tools")
-        val destination = toolsJar.asFile.toPath()
+        val destination =
+            toolsJar.asFile
+                .toPath()
+                .toAbsolutePath()
+                .normalize()
+        require(destination.startsWith(projectRoot)) { "Destination TLA+ Tools path escapes the project" }
+        requireNoSymbolicLinkComponents(projectRoot, destination, "Destination TLA+ Tools")
         Files.createDirectories(destination.parent)
+        requireNoSymbolicLinkComponents(projectRoot, destination, "Destination TLA+ Tools")
+        val realProjectRoot = projectRoot.toRealPath()
+        val realDestinationParent = destination.parent.toRealPath()
+        require(realDestinationParent.startsWith(realProjectRoot)) {
+            "Destination TLA+ Tools parent resolves outside the project"
+        }
         val temporary = Files.createTempFile(destination.parent, ".tla2tools-", ".part")
         try {
-            runCatching {
-                Files.setPosixFilePermissions(
-                    temporary,
-                    setOf(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE),
+            val ownerOnlyPermissions =
+                setOf(
+                    PosixFilePermission.OWNER_READ,
+                    PosixFilePermission.OWNER_WRITE,
                 )
+            Files.setPosixFilePermissions(temporary, ownerOnlyPermissions)
+            require(Files.getPosixFilePermissions(temporary) == ownerOnlyPermissions) {
+                "Temporary TLA+ Tools permissions must be owner-only"
             }
             Files.newInputStream(source, LinkOption.NOFOLLOW_LINKS).use { input ->
                 Files.newOutputStream(temporary).use { output -> input.copyTo(output) }
@@ -179,6 +202,9 @@ val provisionTlaTools by tasks.registering {
                 StandardCopyOption.ATOMIC_MOVE,
                 StandardCopyOption.REPLACE_EXISTING,
             )
+            require(Files.getPosixFilePermissions(destination) == ownerOnlyPermissions) {
+                "Cached TLA+ Tools permissions must be owner-only"
+            }
         } finally {
             Files.deleteIfExists(temporary)
         }
