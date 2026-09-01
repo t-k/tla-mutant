@@ -1,39 +1,78 @@
 # tla-mutant
 
-`tla-mutant` is an experimental vertical slice for mutation analysis of TLA+ State Invariants. It intentionally implements only three mutation families: guard-conjunct deletion (GCD), boundary relaxation (BRL), and update off-by-one (UOI).
+`tla-mutant` mutates a TLA+ model and runs TLC to find behaviors that the model can reach without violating its current State Invariants. A surviving mutant can expose a missing or overly weak invariant, but it is a review candidate, not an automatic defect report.
 
-The first pinned 10-specification experiment produced no witness-bearing state-expanding survivors. The hardened v8 GCD-stratified 15-specification follow-up produced nine reproducible witness-bearing state expansions across six specifications, domains, and family clusters. The preregistered v10 holdout then evaluated eight previously unseen specifications, produced two review-eligible survivors, and yielded one user-delegated `ACCEPT`. Its separately frozen v11 intervention verified that `FaultVoteBoundsWithinCrashed` detects the motivating mutant while the type-only oracle still passes. See the [prospective final assessment](docs/experiments/gcd-prospective-final-assessment.md), [current v8 assessment](docs/experiments/gcd-stratified-assessment.md), [historical v7 assessment](docs/experiments/gcd-stratified-assessment-v7.md), [failed v6 instrumentation assessment](docs/experiments/gcd-stratified-assessment-v6-failed.md), and [original assessment](docs/experiments/vertical-slice-assessment.md). External human or upstream-maintainer acceptance remains separate.
+The current implementation is an experimental CLI with three mutation families: guard-conjunct deletion (GCD), boundary relaxation (BRL), and update off-by-one (UOI). It supports a State Invariant oracle for finding state-expanding candidates and a full-property oracle for checking every property configured in the original cfg.
 
-## Requirements
+## What it checks
+
+- **GCD** replaces one eligible positive current-state guard conjunct with `TRUE`, which can admit a successor that the original guard excluded.
+- **BRL** changes an eligible `<` guard to `<=`, or `>` to `>=`, at a current-state boundary.
+- **UOI** changes a supported integer update on the right-hand side of a primed equality by one.
+
+The oracle determines how each mutant is judged:
+
+- `state-invariants` asks whether the configured State Invariants reject the mutant and records qualified state-expansion evidence. This is the default mode.
+- `full-property` leaves the cfg unchanged and lets configured invariants, action properties, temporal properties, fairness, constraints, and deadlock checking contribute to the verdict.
+
+Neither mode decides whether a survivor is a domain defect. A person must inspect the mutation and its witness in the context of the model.
+
+## Quick start
+
+Requirements:
 
 - Java 21
-- Rootless Podman with cgroup v2
-- The pinned container image from `config/execution-policy.json`
+- Rootless Podman with cgroup v2 for downloaded or otherwise untrusted specifications
+- The pinned container image from `config/execution-policy.json` for corpus execution
 
-The Gradle build downloads the pinned TLA+ Tools artifact and verifies its size and SHA-256 digest.
-The current reproducible application JAR identity is preregistered in `config/current-application.json`. Historical v8 application identity remains part of the frozen v8 census and is reproduced from the corresponding historical commit rather than compared to a changed HEAD.
-The application JAR intentionally does not embed TLA+ Tools. Invoke the CLI with both separately verified JARs on the classpath as shown below; `--tools-jar` additionally supplies the exact Tools JAR to child TLC processes.
-
-## Verify
+Provision the reviewed TLA+ Tools JAR from the repository, verify both JAR identities, and build the CLI:
 
 ```sh
-./gradlew spotlessCheck test integrationTest sandboxTest verifyFrozenApplication
+./gradlew verifyTlaTools verifyFrozenApplication fatJar
 ```
 
-## Run a trusted local census
-
-The direct `census` command parses the model with SANY in the host JVM, so use it only for trusted local input. Put the separately verified application and TLA+ Tools JARs on the JVM classpath:
-
-Every JAR on this classpath executes with the current user's host privileges. Do not add an unverified JAR. From this repository, run `./gradlew verifyTlaTools verifyFrozenApplication` before the census command to verify both artifacts against their pinned identities.
+The direct `census` command parses the model with SANY in the host JVM. Every JAR on its classpath executes with the current user's privileges, so use only the two verified JARs and a trusted local specification.
 
 ```sh
 java -cp build/libs/tla-mutant-all.jar:.tools/tla2tools-1.8.0.jar dev.tlamutant.cli.Main census \
   --model-dir path/to/model \
   --module Spec.tla \
-  --config Spec.cfg
+  --config Spec.cfg \
+  > build/census.json
 ```
 
-Use the corpus census commands for public or otherwise untrusted specifications; those commands retain the rootless Podman boundary.
+Downloaded, public, or otherwise untrusted specifications belong in the corpus commands, which parse and execute them inside rootless Podman.
+
+## Reading the result
+
+- `KILLED`: the selected oracle rejected the mutant.
+- `STATE_EXPANDING`: the mutant reached a state outside the baseline reachable-state set while the selected State Invariants still passed.
+- `SURVIVED`: the selected oracle did not kill the mutant, but the run did not establish a qualified state-expansion witness.
+- `UNRESOLVED`: the runner could not produce a trustworthy verdict because of a timeout, resource limit, invalid execution evidence, or another execution failure.
+
+For a state-expanding survivor, inspect the source patch and mutant-only witness, write the smallest domain-specific invariant that excludes the unwanted state, and rerun with that invariant enabled. `tla-mutant` does not generate or approve the invariant automatically.
+
+## Evidence so far
+
+The [v8 GCD-stratified run](docs/experiments/gcd-stratified-assessment.md) found nine reproducible witness-bearing state expansions across six specifications. The preregistered v10 holdout fixed eight previously unseen specifications before mutation; two completed survivors met the review rule. A user-delegated review accepted one invariant proposal and marked the other `NEEDS_STRENGTHENING`. In the separately frozen v11 intervention, the accepted invariant killed its motivating mutant while the type-only oracle still passed with 30,943 explored states. The [prospective final assessment](docs/experiments/gcd-prospective-final-assessment.md) records the cohort, intervention, and exact limitations.
+
+The [historical v7 assessment](docs/experiments/gcd-stratified-assessment-v7.md), [failed v6 instrumentation assessment](docs/experiments/gcd-stratified-assessment-v6-failed.md), and [original 10-specification assessment](docs/experiments/vertical-slice-assessment.md) remain available for audit.
+
+## Limits
+
+- A surviving mutant is a review candidate, not proof of a specification defect.
+- The accepted proposal came from a user-delegated review, not an independent domain owner or upstream maintainer.
+- One successful prospective intervention does not estimate how often the method will find useful invariants in other specifications.
+- TLC provides finite-state evidence for the configured model. It is not an unbounded inductive proof.
+
+## Security and reproducibility
+
+- The application JAR is fixed by `config/current-application.json` at 3,221,295 bytes and SHA-256 `80e20e15f832c38e8562c8080962c7b5a7d603d2de0e9acbc2576217a6f189d1`.
+- TLA+ Tools is fixed by `config/tla-tools.lock.json` at 4,487,757 bytes and SHA-256 `eabd140a70f49eb9305a3bd3f3df944eddf87e5a90d329789085f8953a80533a`. The exact unsigned JAR is tracked because the upstream v1.8.0 prerelease URL is rolling. See the [provenance note](vendor/tla-tools/1.8.0-9787e65/README.md) and [security review](docs/security/2026-09-02-vendored-tla-tools-pin-review.md).
+- The application JAR does not embed TLA+ Tools. Direct commands need both verified JARs on the classpath, and commands that launch child TLC processes also take `--tools-jar`.
+- Direct commands execute trusted input on the host. Corpus commands fetch individually pinned public blobs and keep SANY and TLC inside the rootless Podman boundary.
+- Frozen manifests and receipts bind input identities, execution policy, tool JAR, and application JAR. Per-run and aggregate deadlines, state and file bounds, strict output parsing, and exact cleanup checks turn incomplete evidence into `UNRESOLVED` instead of a survivor.
+- Historical application identities remain part of their frozen census or receipt. Reproduce them from the corresponding historical commit rather than comparing them with the current application JAR.
 
 ## Run a full-property experiment
 
