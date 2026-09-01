@@ -197,6 +197,7 @@ public final class Main implements Runnable {
 
         @Override
         public Integer call() throws Exception {
+            TlaToolsClasspath.requireForCensus();
             List<CorpusManifest.DerivedSourceEdit> edits = parseDerivedSourceEdits(derivedSourceEditJson);
             GcdCensusReport report;
             if (edits.isEmpty()) {
