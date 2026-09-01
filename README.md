@@ -24,6 +24,8 @@ The application JAR intentionally does not embed TLA+ Tools. Invoke the CLI with
 
 The direct `census` command parses the model with SANY in the host JVM, so use it only for trusted local input. Put the separately verified application and TLA+ Tools JARs on the JVM classpath:
 
+Every JAR on this classpath executes with the current user's host privileges. Do not add an unverified JAR. From this repository, run `./gradlew verifyTlaTools verifyFrozenApplication` before the census command to verify both artifacts against their pinned identities.
+
 ```sh
 java -cp build/libs/tla-mutant-all.jar:.tools/tla2tools-1.8.0.jar dev.tlamutant.cli.Main census \
   --model-dir path/to/model \

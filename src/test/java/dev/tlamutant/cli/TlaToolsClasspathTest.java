@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
 final class TlaToolsClasspathTest {
@@ -25,5 +27,18 @@ final class TlaToolsClasspathTest {
     @Test
     void testRuntimeWithPinnedToolsPassesTheGuard() {
         assertDoesNotThrow(() -> TlaToolsClasspath.requireForCensus(TlaToolsClasspath.class.getClassLoader()));
+    }
+
+    @Test
+    void diagnosticNamesTheToolsVersionFromTheProvenanceLock() throws Exception {
+        String version = new ObjectMapper()
+                .readTree(Path.of("config/tla-tools.lock.json").toFile())
+                .required("version")
+                .textValue();
+        IllegalStateException failure = assertThrows(
+                IllegalStateException.class,
+                () -> TlaToolsClasspath.requireForCensus(ClassLoader.getPlatformClassLoader()));
+
+        assertTrue(failure.getMessage().contains("tla2tools-" + version + ".jar"));
     }
 }
